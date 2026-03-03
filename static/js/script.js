@@ -10,7 +10,6 @@ let recognition = null;
 let currentFile = null;
 // Naya variable add karo top par
 let lastMessageDate = null; 
-let vantaEffect = null;
 
 // Helper function date calculate karne ke liye
 // Helper function date calculate karne ke liye
@@ -407,56 +406,7 @@ async function setMode(mode, btn) {
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    // 🌟 1. ETHRIX AGENT SCI-FI MAGIC 🌟
-    if (mode === 'ethrix_agent') {
-        document.body.classList.add('sci-fi-theme');
-        
-        // Purana (Halo/Rings) effect destroy karo
-        if (vantaEffect) {
-            vantaEffect.destroy();
-            vantaEffect = null;
-        }
-
-        // Naya Sci-Fi Net Effect ussi purane background par chalao
-        if (window.VANTA && window.VANTA.NET) {
-            vantaEffect = VANTA.NET({
-              el: "#vanta-bg", // Tumhara original div!
-              mouseControls: true,
-              touchControls: true,
-              gyroControls: false,
-              minHeight: 200.00,
-              minWidth: 200.00,
-              scale: 1.00,
-              scaleMobile: 1.00,
-              color: 0x00ffff, 
-              backgroundColor: 0x020205, 
-              points: 12.00,
-              maxDistance: 20.00,
-              spacing: 16.00
-            });
-        }
-
-        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#020205', color: '#0ff' })
-            .fire({ icon: 'success', title: '🌌 Ethrix Agent Online' });
-
-    } else {
-        // Normal mode par wapas jane se sci-fi theme hatao
-        const wasSciFi = document.body.classList.contains('sci-fi-theme');
-        document.body.classList.remove('sci-fi-theme');
-        
-        // Agar agent mode se wapas aaye hain, toh Net hata kar Halo wapas lao
-        if (wasSciFi) {
-            if (vantaEffect) {
-                vantaEffect.destroy();
-                vantaEffect = null;
-            }
-            if (typeof initVanta === 'function') {
-                initVanta(); // Tumhara apna pyara function!
-            }
-        }
-    }
-
-    // 🎨 2. IF IMAGE GEN IS SELECTED -> SHOW OPTIONS
+    // IF IMAGE GEN IS SELECTED -> SHOW OPTIONS
     if (mode === 'image_gen') {
         const { value: formValues } = await Swal.fire({
             title: '🎨 Image Studio Settings',
@@ -504,9 +454,7 @@ async function setMode(mode, btn) {
             Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#1e1e1e', color: '#fff' })
                 .fire({ icon: 'success', title: `Mode Set: ${imageSettings.quality.toUpperCase()} + ${imageSettings.style.toUpperCase()}` });
         }
-    } 
-    // 💬 3. NORMAL MODES TOAST MESSAGE
-    else if (mode !== 'ethrix_agent') {
+    } else {
         Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 1000 }).fire({ icon: 'info', title: `Mode: ${mode}` });
     }
 }
