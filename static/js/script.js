@@ -405,9 +405,20 @@ function removeFile() {
 async function setMode(mode, btn) {
     currentMode = mode;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    if (btn) btn.classList.add('active');
 
-    // IF IMAGE GEN IS SELECTED -> SHOW OPTIONS
+    // 🌟 1. ETHRIX AGENT SCI-FI MAGIC 🌟
+    if (mode === 'ethrix_agent') {
+        document.body.classList.add('sci-fi-theme');
+        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#020205', color: '#0ff' })
+            .fire({ icon: 'success', title: '🌌 Ethrix Agent Online' });
+        console.log("System Override: Ethrix Autonomous Agent Online. All 10 modules initialized.");
+    } else {
+        // Baki kisi bhi mode par jane se sci-fi theme hat jayegi
+        document.body.classList.remove('sci-fi-theme');
+    }
+
+    // 🎨 2. IF IMAGE GEN IS SELECTED -> SHOW OPTIONS (Tumhara Original Code)
     if (mode === 'image_gen') {
         const { value: formValues } = await Swal.fire({
             title: '🎨 Image Studio Settings',
@@ -455,7 +466,9 @@ async function setMode(mode, btn) {
             Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#1e1e1e', color: '#fff' })
                 .fire({ icon: 'success', title: `Mode Set: ${imageSettings.quality.toUpperCase()} + ${imageSettings.style.toUpperCase()}` });
         }
-    } else {
+    } 
+    // 💬 3. NORMAL MODES TOAST MESSAGE
+    else if (mode !== 'ethrix_agent') {
         Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 1000 }).fire({ icon: 'info', title: `Mode: ${mode}` });
     }
 }

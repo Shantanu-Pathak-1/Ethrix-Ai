@@ -855,10 +855,38 @@ async def chat_endpoint(req: ChatRequest, request: Request, background_tasks: Ba
         elif mode == "movie_talker": reply = await movie_talker_tool(msg, context_history)
         elif mode == "anime_talker": reply = await anime_talker_tool(msg, context_history)
         elif mode == "research":
-            data = await perform_research_task(msg)
-            client = get_groq()
-            reply = client.chat.completions.create(messages=[{"role": "system", "content": FINAL_SYSTEM_PROMPT}, {"role": "user", "content": f"Context: {data}\nQ: {msg}"}], model="llama-3.3-70b-versatile").choices[0].message.content if client else data
-        
+       elif mode == "ethrix_agent":
+            try:
+                import httpx
+                async with httpx.AsyncClient() as http_client:
+                    headers = {
+                        "x-api-key": os.getenv("AGENT_API_KEY", "shantanu_super_secret_key"),
+                        "Content-Type": "application/json"
+                    }
+                    
+                    # Agent ko history bhejni zaruri hai taaki use pichli baatein yaad rahein
+                    clean_history = [{"role": m["role"], "content": m["content"]} for m in (chat_doc.get("messages", []) + [{"role": "user", "content": msg}])[-15:]]
+                    
+                    payload = {
+                        "query": msg,
+                        "user_context": FINAL_SYSTEM_PROMPT,
+                        "history": clean_history,
+                        "user_email": user['email']
+                    }
+                    
+                    # ⚠️ DHYAN DENA: Yahan apne Hugging Face space ka sahi URL daalna
+                    AGENT_URL = os.getenv("HF_AGENT_URL")
+                    
+                    # Agent thoda time le sakta hai tools chalane mein, isliye timeout 40 seconds diya hai
+                    resp = await http_client.post(AGENT_URL, headers=headers, json=payload, timeout=40.0)
+                    
+                    if resp.status_code == 200:
+                        reply = resp.json().get("response", "Agent processing complete.")
+                    else:
+                        reply = f"⚠️ Ethrix Agent connection error! Status: {resp.status_code}"
+            except Exception as e:
+                reply = f"⚠️ Ethrix Agent is offline or unreachable: {str(e)}"
+
         # 🚀 YAHAN HAI WOH CUSTOM TOOL WALA ELIF LOGIC!
         elif mode.startswith("custom_"):
             custom_tool = next((t for t in db_user.get("custom_tools", []) if t["id"] == mode), None)
