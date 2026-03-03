@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcards Maker - Shanvika</title>
+    <title>Flashcards Maker - Ethrix</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,9 +20,16 @@
     </style>
 </head>
 <body class="bg-gray-900 text-white flex h-screen overflow-hidden">
-    <nav class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col hidden md:flex">
+    <!-- Mobile top bar -->
+    <div class="tools-mobile-topbar hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-gray-900/95 backdrop-blur-md border-b border-gray-700">
+        <button onclick="document.getElementById('tools-sidebar').classList.toggle('mobile-open')" class="text-white text-xl"><i class="fas fa-bars"></i></button>
+        <span class="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">Ethrix</span>
+        <a href="/tools" class="text-gray-400 hover:text-white text-sm"><i class="fas fa-flask"></i> Tools</a>
+    </div>
+    <div class="tools-mobile-spacer h-14 md:hidden"></div>
+    <nav id="tools-sidebar" class="tools-nav-sidebar w-64 bg-gray-800 border-r border-gray-700 flex flex-col hidden md:flex">
         <div class="p-4 shrink-0">
-            <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 mb-6">Shanvika Lab</h2>
+            <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 mb-6">Ethrix Lab</h2>
             <div class="space-y-2">
                 <a href="/tools" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 transition text-gray-300"><i class="fas fa-arrow-left w-5"></i> <span>Back to Tools</span></a>
             </div>
@@ -41,13 +48,13 @@
         </div>
     </nav>
 
-    <main class="flex-1 flex flex-col h-full bg-gray-950 relative">
-        <header class="p-6 border-b border-gray-800 bg-gray-900/50 backdrop-blur-md z-10 flex justify-between">
+    <main class="tools-main-content flex-1 flex flex-col h-full bg-gray-950 relative">
+        <header class="tool-page-header p-4 md:p-6 border-b border-gray-800 bg-gray-900/50 backdrop-blur-md z-10 flex justify-between">
             <div><h1 class="text-2xl font-bold text-white">Flashcards Maker 📚</h1></div>
             <button onclick="window.location.reload()" class="text-gray-400 hover:text-white"><i class="fas fa-plus"></i> New Set</button>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-6 relative" id="main-content-area">
+        <div class="flex-1 overflow-y-auto tool-page-content p-4 md:p-6 relative" id="main-content-area">
             <div class="max-w-5xl mx-auto">
                 <div id="loading" class="loading-text"><i class="fas fa-magic fa-spin mr-2"></i> Flashcards bana rahi hu... thoda wait karo! ✨</div>
                 <div id="flashcard-container" class="flashcard-container">

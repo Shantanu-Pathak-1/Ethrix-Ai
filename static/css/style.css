@@ -1,6 +1,6 @@
 /* ==================================================================================
    FILE: static/css/style.css
-   DESCRIPTION: Master Stylesheet for Shanvika AI Web Interface
+   DESCRIPTION: Master Stylesheet for Ethrix AI Web Interface
    ================================================================================== */
 
 /* =========================================
@@ -354,4 +354,292 @@ code { font-family: 'Consolas', monospace; color: #d4d4d4; }
         0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
         100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
     }
+}
+/* ==================================================================================
+   RESPONSIVE ADDITIONS — Mobile (320–480px) & Tablet (481–1024px)
+   Added during Ethrix AI rebranding & responsiveness pass
+   ================================================================================== */
+
+/* =========================================
+   [R1] GLOBAL — Prevent horizontal scroll
+   ========================================= */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* =========================================
+   [R2] TOOLS SIDEBAR — Mobile nav overlay
+   ========================================= */
+.tools-nav-sidebar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 767px) {
+    /* Tools/tool-page sidebars: hidden off-screen, slide in when open */
+    nav.tools-nav-sidebar {
+        position: fixed !important;
+        left: 0; top: 0; bottom: 0;
+        width: 80% !important;
+        max-width: 280px !important;
+        z-index: 200 !important;
+        transform: translateX(-100%);
+        display: flex !important; /* override hidden md:flex */
+    }
+    nav.tools-nav-sidebar.mobile-open {
+        transform: translateX(0);
+    }
+    nav.tools-nav-sidebar.mobile-open::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: -1;
+        left: 100%;
+        width: 100vw;
+    }
+    /* Mobile top bar for tools pages */
+    .tools-mobile-topbar {
+        display: flex !important;
+    }
+    /* Ensure main content fills screen on mobile */
+    .tools-main-content {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .tools-mobile-topbar {
+        display: none !important;
+    }
+}
+
+/* =========================================
+   [R3] LOGIN CARD — Fluid on small screens
+   ========================================= */
+@media (max-width: 480px) {
+    .login-card {
+        width: calc(100vw - 32px) !important;
+        max-width: 380px !important;
+        padding: 20px 16px !important;
+        border-radius: 16px !important;
+        margin: 0 16px;
+    }
+    .brand-title {
+        font-size: 1.6rem !important;
+    }
+    .login-logo-responsive {
+        width: 64px !important;
+        height: 64px !important;
+    }
+}
+
+/* =========================================
+   [R4] TOOLS DASHBOARD GRID — Responsive
+   ========================================= */
+@media (max-width: 480px) {
+    /* Single column on tiny phones */
+    .tools-grid-responsive {
+        grid-template-columns: 1fr !important;
+    }
+    /* Tool card inner padding */
+    .tool-card-responsive {
+        padding: 16px !important;
+    }
+    /* Page heading size */
+    .tools-page-heading {
+        font-size: 1.4rem !important;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+    .tools-grid-responsive {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* =========================================
+   [R5] LANDING PAGE — Mobile hero & cards
+   ========================================= */
+@media (max-width: 480px) {
+    /* Shrink hero heading on very small phones */
+    .landing-hero-h1 {
+        font-size: 2rem !important;
+        line-height: 1.2 !important;
+    }
+    .landing-hero-sub {
+        font-size: 0.95rem !important;
+    }
+    /* Stack CTA buttons */
+    .landing-cta-row {
+        flex-direction: column !important;
+        gap: 12px !important;
+        align-items: stretch !important;
+    }
+    .landing-cta-row a {
+        text-align: center;
+    }
+    /* Feature cards: single column */
+    .landing-features-grid {
+        grid-template-columns: 1fr !important;
+    }
+    /* Nav brand text */
+    .landing-nav-brand {
+        font-size: 1rem !important;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+    .landing-hero-h1 {
+        font-size: 2.8rem !important;
+    }
+}
+
+/* =========================================
+   [R6] ABOUT PAGE — Content sections
+   ========================================= */
+@media (max-width: 480px) {
+    /* Tighten about card padding */
+    .about-main-card {
+        padding: 16px !important;
+        border-radius: 16px !important;
+    }
+    /* Creator avatar smaller */
+    .about-avatar {
+        width: 96px !important;
+        height: 96px !important;
+    }
+    /* Name heading */
+    .about-name-heading {
+        font-size: 2rem !important;
+    }
+    /* Timeline left offset */
+    .timeline-container {
+        padding-left: 1.5rem !important;
+    }
+}
+
+/* =========================================
+   [R7] CHAT INPUT — Tighter on 320px
+   ========================================= */
+@media (max-width: 360px) {
+    .input-fixed-bottom {
+        padding: 0.5rem !important;
+        padding-bottom: 0.75rem !important;
+        padding-top: 30px !important;
+    }
+    .mode-btn {
+        font-size: 0.7rem !important;
+        padding: 4px 8px !important;
+    }
+    #user-input {
+        font-size: 14px !important;
+    }
+}
+
+/* =========================================
+   [R8] FLASHCARDS — Mobile grid fix
+   ========================================= */
+@media (max-width: 480px) {
+    .flashcard-container {
+        grid-template-columns: 1fr !important;
+        padding: 10px !important;
+    }
+    .flashcard {
+        height: 200px !important;
+    }
+}
+
+/* =========================================
+   [R9] MEMORY / DIARY pages — padding fix
+   ========================================= */
+@media (max-width: 480px) {
+    .memory-container {
+        padding: 12px !important;
+        padding-top: 20px !important;
+    }
+}
+
+/* =========================================
+   [R10] MODAL — Full-width on tiny screens
+   ========================================= */
+@media (max-width: 480px) {
+    .modal-content {
+        width: 100% !important;
+        max-width: calc(100vw - 24px) !important;
+        padding: 16px !important;
+        border-radius: 16px !important;
+        margin: 0 12px !important;
+    }
+}
+
+/* =========================================
+   [R11] ONBOARDING — Form responsiveness
+   ========================================= */
+@media (max-width: 480px) {
+    .onboarding-card {
+        width: calc(100vw - 32px) !important;
+        padding: 20px 16px !important;
+        border-radius: 16px !important;
+    }
+}
+
+/* =========================================
+   [R12] GALLERY — Image grid
+   ========================================= */
+@media (max-width: 480px) {
+    .gallery-grid-responsive {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+}
+
+/* =========================================
+   [R13] TOOL PAGES — Header & content area
+   ========================================= */
+@media (max-width: 767px) {
+    /* Tool page headers with text */
+    .tool-page-header {
+        padding: 16px !important;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .tool-page-header h1 {
+        font-size: 1.2rem !important;
+    }
+    /* Tool page content areas */
+    .tool-page-content {
+        padding: 12px !important;
+    }
+    /* Textarea and inputs in tools */
+    .tool-input-area {
+        font-size: 14px !important;
+    }
+    /* Result boxes */
+    .tool-result-box {
+        padding: 12px !important;
+        font-size: 0.875rem !important;
+    }
+}
+
+/* =========================================
+   [R14] PREVENT OVERFLOW on all pages
+   ========================================= */
+img, video, iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure long URLs/words don't overflow */
+p, span, div, li, td, th {
+    overflow-wrap: break-word;
+    word-break: break-word;
 }

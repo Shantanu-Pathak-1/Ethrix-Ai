@@ -16,7 +16,7 @@ async function loadDiaryEntries() {
                 <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #64748b;">
                     <i class="fas fa-book-open" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
                     <h3>Diary is Empty</h3>
-                    <p>Shanvika hasn't written anything yet. Chat with her to create memories!</p>
+                    <p>Ethrix hasn't written anything yet. Chat with her to create memories!</p>
                 </div>
             `;
             return;

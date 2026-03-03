@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Studio • Shanvika Gallery</title>
+    <title>My Studio • Ethrix Gallery</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -17,7 +17,7 @@
 </head>
 <body class="p-4 md:p-8 min-h-screen">
 
-    <div class="max-w-7xl mx-auto flex justify-between items-center mb-8">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center mb-8">
         <div>
             <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500">My Studio</h1>
             <p class="text-gray-400 text-sm">Your AI Generated Masterpieces</p>
@@ -32,7 +32,7 @@
             <div class="text-center py-20 opacity-50">
                 <i class="fas fa-palette text-6xl mb-4 text-gray-600"></i>
                 <h2 class="text-xl">It's empty here!</h2>
-                <p>Go to chat and ask Shanvika to "Paint a cyberpunk city"</p>
+                <p>Go to chat and ask Ethrix to "Paint a cyberpunk city"</p>
             </div>
         {% else %}
             <div class="masonry-grid">
@@ -43,7 +43,7 @@
                     <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col justify-end p-4">
                         <p class="text-sm font-bold truncate text-white mb-1">{{ img.prompt }}</p>
                         <div class="flex gap-2">
-                            <a href="{{ img.url }}" download="shanvika_art.jpg" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-xs flex-1 text-center">
+                            <a href="{{ img.url }}" download="ethrix_art.jpg" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-xs flex-1 text-center">
                                 <i class="fas fa-download"></i> Save
                             </a>
                             <button onclick="deleteImage(this, '{{ img.url }}')" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs">

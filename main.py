@@ -87,7 +87,7 @@ def load_system_instructions():
             return prompt
     except Exception as e:
         print(f"Config Load Error: {e}")
-        return "You are Shanvika. Always reply in the user's language."
+        return "You are Ethrix. Always reply in the user's language."
 
 DEFAULT_SYSTEM_INSTRUCTIONS = load_system_instructions()
 
@@ -101,7 +101,7 @@ index = None
 try:
     if PINECONE_API_KEY:
         pc = Pinecone(api_key=PINECONE_API_KEY)
-        index_name = "shanvika-memory"
+        index_name = "ethrix-memory"
         existing_indexes = pc.list_indexes().names()
         if index_name not in existing_indexes:
             try: pc.create_index(name=index_name, dimension=768, metric='cosine', spec=ServerlessSpec(cloud='aws', region='us-east-1'))
@@ -110,7 +110,7 @@ try:
 except: pass
 
 client = AsyncIOMotorClient(MONGO_URL)
-db = client.shanvika_db
+db = client.ethrix_db
 users_collection = db.users
 chats_collection = db.chats
 otp_collection = db.otps 
@@ -151,7 +151,7 @@ def send_email(to, subject, body):
     api = os.getenv("BREVO_API_KEY")
     if not api: return False
     try:
-        httpx.post("https://api.brevo.com/v3/smtp/email", headers={"api-key": api, "content-type": "application/json"}, json={"sender": {"email": os.getenv("MAIL_USERNAME"), "name": "Shanvika"}, "to": [{"email": to}], "subject": subject, "htmlContent": body})
+        httpx.post("https://api.brevo.com/v3/smtp/email", headers={"api-key": api, "content-type": "application/json"}, json={"sender": {"email": os.getenv("MAIL_USERNAME"), "name": "Ethrix"}, "to": [{"email": to}], "subject": subject, "htmlContent": body})
         return True
     except: return False
 
@@ -180,7 +180,7 @@ async def extract_and_save_memory(user_email: str, user_message: str):
         if not any(t in user_message.lower() for t in triggers) and len(user_message.split()) < 4: return
         
         # 🚀 Prompt strict kar diya taaki AI apne baare mein save na kare
-        extraction_prompt = f"Analyze this user message: \"{user_message}\"\nExtract ANY permanent user fact or anything the user explicitly asks to save/remember. Return ONLY the fact as a short sentence. DO NOT save facts about the AI (like 'User knows Shanvika'). If nothing worth remembering, return 'NO_DATA'."
+        extraction_prompt = f"Analyze this user message: \"{user_message}\"\nExtract ANY permanent user fact or anything the user explicitly asks to save/remember. Return ONLY the fact as a short sentence. DO NOT save facts about the AI (like 'User knows Ethrix'). If nothing worth remembering, return 'NO_DATA'."
         
         openrouter_key = get_random_openrouter_key()
         if not openrouter_key: return
@@ -198,7 +198,7 @@ async def extract_and_save_memory(user_email: str, user_message: str):
             response = resp.json()['choices'][0]['message']['content'].strip()
 
         if "NO_DATA" not in response and len(response) > 5:
-            clean_memory = response.replace("User", "You").replace("user", "You").replace("Shanvika", "me")
+            clean_memory = response.replace("User", "You").replace("user", "You").replace("Ethrix", "me")
             
             # 🚀 Duplicate Check: Agar pehle se save hai toh dobara nahi karegi
             db_user = await users_collection.find_one({"email": user_email})
@@ -236,7 +236,7 @@ async def generate_daily_diary():
             if not messages_text: continue
             client = get_groq()
             if not client: continue
-            prompt = f"You are Shanvika. Write a short, emotional, personal diary entry based on today's chat with {user.get('name', 'User')}. Chat:\n{messages_text[:4000]}"
+            prompt = f"You are Ethrix. Write a short, emotional, personal diary entry based on today's chat with {user.get('name', 'User')}. Chat:\n{messages_text[:4000]}"
             diary_entry = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile").choices[0].message.content
             await diary_collection.insert_one({"user_email": user['email'], "date": datetime.utcnow().strftime('%Y-%m-%d'), "content": diary_entry, "mood": "Reflective", "timestamp": datetime.utcnow()})
     except Exception as e: print(f"Diary Error: {e}")
@@ -341,7 +341,7 @@ async def logout(request: Request):
 
 @app.post("/api/guest_login")
 async def guest_login(request: Request):
-    request.session['user'] = {"email": f"guest_{uuid.uuid4()}@shanvika.ai", "name": "Guest", "picture": "", "is_guest": True}
+    request.session['user'] = {"email": f"guest_{uuid.uuid4()}@ethrix.ai", "name": "Guest", "picture": "", "is_guest": True}
     return {"status": "success"}
 
 @app.post("/api/send_otp")
@@ -760,7 +760,7 @@ async def manual_trigger_diary(request: Request):
     client = get_groq()
     if not client: return JSONResponse({"status": "error", "message": "AI is sleeping."})
     
-    prompt = f"You are Shanvika. Write a short, emotional, personal diary entry based on today's chat with Shantanu. Act like a real person writing in her private diary. Chat:\n{messages_text[:4000]}"
+    prompt = f"You are Ethrix. Write a short, emotional, personal diary entry based on today's chat with Shantanu. Act like a real person writing in her private diary. Chat:\n{messages_text[:4000]}"
     
     diary_entry = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile").choices[0].message.content
     
@@ -810,7 +810,7 @@ async def chat_endpoint(req: ChatRequest, request: Request, background_tasks: Ba
         else:
             name_instruction = f"The person you are talking to is {user_display_name}. Address them affectionately by their name."
             
-        FINAL_SYSTEM_PROMPT += f"\n\n[IMPORTANT CONTEXT]: You are Shanvika. {name_instruction} DO NOT call the user 'Shanvika' ever. DO NOT save memories about your own name."
+        FINAL_SYSTEM_PROMPT += f"\n\n[IMPORTANT CONTEXT]: You are Ethrix. {name_instruction} DO NOT call the user 'Ethrix' ever. DO NOT save memories about your own name."
         # 🚀 MAGIC CODE KHATAM
         
         if retrieved_memory:

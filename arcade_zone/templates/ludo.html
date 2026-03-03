@@ -179,7 +179,7 @@
         </div>
         <div class="dice" id="dice" onclick="rollDice()">🎲</div>
         <div class="player-tag player-blue" id="p-blue">
-            <i class="fas fa-robot text-xl block mb-1"></i> SHANVIKA
+            <i class="fas fa-robot text-xl block mb-1"></i> ETHRIX
         </div>
     </div>
     
@@ -332,7 +332,7 @@
             gameState = 'ANIMATING';
             const dice = document.getElementById('dice');
             dice.classList.add('rolling');
-            setStatus(turn === 'red' ? 'Rolling...' : 'Shanvika is rolling...');
+            setStatus(turn === 'red' ? 'Rolling...' : 'Ethrix is rolling...');
 
             let rolls = 0;
             let rollInterval = setInterval(() => {
@@ -343,7 +343,7 @@
                     dice.classList.remove('rolling');
                     currentRoll = Math.floor(Math.random() * 6) + 1;
                     
-                    // Shanvika gets a little lucky sometimes 😉
+                    // Ethrix gets a little lucky sometimes 😉
                     if(turn === 'blue' && Math.random() > 0.75) currentRoll = 6; 
                     
                     dice.innerText = currentRoll;
@@ -368,7 +368,7 @@
             }
 
             if(turn === 'blue') {
-                setStatus(`Shanvika is thinking...`);
+                setStatus(`Ethrix is thinking...`);
                 setTimeout(() => doAiMove(validGotis), 1000);
             } else {
                 gameState = 'WAITING_MOVE';
@@ -384,7 +384,7 @@
             moveTokenProcess(goti, 'red');
         }
 
-        // --- 4. SHANVIKA AI BRAIN ---
+        // --- 4. ETHRIX AI BRAIN ---
         function doAiMove(validGotis) {
             let chosen = validGotis[0];
             
@@ -452,7 +452,7 @@
 
             setTimeout(() => {
                 if(tokens[color].every(t => t.pos === 105)) {
-                    setStatus(color === 'red' ? "🎉 YOU WON THE GAME! 🎉" : "😈 SHANVIKA WON! BETTER LUCK NEXT TIME!");
+                    setStatus(color === 'red' ? "🎉 YOU WON THE GAME! 🎉" : "😈 ETHRIX WON! BETTER LUCK NEXT TIME!");
                     return;
                 }
 
@@ -473,7 +473,7 @@
             document.getElementById('dice').innerText = "🎲";
             gameState = 'WAITING_ROLL';
             
-            setStatus(turn === 'red' ? "Your Turn! Tap Dice." : "Shanvika is thinking...");
+            setStatus(turn === 'red' ? "Your Turn! Tap Dice." : "Ethrix is thinking...");
             drawBoard(); 
             
             if(turn === 'blue') setTimeout(executeRoll, 1000);

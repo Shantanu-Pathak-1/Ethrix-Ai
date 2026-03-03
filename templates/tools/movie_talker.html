@@ -3,14 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Talker - Shanvika</title>
+    <title>Movie Talker - Ethrix</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white flex h-screen overflow-hidden">
-    <nav class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col hidden md:flex z-20">
+    <!-- Mobile top bar -->
+    <div class="tools-mobile-topbar hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-gray-900/95 backdrop-blur-md border-b border-gray-700">
+        <button onclick="document.getElementById('tools-sidebar').classList.toggle('mobile-open')" class="text-white text-xl"><i class="fas fa-bars"></i></button>
+        <span class="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">Ethrix</span>
+        <a href="/tools" class="text-gray-400 hover:text-white text-sm"><i class="fas fa-flask"></i> Tools</a>
+    </div>
+    <div class="tools-mobile-spacer h-14 md:hidden"></div>
+    <nav id="tools-sidebar" class="tools-nav-sidebar w-64 bg-gray-800 border-r border-gray-700 flex flex-col hidden md:flex z-20">
         <div class="p-4 shrink-0">
             <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 mb-6 flex items-center gap-2"><i class="fas fa-film"></i> Movie Talker</h2>
             <div class="space-y-2"><a href="/tools" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 text-gray-300"><i class="fas fa-arrow-left w-5"></i> Back to Tools</a></div>
@@ -22,13 +29,13 @@
         </div>
     </nav>
 
-    <main class="flex-1 flex flex-col h-full bg-gray-900 relative">
+    <main class="tools-main-content flex-1 flex flex-col h-full bg-gray-900 relative">
         <header class="p-5 border-b border-gray-800 bg-gray-900/80 flex justify-between">
             <h1 class="text-2xl font-bold">Movie & Series Gossip 🍿</h1>
             <button onclick="window.location.reload()" class="text-gray-400 hover:text-white"><i class="fas fa-plus"></i> New Topic</button>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-4" id="chat-container">
+        <div class="flex-1 overflow-y-auto tool-page-content p-4 md:p-6 flex flex-col gap-4" id="chat-container">
             <div class="bg-purple-900/40 p-5 rounded-2xl max-w-[85%] border border-purple-500/30 self-start text-purple-100" id="welcome-msg">
                 <h3 class="font-bold text-lg mb-2 text-purple-300"><i class="fas fa-popcorn"></i> Lights, Camera, Action!</h3>
                 <p>Hello Shantanu! Aaj konsi series discuss karni hai? Kya hum Lucifer ke devilish charm ki baat karein ya kisi nayi movie ki gossip karein? Batao batao! 🥰 🎙️</p>

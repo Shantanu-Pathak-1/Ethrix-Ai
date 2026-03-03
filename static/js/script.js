@@ -220,7 +220,7 @@ async function sendMessage() {
         }
 
     } catch (e) {
-        document.getElementById(thinkingId).innerHTML = '<span class="text-red-400">Error: Could not connect to Shanvika.</span>';
+        document.getElementById(thinkingId).innerHTML = '<span class="text-red-400">Error: Could not connect to Ethrix.</span>';
     }
 }
 
@@ -306,7 +306,7 @@ function copyText(msgId) {
 function shareResponse(msgId) {
     const content = document.getElementById(msgId + '_content').innerText;
     if (navigator.share) {
-        navigator.share({ title: 'Shanvika AI', text: content, url: window.location.href });
+        navigator.share({ title: 'Ethrix AI', text: content, url: window.location.href });
     } else {
         copyText(msgId);
         Swal.fire({ icon: 'success', title: 'Copied!', text: 'Link copied to clipboard', timer: 1500, showConfirmButton: false });

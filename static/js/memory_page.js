@@ -35,7 +35,7 @@ async function loadMemories() {
     list.innerHTML = '';
     
     if (data.memories.length === 0) {
-        list.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">No memories saved yet. Chat with Shanvika to build memory!</p>';
+        list.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">No memories saved yet. Chat with Ethrix to build memory!</p>';
         return;
     }
 

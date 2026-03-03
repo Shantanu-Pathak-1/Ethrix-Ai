@@ -69,8 +69,8 @@ def get_openrouter_response(prompt, task_type="fast"):
             
         headers = {
             "Authorization": f"Bearer {key}",
-            "HTTP-Referer": "https://shanvika.ai", 
-            "X-Title": "Shanvika AI", 
+            "HTTP-Referer": "https://ethrix.ai", 
+            "X-Title": "Ethrix AI", 
             "Content-Type": "application/json"
         }
         
