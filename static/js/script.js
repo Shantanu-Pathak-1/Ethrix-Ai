@@ -406,7 +406,7 @@ async function setMode(mode, btn) {
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    // IF IMAGE GEN IS SELECTED -> SHOW OPTIONS
+    // 🎨 IF IMAGE GEN IS SELECTED -> SHOW OPTIONS
     if (mode === 'image_gen') {
         const { value: formValues } = await Swal.fire({
             title: '🎨 Image Studio Settings',
@@ -454,7 +454,15 @@ async function setMode(mode, btn) {
             Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#1e1e1e', color: '#fff' })
                 .fire({ icon: 'success', title: `Mode Set: ${imageSettings.quality.toUpperCase()} + ${imageSettings.style.toUpperCase()}` });
         }
-    } else {
+    } 
+    // 🌌 ETHRIX AGENT SAFE MODE
+    else if (mode === 'ethrix_agent') {
+        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#020205', color: '#0ff' })
+            .fire({ icon: 'success', title: '🌌 Ethrix Agent Online' });
+        console.log("Agent selected. Background is kept safe and untouched.");
+    } 
+    // 💬 NORMAL MODES
+    else {
         Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 1000 }).fire({ icon: 'info', title: `Mode: ${mode}` });
     }
 }
