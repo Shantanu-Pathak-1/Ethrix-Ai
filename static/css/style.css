@@ -278,3 +278,57 @@ code { font-family: 'Consolas', monospace; color: #d4d4d4; }
 @media (min-width: 768px) { #welcome-screen { padding: 2rem; } }
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .break-words { overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
+
+/* =========================================================
+   🚀 CUSTOM NEON CURSOR & CLICK ANIMATION (DESKTOP ONLY)
+   ========================================================= */
+@media (pointer: fine) {
+    /* Hide default cursor only on devices with a real mouse */
+    body, a, button, input, textarea, select, .tool-card, .goti, .dice {
+        cursor: none !important;
+    }
+
+    /* The tiny glowing dot */
+    .cursor-dot {
+        position: fixed;
+        top: 0; left: 0;
+        width: 8px; height: 8px;
+        background: #ec4899; /* Pinkish-Purple Glow */
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 99999;
+        pointer-events: none;
+        box-shadow: 0 0 10px #ec4899, 0 0 20px #ec4899;
+    }
+
+    /* The following circle */
+    .cursor-outline {
+        position: fixed;
+        top: 0; left: 0;
+        width: 32px; height: 32px;
+        border: 2px solid rgba(236, 72, 153, 0.6);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 99998;
+        pointer-events: none;
+        transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
+    }
+
+    /* Ripple Effect on Click */
+    .click-ripple {
+        position: fixed;
+        top: 0; left: 0;
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(236, 72, 153, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
+        transform: translate(-50%, -50%) scale(0);
+        z-index: 99997;
+        pointer-events: none;
+        animation: ripple-anim 0.5s ease-out forwards;
+    }
+
+    @keyframes ripple-anim {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+    }
+}

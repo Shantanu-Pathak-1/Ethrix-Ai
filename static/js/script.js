@@ -457,3 +457,72 @@ async function deleteAllChats() {
         loadHistory(); createNewChat(); closeModal('settings-modal');
     }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Check if device has a fine pointer (mouse)
+    if (window.matchMedia("(pointer: fine)").matches) {
+        
+        // 1. Create Cursor Elements
+        const dot = document.createElement("div");
+        dot.className = "cursor-dot";
+        const outline = document.createElement("div");
+        outline.className = "cursor-outline";
+        
+        document.body.appendChild(dot);
+        document.body.appendChild(outline);
+
+        // 2. Move Cursor on MouseMove
+        window.addEventListener("mousemove", (e) => {
+            // Dot follows instantly
+            dot.style.left = `${e.clientX}px`;
+            dot.style.top = `${e.clientY}px`;
+            
+            // Outline follows with a slight smooth delay
+            outline.animate({
+                left: `${e.clientX}px`,
+                top: `${e.clientY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        // 3. Ripple Animation on Click
+        window.addEventListener("mousedown", (e) => {
+            const ripple = document.createElement("div");
+            ripple.className = "click-ripple";
+            ripple.style.left = `${e.clientX}px`;
+            ripple.style.top = `${e.clientY}px`;
+            document.body.appendChild(ripple);
+            
+            // Shrink the outline slightly on click for feedback
+            outline.style.transform = "translate(-50%, -50%) scale(0.7)";
+            setTimeout(() => {
+                outline.style.transform = "translate(-50%, -50%) scale(1)";
+            }, 150);
+
+            // Remove ripple after animation ends
+            setTimeout(() => {
+                ripple.remove();
+            }, 500);
+        });
+
+        // 4. Hover Effect on Clickable Items
+        // Adds a nice background glow to the outline when hovering over buttons/links
+        const addHoverEffect = () => {
+            const clickables = document.querySelectorAll("a, button, input, textarea, select, .tool-card, .goti, .dice");
+            clickables.forEach(el => {
+                el.addEventListener("mouseenter", () => {
+                    outline.style.width = "50px";
+                    outline.style.height = "50px";
+                    outline.style.backgroundColor = "rgba(236, 72, 153, 0.1)";
+                });
+                el.addEventListener("mouseleave", () => {
+                    outline.style.width = "32px";
+                    outline.style.height = "32px";
+                    outline.style.backgroundColor = "transparent";
+                });
+            });
+        };
+        
+        // Run once, and you can call this again if you dynamically load new buttons!
+        addHoverEffect();
+    }
+});

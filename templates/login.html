@@ -13,45 +13,22 @@
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.fog.min.js"></script>
     
     <style>
-        /* ========================================= */
-        /* [LOGO CONTROL] MOBILE VS LAPTOP SIZE      */
-        /* ========================================= */
-        
         .login-logo-responsive {
-            /* 📱 MOBILE SIZE (Choti Screen) */
-            width: 80px; 
-            height: 80px;
-            
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(236, 72, 153, 0.5);
-            margin-bottom: 15px;
-            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+            width: 80px; height: 80px; border-radius: 50%; object-fit: cover;
+            border: 2px solid rgba(236, 72, 153, 0.5); margin-bottom: 15px; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
         }
+        @media (min-width: 768px) { .login-logo-responsive { width: 112px; height: 112px; } }
 
-        /* 💻 LAPTOP SIZE (Badi Screen > 768px) */
-        @media (min-width: 768px) {
-            .login-logo-responsive {
-                width: 112px;  /* Yaha Laptop ka size badhao */
-                height: 112px;
-            }
-        }
-        /* ========================================= */
-
-        /* BASE STYLES */
         body { margin: 0; background: #0f0f0f; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; overflow: hidden; }
         
-        /* GLASS CARD */
         .login-card { width: 380px; padding: 30px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-radius: 24px; text-align: center; position: relative; z-index: 10; transition: transform 0.3s; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); border: 1px solid rgba(255, 255, 255, 0.4); }
         .login-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px 0 rgba(236, 72, 153, 0.3); }
         
-        /* TITLE & TABS */
         .brand-title { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #ec4899, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
         .tabs { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
         .tab { cursor: pointer; color: #888; font-weight: 600; padding: 5px 10px; transition: 0.3s; }
         .tab.active { color: #ec4899; border-bottom: 2px solid #ec4899; }
         
-        /* INPUTS & BUTTONS */
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-family: inherit; transition: border-color 0.3s; }
         input:focus { border-color: #ec4899; outline: none; }
         
@@ -59,11 +36,9 @@
         .btn:hover:not(:disabled) { background: #db2777; transform: translateY(-2px); }
         .btn:disabled { background: #f472b6; cursor: not-allowed; opacity: 0.8; }
         
-        /* GOOGLE BUTTON */
         .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 10px; background: white; color: #333; font-weight: 600; cursor: pointer; margin-top: 15px; text-decoration: none; transition: 0.2s; }
         .google-btn:hover { background: #f9f9f9; transform: translateY(-2px); }
         
-        /* MAGIC PASSWORD */
         .magic-input-wrapper { position: relative; width: 100%; }
         .magic-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s; }
         .magic-btn:hover { transform: translateY(-50%) scale(1.2); }
@@ -72,15 +47,41 @@
         .hidden { display: none; }
         .otp-sent { color: green; font-size: 0.8rem; margin-top: 5px; }
         
-        /* SPINNER */
         .spinner { border: 3px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 3px solid #ffffff; width: 18px; height: 18px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* =========================================================
+           🚀 CUSTOM NEON CURSOR & CLICK ANIMATION (DESKTOP ONLY)
+           ========================================================= */
+        @media (pointer: fine) {
+            body, a, button, input, .tab { cursor: none !important; }
+            .cursor-dot {
+                position: fixed; top: 0; left: 0; width: 8px; height: 8px;
+                background: #ec4899; border-radius: 50%; transform: translate(-50%, -50%);
+                z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #ec4899, 0 0 20px #ec4899;
+            }
+            .cursor-outline {
+                position: fixed; top: 0; left: 0; width: 32px; height: 32px;
+                border: 2px solid rgba(236, 72, 153, 0.6); border-radius: 50%;
+                transform: translate(-50%, -50%); z-index: 99998; pointer-events: none;
+                transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
+            }
+            .click-ripple {
+                position: fixed; top: 0; left: 0; width: 40px; height: 40px; border-radius: 50%;
+                background: radial-gradient(circle, rgba(236, 72, 153, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
+                transform: translate(-50%, -50%) scale(0); z-index: 99997; pointer-events: none;
+                animation: ripple-anim 0.5s ease-out forwards;
+            }
+            @keyframes ripple-anim {
+                0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+                100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+            }
+        }
     </style>
 </head>
 <body id="vanta-bg">
 
 <div class="login-card">
-    
     <div class="flex flex-col items-center mb-4">
         <img src="/static/images/logo.png" class="login-logo-responsive">
         <div class="brand-title" style="margin-bottom: 5px;">Shanvika AI</div>
@@ -133,7 +134,44 @@
 </div>
 
 <script>
-    // 5.1 Initialize Vanta Fog Background
+    // --- CUSTOM NEON CURSOR LOGIC ---
+    document.addEventListener("DOMContentLoaded", () => {
+        if (window.matchMedia("(pointer: fine)").matches) {
+            const dot = document.createElement("div"); dot.className = "cursor-dot";
+            const outline = document.createElement("div"); outline.className = "cursor-outline";
+            document.body.appendChild(dot); document.body.appendChild(outline);
+
+            window.addEventListener("mousemove", (e) => {
+                dot.style.left = `${e.clientX}px`; dot.style.top = `${e.clientY}px`;
+                outline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
+            });
+
+            window.addEventListener("mousedown", (e) => {
+                const ripple = document.createElement("div"); ripple.className = "click-ripple";
+                ripple.style.left = `${e.clientX}px`; ripple.style.top = `${e.clientY}px`;
+                document.body.appendChild(ripple);
+                outline.style.transform = "translate(-50%, -50%) scale(0.7)";
+                setTimeout(() => outline.style.transform = "translate(-50%, -50%) scale(1)", 150);
+                setTimeout(() => ripple.remove(), 500);
+            });
+
+            const addHoverEffect = () => {
+                document.querySelectorAll("a, button, input, .tab").forEach(el => {
+                    el.addEventListener("mouseenter", () => {
+                        outline.style.width = "50px"; outline.style.height = "50px";
+                        outline.style.backgroundColor = "rgba(236, 72, 153, 0.1)";
+                    });
+                    el.addEventListener("mouseleave", () => {
+                        outline.style.width = "32px"; outline.style.height = "32px";
+                        outline.style.backgroundColor = "transparent";
+                    });
+                });
+            };
+            addHoverEffect();
+        }
+    });
+
+    // Vanta Fog Background
     VANTA.FOG({ el: "#vanta-bg", highlightColor: 0xffc3e0, midtoneColor: 0xff80bf, lowlightColor: 0xa855f7, baseColor: 0xffffff, blurFactor: 0.60, speed: 1.20, zoom: 0.80 });
 
     function setLoading(btn, isLoading, text) {
@@ -146,7 +184,6 @@
         }
     }
 
-    // 5.2 Tab Switching Logic
     function switchTab(tab) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         event.target.classList.add('active');
@@ -162,7 +199,6 @@
         }
     }
 
-    // 5.3 Magic Password Generator
     function generateMagicPass() {
         const email = document.getElementById('reg-email').value;
         const passField = document.getElementById('reg-pass');
@@ -176,7 +212,6 @@
         Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, icon: 'success', title: 'Magic Password Generated!' });
     }
 
-    // 5.4 Auth API Calls
     async function sendOTP(btn) {
         const email = document.getElementById('reg-email').value;
         if(!email) return Swal.fire('Oops!', 'Please enter your email.', 'warning');

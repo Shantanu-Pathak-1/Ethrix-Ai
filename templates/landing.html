@@ -14,58 +14,31 @@
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.59/build/spline-viewer.js"></script>
     
     <style>
-        /* 👇👇👇 LOGO SIZE SETTINGS (YAHA CHANGE KARO) 👇👇👇 */
+        /* 👇👇👇 LOGO SIZE SETTINGS 👇👇👇 */
         .logo-responsive {
-            /* 1. MOBILE SIZE (Phone ke liye) */
-            width: 45px; 
-            height: 45px;
-            
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(236, 72, 153, 0.3); /* Pink Border */
-            transition: all 0.3s ease;
+            width: 45px; height: 45px; border-radius: 50%; object-fit: cover;
+            border: 2px solid rgba(236, 72, 153, 0.3); transition: all 0.3s ease;
         }
-
-        /* 2. LAPTOP SIZE (Badi Screen ke liye) */
-        @media (min-width: 768px) {
-            .logo-responsive {
-                width: 50px;  /* Yaha Laptop ka size badhao */
-                height: 50px;
-            }
-        }
-        /* 👆👆👆 SETTINGS END 👆👆👆 */
+        @media (min-width: 768px) { .logo-responsive { width: 50px; height: 50px; } }
 
         /* CORE VARIABLES */
         :root {
-            --bg-color: #050505;
-            --text-main: #ffffff;
-            --text-sub: #9ca3af;
-            --glass-bg: rgba(25, 25, 25, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-shadow: rgba(0, 0, 0, 0.3);
-            --badge-bg: rgba(236, 72, 153, 0.1);
-            --badge-border: rgba(236, 72, 153, 0.3);
-            --badge-text: #f472b6;
+            --bg-color: #050505; --text-main: #ffffff; --text-sub: #9ca3af;
+            --glass-bg: rgba(25, 25, 25, 0.4); --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: rgba(0, 0, 0, 0.3); --badge-bg: rgba(236, 72, 153, 0.1);
+            --badge-border: rgba(236, 72, 153, 0.3); --badge-text: #f472b6;
         }
 
         body.light-mode {
-            --bg-color: #ffffff;
-            --text-main: #111827;
-            --text-sub: #4b5563;
-            --glass-bg: rgba(255, 255, 255, 0.75);
-            --glass-border: rgba(0, 0, 0, 0.1);
-            --glass-shadow: rgba(0, 0, 0, 0.05);
-            --badge-bg: rgba(236, 72, 153, 0.1);
-            --badge-border: rgba(236, 72, 153, 0.4);
-            --badge-text: #db2777;
+            --bg-color: #ffffff; --text-main: #111827; --text-sub: #4b5563;
+            --glass-bg: rgba(255, 255, 255, 0.75); --glass-border: rgba(0, 0, 0, 0.1);
+            --glass-shadow: rgba(0, 0, 0, 0.05); --badge-bg: rgba(236, 72, 153, 0.1);
+            --badge-border: rgba(236, 72, 153, 0.4); --badge-text: #db2777;
         }
 
         body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-color); 
-            color: var(--text-main); 
-            overflow-x: hidden; 
-            transition: background-color 0.3s ease, color 0.3s ease;
+            font-family: 'Inter', sans-serif; background-color: var(--bg-color); 
+            color: var(--text-main); overflow-x: hidden; transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* SCROLLBAR */
@@ -89,6 +62,34 @@
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
         .text-gradient { background: linear-gradient(to right, #ec4899, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         html { scroll-behavior: smooth; }
+
+        /* =========================================================
+           🚀 CUSTOM NEON CURSOR & CLICK ANIMATION (DESKTOP ONLY)
+           ========================================================= */
+        @media (pointer: fine) {
+            body, a, button, input, .glass, .badge { cursor: none !important; }
+            .cursor-dot {
+                position: fixed; top: 0; left: 0; width: 8px; height: 8px;
+                background: #ec4899; border-radius: 50%; transform: translate(-50%, -50%);
+                z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #ec4899, 0 0 20px #ec4899;
+            }
+            .cursor-outline {
+                position: fixed; top: 0; left: 0; width: 32px; height: 32px;
+                border: 2px solid rgba(236, 72, 153, 0.6); border-radius: 50%;
+                transform: translate(-50%, -50%); z-index: 99998; pointer-events: none;
+                transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
+            }
+            .click-ripple {
+                position: fixed; top: 0; left: 0; width: 40px; height: 40px; border-radius: 50%;
+                background: radial-gradient(circle, rgba(236, 72, 153, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
+                transform: translate(-50%, -50%) scale(0); z-index: 99997; pointer-events: none;
+                animation: ripple-anim 0.5s ease-out forwards;
+            }
+            @keyframes ripple-anim {
+                0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+                100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+            }
+        }
     </style>
 </head>
 <body>
@@ -98,9 +99,7 @@
     <nav class="fixed w-full z-50 p-4 md:p-6">
         <div class="max-w-7xl mx-auto flex justify-between items-center glass px-4 py-2 md:px-6 md:py-3 rounded-full">
             <div class="flex items-center gap-3">
-                
                 <img src="/static/images/logo.png" class="logo-responsive shadow-lg">
-                
                 <span class="font-bold text-xl md:text-2xl tracking-wide">Shanvika</span>
             </div>
             
@@ -117,7 +116,7 @@
 
     <section class="min-h-screen flex items-center justify-center px-4 pt-20 relative">
         <div class="text-center max-w-5xl mx-auto">
-            <div class="inline-block px-4 py-1 rounded-full badge text-xs font-bold uppercase tracking-widest mb-6 fade-in-up backdrop-blur-md">
+            <div class="inline-block px-4 py-1 rounded-full badge text-xs font-bold uppercase tracking-widest mb-6 fade-in-up backdrop-blur-md cursor-pointer hover:bg-pink-500/20 transition">
                 v10.0 • Now with Voice & Vision
             </div>
             <h1 class="text-4xl md:text-7xl font-bold mb-6 fade-in-up delay-100 leading-tight drop-shadow-2xl">
@@ -172,6 +171,44 @@
     </footer>
 
     <script>
+        // --- CUSTOM NEON CURSOR LOGIC ---
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.matchMedia("(pointer: fine)").matches) {
+                const dot = document.createElement("div"); dot.className = "cursor-dot";
+                const outline = document.createElement("div"); outline.className = "cursor-outline";
+                document.body.appendChild(dot); document.body.appendChild(outline);
+
+                window.addEventListener("mousemove", (e) => {
+                    dot.style.left = `${e.clientX}px`; dot.style.top = `${e.clientY}px`;
+                    outline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
+                });
+
+                window.addEventListener("mousedown", (e) => {
+                    const ripple = document.createElement("div"); ripple.className = "click-ripple";
+                    ripple.style.left = `${e.clientX}px`; ripple.style.top = `${e.clientY}px`;
+                    document.body.appendChild(ripple);
+                    outline.style.transform = "translate(-50%, -50%) scale(0.7)";
+                    setTimeout(() => outline.style.transform = "translate(-50%, -50%) scale(1)", 150);
+                    setTimeout(() => ripple.remove(), 500);
+                });
+
+                const addHoverEffect = () => {
+                    document.querySelectorAll("a, button, input, .glass, .badge").forEach(el => {
+                        el.addEventListener("mouseenter", () => {
+                            outline.style.width = "50px"; outline.style.height = "50px";
+                            outline.style.backgroundColor = "rgba(236, 72, 153, 0.1)";
+                        });
+                        el.addEventListener("mouseleave", () => {
+                            outline.style.width = "32px"; outline.style.height = "32px";
+                            outline.style.backgroundColor = "transparent";
+                        });
+                    });
+                };
+                addHoverEffect();
+            }
+        });
+
+        // Theme Logic
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
             const icon = document.getElementById('theme-icon');
@@ -183,6 +220,8 @@
                 icon.parentElement.classList.replace('text-gray-600', 'text-yellow-400');
             }
         }
+        
+        // Remove Spline Logo
         const killLogo = setInterval(() => {
             const viewer = document.querySelector('spline-viewer');
             if (viewer && viewer.shadowRoot) {
