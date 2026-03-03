@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards Maker - Shanvika</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .flashcard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; padding: 20px; margin-top: 20px; }
+        .flashcard { background-color: transparent; width: 100%; height: 250px; perspective: 1000px; cursor: pointer; }
+        .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; box-shadow: 0 10px 20px rgba(0,0,0,0.3); border-radius: 20px; }
+        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 30px; border-radius: 20px; font-size: 1.25rem; font-weight: 600; }
+        .flashcard-front { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; border: 1px solid rgba(255,255,255,0.1); }
+        .flashcard-back { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #e2e8f0; transform: rotateY(180deg); border: 2px solid #6366f1; font-size: 1.1rem; font-weight: 400; }
+        .loading-text { text-align: center; color: #a78bfa; margin-top: 30px; font-style: italic; display: none; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex h-screen overflow-hidden">
+    <nav class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col hidden md:flex">
+        <div class="p-4 shrink-0">
+            <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 mb-6">Shanvika Lab</h2>
+            <div class="space-y-2">
+                <a href="/tools" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 transition text-gray-300"><i class="fas fa-arrow-left w-5"></i> <span>Back to Tools</span></a>
+            </div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto px-4 border-t border-gray-700 pt-4">
+            <h3 class="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider">History</h3>
+            <div id="tool-history-list" class="space-y-2"></div>
+        </div>
+
+        <div class="p-4 border-t border-gray-700 shrink-0">
+            <div class="flex items-center gap-3 p-2 bg-gray-700/50 rounded-xl">
+                <img src="{{ user.picture if user.picture else url_for('static', filename='images/logo.png') }}" alt="Profile" class="w-9 h-9 rounded-full object-cover border-2 border-purple-500">
+                <span class="font-medium truncate">{{ user.name }}</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex flex-col h-full bg-gray-950 relative">
+        <header class="p-6 border-b border-gray-800 bg-gray-900/50 backdrop-blur-md z-10 flex justify-between">
+            <div><h1 class="text-2xl font-bold text-white">Flashcards Maker 📚</h1></div>
+            <button onclick="window.location.reload()" class="text-gray-400 hover:text-white"><i class="fas fa-plus"></i> New Set</button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6 relative" id="main-content-area">
+            <div class="max-w-5xl mx-auto">
+                <div id="loading" class="loading-text"><i class="fas fa-magic fa-spin mr-2"></i> Flashcards bana rahi hu... thoda wait karo! ✨</div>
+                <div id="flashcard-container" class="flashcard-container">
+                    <div class="text-center text-gray-500 w-full mt-20" id="welcome-msg">
+                        <i class="fas fa-lightbulb text-6xl mb-4 opacity-20"></i>
+                        <p class="text-xl">Topic likho ya mic se bol kar batao! 🎙️</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 bg-gray-900 border-t border-gray-800">
+            <div class="max-w-4xl mx-auto flex gap-4 items-center">
+                <button id="mic-btn" onclick="startVoiceCommand('topic-input')" class="w-12 h-12 rounded-full bg-gray-800 border border-gray-700 text-gray-400 hover:text-purple-400 transition flex items-center justify-center text-xl shrink-0"><i class="fas fa-microphone"></i></button>
+                <input type="text" id="topic-input" class="flex-1 bg-gray-800 border border-gray-700 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., Python Basics...">
+                <button onclick="generateFlashcards()" class="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 rounded-2xl font-bold hover:scale-105 transition shadow-lg"><i class="fas fa-wand-magic-sparkles"></i></button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let sessionId = 'flash_tool_' + Date.now();
+        window.onload = loadToolHistory;
+
+        function startVoiceCommand(inputId) {
+            if (!('webkitSpeechRecognition' in window)) { alert("Browser does not support voice!"); return; }
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'en-IN';
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.add('text-purple-500', 'animate-pulse');
+            recognition.onresult = (e) => { document.getElementById(inputId).value = e.results[0][0].transcript; micBtn.classList.remove('text-purple-500', 'animate-pulse'); };
+            recognition.onerror = () => micBtn.classList.remove('text-purple-500', 'animate-pulse');
+            recognition.onend = () => micBtn.classList.remove('text-purple-500', 'animate-pulse');
+            recognition.start();
+        }
+
+        async function loadToolHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                const list = document.getElementById('tool-history-list');
+                list.innerHTML = '';
+                data.history.filter(c => c.title.toLowerCase().includes('flashcard')).forEach(chat => {
+                    list.innerHTML += `<div onclick="loadOldSession('${chat.id}')" class="p-2 hover:bg-gray-700 rounded-lg cursor-pointer text-sm text-gray-300 truncate transition"><i class="fas fa-history text-gray-500 mr-2"></i> ${chat.title.replace('Tool: Flashcards - ', '')}</div>`;
+                });
+            } catch(e) {}
+        }
+
+        async function loadOldSession(id) {
+            sessionId = id;
+            const container = document.getElementById('flashcard-container');
+            container.innerHTML = '<div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl"></i> Loading...</div>';
+            try {
+                const res = await fetch(`/api/chat/${id}`);
+                const data = await res.json();
+                container.innerHTML = '';
+                data.messages.forEach(msg => {
+                    if (msg.role === 'assistant') {
+                        try {
+                            JSON.parse(msg.content).forEach(card => {
+                                container.insertAdjacentHTML('beforeend', `<div class="flashcard" onclick="this.classList.toggle('flipped')"><div class="flashcard-inner"><div class="flashcard-front"><p>${card.question}</p></div><div class="flashcard-back"><p>${card.answer}</p></div></div></div>`);
+                            });
+                        } catch(e) {}
+                    }
+                });
+            } catch(e) { container.innerHTML = `<p class="text-red-400">Failed to load</p>`; }
+        }
+
+        async function generateFlashcards() {
+            const topicInput = document.getElementById('topic-input');
+            const topic = topicInput.value.trim();
+            if(!topic) return;
+            document.getElementById('flashcard-container').innerHTML = '';
+            document.getElementById('loading').style.display = 'block';
+            topicInput.value = '';
+            try {
+                const response = await fetch('/api/tools/flashcards', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic: topic }) });
+                const result = await response.json();
+                document.getElementById('loading').style.display = 'none';
+                if(result.status === 'success') {
+                    result.data.forEach(card => {
+                        document.getElementById('flashcard-container').insertAdjacentHTML('beforeend', `<div class="flashcard" onclick="this.classList.toggle('flipped')"><div class="flashcard-inner"><div class="flashcard-front"><p>${card.question}</p></div><div class="flashcard-back"><p>${card.answer}</p></div></div></div>`);
+                    });
+                    loadToolHistory(); // Refresh history
+                }
+            } catch (error) {}
+        }
+    </script>
+</body>
+</html>

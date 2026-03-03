@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flappy Bug • Arcade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #050505; color: white; font-family: 'Courier New', Courier, monospace; overflow: hidden; height: 100vh; margin: 0; touch-action: none; }
+        canvas { background: #111827; border: 2px solid #3b82f6; border-radius: 12px; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); display: block; margin: 0 auto; max-height: 60vh; width: auto; aspect-ratio: 2/3;}
+        .glass { background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(10px); }
+        .mode-btn { transition: all 0.2s; border: 2px solid transparent; }
+        .mode-btn.active { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.2); }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center w-full">
+
+    <a href="/tools" class="fixed top-4 left-4 z-50 bg-gray-800/80 hover:bg-gray-700 text-white p-2 md:px-4 md:py-2 rounded-full border border-gray-600 shadow-lg transition flex items-center gap-2">
+        <i class="fas fa-arrow-left"></i> <span class="hidden md:inline font-bold text-sm">Tools</span>
+    </a>
+
+    <div class="text-center mb-2 mt-12">
+        <h1 class="text-2xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+            <i class="fas fa-bug text-blue-500 mr-2"></i>Flappy Bug
+        </h1>
+    </div>
+
+    <div class="relative mt-2">
+        <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center glass z-10 rounded-xl w-full h-full">
+            <h2 id="overlay-title" class="text-2xl font-bold text-white mb-2">Ready to Code?</h2>
+            
+            <div class="flex gap-2 mb-4 bg-gray-800 p-1 rounded-lg">
+                <button onclick="setMode('easy')" id="btn-easy" class="mode-btn px-3 py-1 rounded text-green-400 font-bold text-sm">Easy</button>
+                <button onclick="setMode('normal')" id="btn-normal" class="mode-btn px-3 py-1 rounded text-yellow-400 font-bold text-sm active">Normal</button>
+                <button onclick="setMode('hard')" id="btn-hard" class="mode-btn px-3 py-1 rounded text-red-400 font-bold text-sm">Hard</button>
+            </div>
+
+            <p id="overlay-score" class="text-lg text-blue-400 font-bold mb-1 hidden">Score: <span id="final-score">0</span></p>
+            <p class="text-sm text-yellow-400 font-bold mb-4">DB High Score: <span id="high-score-display">0</span></p>
+            <button onclick="startGame()" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-full font-bold text-white transition shadow-[0_0_15px_rgba(37,99,235,0.5)]">Start</button>
+        </div>
+        <canvas id="gameCanvas" width="320" height="480"></canvas>
+    </div>
+
+    <div class="mt-4 flex gap-4 text-lg font-bold">
+        <div class="bg-gray-800 px-4 py-2 rounded-lg border border-gray-700">Score: <span id="score" class="text-blue-400">0</span></div>
+        <div class="bg-gray-800 px-4 py-2 rounded-lg border border-gray-700">Best: <span id="best-score" class="text-yellow-400">0</span></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreElement = document.getElementById("score");
+        
+        let frames = 0; let score = 0; let gameActive = false; let animationId;
+        let highScore = 0;
+        
+        // Fetch Highscore from DB
+        fetch('/api/arcade/highscore/flappy_bug')
+            .then(res => res.json()).then(data => {
+                highScore = data.score || 0;
+                document.getElementById("best-score").innerText = highScore;
+                document.getElementById("high-score-display").innerText = highScore;
+            });
+
+        // Modes Configuration
+        const modes = {
+            easy: { gap: 170, dx: 1.5, gravity: 0.1, jump: -3.5 },
+            normal: { gap: 130, dx: 2.0, gravity: 0.12, jump: -4.0 },
+            hard: { gap: 100, dx: 3.0, gravity: 0.16, jump: -4.5 }
+        };
+        let currentMode = modes.normal;
+
+        function setMode(modeStr) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-'+modeStr).classList.add('active');
+            currentMode = modes[modeStr];
+        }
+
+        const bug = {
+            x: 50, y: 150, width: 30, height: 30, speed: 0,
+            draw: function() { ctx.font = "30px Arial"; ctx.fillText("🐛", this.x, this.y + 25); },
+            update: function() {
+                this.speed += currentMode.gravity; this.y += this.speed;
+                if (this.y + this.height >= canvas.height || this.y <= 0) gameOver();
+            },
+            flap: function() { this.speed = currentMode.jump; }
+        };
+
+        const pipes = {
+            position: [], width: 50,
+            draw: function() {
+                for (let i = 0; i < this.position.length; i++) {
+                    let p = this.position[i];
+                    let topY = p.y; let bottomY = p.y + currentMode.gap;
+                    let grad = ctx.createLinearGradient(p.x, 0, p.x + this.width, 0);
+                    grad.addColorStop(0, "#ef4444"); grad.addColorStop(1, "#991b1b");
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(p.x, 0, this.width, topY);
+                    ctx.fillRect(p.x, bottomY, this.width, canvas.height - bottomY);
+                    ctx.fillStyle = "white"; ctx.font = "12px Courier";
+                    ctx.fillText("404", p.x + 10, topY - 20); ctx.fillText("ERR", p.x + 10, bottomY + 30);
+                }
+            },
+            update: function() {
+                if (frames % 100 === 0) {
+                    // Yahan humne 'passed: false' flag add kiya hai track karne ke liye
+                    this.position.push({ x: canvas.width, y: Math.floor(Math.random() * (canvas.height - currentMode.gap - 100)) + 50, passed: false });
+                }
+                for (let i = 0; i < this.position.length; i++) {
+                    let p = this.position[i]; 
+                    p.x -= currentMode.dx;
+                    
+                    // Collision check
+                    if (bug.x + bug.width > p.x && bug.x < p.x + this.width && (bug.y < p.y || bug.y + bug.height > p.y + currentMode.gap)) {
+                        gameOver();
+                    }
+                    
+                    // Score check - Naya Logic!
+                    if (!p.passed && bug.x > p.x + this.width) {
+                        score++; 
+                        scoreElement.innerText = score; 
+                        p.passed = true;
+                    }
+                }
+                
+                // Cleanup off-screen pipes
+                if (this.position.length > 0 && this.position[0].x + this.width <= 0) {
+                    this.position.shift();
+                }
+            },
+            reset: function() { this.position = []; }
+        };
+
+        function draw() {
+            ctx.fillStyle = "#111827"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            pipes.draw(); bug.draw();
+        }
+
+        function update() { bug.update(); pipes.update(); }
+
+        function loop() {
+            if (!gameActive) return;
+            update(); draw(); frames++;
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function startGame() {
+            bug.y = 150; bug.speed = 0; pipes.reset();
+            score = 0; scoreElement.innerText = score; frames = 0;
+            gameActive = true; document.getElementById("overlay").classList.add("hidden");
+            cancelAnimationFrame(animationId); loop();
+        }
+
+        function gameOver() {
+            gameActive = false;
+            document.getElementById("overlay").classList.remove("hidden");
+            document.getElementById("overlay-title").innerText = "System Crashed! 💥";
+            document.getElementById("overlay-score").classList.remove("hidden");
+            document.getElementById("final-score").innerText = score;
+            
+            // Save to DB if highscore
+            if(score > highScore) { 
+                highScore = score;
+                document.getElementById("best-score").innerText = highScore; 
+                document.getElementById("high-score-display").innerText = highScore;
+                fetch('/api/arcade/highscore', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({game: 'flappy_bug', score: highScore})
+                });
+            }
+        }
+
+        window.addEventListener("keydown", (e) => { if (e.code === "Space" && gameActive) bug.flap(); });
+        canvas.addEventListener("mousedown", () => { if (gameActive) bug.flap(); });
+        canvas.addEventListener("touchstart", (e) => { e.preventDefault(); if (gameActive) bug.flap(); }, {passive: false});
+    </script>
+</body>
+</html>

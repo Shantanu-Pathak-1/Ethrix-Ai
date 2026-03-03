@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe • Arcade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .cell { transition: all 0.2s ease-in-out; }
+        .cell:hover:not(.taken) { background: rgba(236, 72, 153, 0.1); cursor: pointer; }
+        .win-line { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.8; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.8; transform: scale(0.95); } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <a href="/tools" class="fixed top-4 left-4 z-50 bg-gray-800/80 hover:bg-gray-700 text-white p-2 md:px-4 md:py-2 rounded-full border border-gray-600 shadow-lg backdrop-blur-sm transition flex items-center gap-2">
+        <i class="fas fa-arrow-left"></i> <span class="hidden md:inline font-bold text-sm">Tools Lab</span>
+    </a>
+
+    <div class="mb-8 text-center mt-12">
+        <h1 class="text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
+            <i class="fas fa-gamepad mr-2 text-pink-500"></i> Tic-Tac-Toe
+        </h1>
+        <p class="text-gray-400">Can you beat the AI?</p>
+    </div>
+
+    <div class="flex gap-2 mb-6 p-1 glass rounded-full">
+        <button onclick="setDifficulty('easy')" id="btn-easy" class="px-6 py-2 rounded-full font-bold transition text-gray-400 hover:text-white">Easy</button>
+        <button onclick="setDifficulty('normal')" id="btn-normal" class="px-6 py-2 rounded-full font-bold transition text-white bg-purple-600 shadow-lg">Normal</button>
+        <button onclick="setDifficulty('hard')" id="btn-hard" class="px-6 py-2 rounded-full font-bold transition text-gray-400 hover:text-white">Hard</button>
+    </div>
+
+    <div class="glass p-6 rounded-2xl shadow-2xl relative">
+        <div id="status" class="text-center mb-4 text-xl font-bold text-pink-400 h-8">Your Turn! (X)</div>
+        
+        <div class="grid grid-cols-3 gap-3" id="board">
+            </div>
+
+        <button onclick="resetGame()" class="mt-6 w-full py-3 bg-gray-800 hover:bg-gray-700 rounded-xl font-bold border border-gray-600 transition flex items-center justify-center gap-2">
+            <i class="fas fa-redo"></i> Play Again
+        </button>
+    </div>
+
+    <script>
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let human = "X";
+        let ai = "O";
+        let difficulty = "normal";
+        let gameActive = true;
+
+        const winCombos = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Cols
+            [0, 4, 8], [2, 4, 6]             // Diagonals
+        ];
+
+        // UI Initialization
+        function initBoard() {
+            const boardDiv = document.getElementById("board");
+            boardDiv.innerHTML = "";
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement("div");
+                cell.className = "cell w-20 h-20 md:w-24 md:h-24 bg-gray-900 rounded-xl flex items-center justify-center text-4xl md:text-5xl font-bold text-white shadow-inner";
+                cell.id = `cell-${i}`;
+                cell.onclick = () => playerMove(i);
+                boardDiv.appendChild(cell);
+            }
+        }
+
+        function setDifficulty(level) {
+            difficulty = level;
+            document.querySelectorAll("button[id^='btn-']").forEach(btn => {
+                btn.className = "px-6 py-2 rounded-full font-bold transition text-gray-400 hover:text-white";
+            });
+            const activeBtn = document.getElementById(`btn-${level}`);
+            let color = level === 'easy' ? 'bg-green-600' : (level === 'normal' ? 'bg-purple-600' : 'bg-red-600');
+            activeBtn.className = `px-6 py-2 rounded-full font-bold transition text-white shadow-lg ${color}`;
+            resetGame();
+        }
+
+        // Gameplay Logic
+        function playerMove(index) {
+            if (board[index] === "" && gameActive) {
+                makeMove(index, human, "text-pink-500");
+                if (!checkWinOrTie()) {
+                    document.getElementById("status").innerText = "AI is thinking...";
+                    gameActive = false; // Prevent clicking during AI turn
+                    setTimeout(aiMove, 500); // Small delay for realism
+                }
+            }
+        }
+
+        function makeMove(index, player, colorClass) {
+            board[index] = player;
+            const cell = document.getElementById(`cell-${index}`);
+            cell.innerText = player;
+            cell.classList.add("taken", colorClass);
+        }
+
+        // AI Logic based on difficulty
+        function aiMove() {
+            let move;
+            let rand = Math.random();
+
+            if (difficulty === "easy") {
+                move = getRandomMove(); // 100% random
+            } else if (difficulty === "normal") {
+                move = rand < 0.5 ? getBestMove() : getRandomMove(); // 50% smart, 50% random
+            } else {
+                move = getBestMove(); // 100% smart (Minimax)
+            }
+
+            if (move !== -1) {
+                makeMove(move, ai, "text-blue-400");
+                gameActive = true;
+                if (!checkWinOrTie()) {
+                    document.getElementById("status").innerText = "Your Turn! (X)";
+                }
+            }
+        }
+
+        function getRandomMove() {
+            let emptySpaces = board.map((val, i) => val === "" ? i : null).filter(v => v !== null);
+            return emptySpaces.length > 0 ? emptySpaces[Math.floor(Math.random() * emptySpaces.length)] : -1;
+        }
+
+        // The Brain: Minimax Algorithm for unbeatable mode
+        function getBestMove() {
+            let bestScore = -Infinity;
+            let move = -1;
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === "") {
+                    board[i] = ai;
+                    let score = minimax(board, 0, false);
+                    board[i] = "";
+                    if (score > bestScore) { bestScore = score; move = i; }
+                }
+            }
+            return move;
+        }
+
+        function minimax(newBoard, depth, isMaximizing) {
+            let result = checkWinnerForMinimax();
+            if (result === ai) return 10 - depth;
+            if (result === human) return depth - 10;
+            if (result === "tie") return 0;
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (newBoard[i] === "") {
+                        newBoard[i] = ai;
+                        bestScore = Math.max(bestScore, minimax(newBoard, depth + 1, false));
+                        newBoard[i] = "";
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (newBoard[i] === "") {
+                        newBoard[i] = human;
+                        bestScore = Math.min(bestScore, minimax(newBoard, depth + 1, true));
+                        newBoard[i] = "";
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function checkWinnerForMinimax() {
+            for (let combo of winCombos) {
+                if (board[combo[0]] && board[combo[0]] === board[combo[1]] && board[combo[0]] === board[combo[2]]) {
+                    return board[combo[0]];
+                }
+            }
+            return board.includes("") ? null : "tie";
+        }
+
+        // Win/Tie UI Handling
+        function checkWinOrTie() {
+            for (let combo of winCombos) {
+                if (board[combo[0]] && board[combo[0]] === board[combo[1]] && board[combo[0]] === board[combo[2]]) {
+                    const winner = board[combo[0]];
+                    document.getElementById("status").innerText = winner === human ? "You Won! 🎉" : "AI Wins! 🤖";
+                    document.getElementById("status").className = `text-center mb-4 text-xl font-bold win-line ${winner === human ? 'text-green-400' : 'text-red-400'}`;
+                    combo.forEach(i => document.getElementById(`cell-${i}`).classList.add('bg-white/10'));
+                    gameActive = false;
+                    return true;
+                }
+            }
+            if (!board.includes("")) {
+                document.getElementById("status").innerText = "It's a Tie! 🤝";
+                document.getElementById("status").className = "text-center mb-4 text-xl font-bold text-yellow-400";
+                gameActive = false;
+                return true;
+            }
+            return false;
+        }
+
+        function resetGame() {
+            board = ["", "", "", "", "", "", "", "", ""];
+            gameActive = true;
+            document.getElementById("status").innerText = "Your Turn! (X)";
+            document.getElementById("status").className = "text-center mb-4 text-xl font-bold text-pink-400 h-8";
+            initBoard();
+        }
+
+        // Start Game
+        initBoard();
+    </script>
+</body>
+</html>

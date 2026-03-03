@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code-le • Arcade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        /* HEIGHT FIX: Use dvh and prevent scrolling */
+        body { background-color: #050505; color: white; font-family: 'Courier New', Courier, monospace; overflow: hidden; height: 100dvh; display: flex; flex-direction: column; }
+        .tile { width: 45px; height: 45px; border: 2px solid #333; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; transition: all 0.3s; }
+        @media (min-width: 768px) { .tile { width: 60px; height: 60px; font-size: 2rem; } }
+        .correct { background-color: #10b981; border-color: #10b981; color: white; animation: flip 0.5s ease; }
+        .present { background-color: #f59e0b; border-color: #f59e0b; color: white; animation: flip 0.5s ease; }
+        .absent { background-color: #374151; border-color: #374151; color: white; animation: flip 0.5s ease; }
+        .active { border-color: #00ff88; box-shadow: 0 0 10px rgba(0,255,136,0.3); }
+        .key { background: #1f2937; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; padding: 12px 10px; font-size: 0.85rem; }
+        .key:hover { background: #374151; }
+        @keyframes flip { 0% { transform: rotateX(0); } 50% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+        .shake { animation: shake 0.4s; }
+    </style>
+</head>
+<body>
+
+    <a href="/tools" class="fixed top-4 left-4 z-50 bg-gray-800/80 hover:bg-gray-700 text-white p-2 md:px-4 md:py-2 rounded-full border border-gray-600 shadow-lg backdrop-blur-sm transition flex items-center gap-2">
+        <i class="fas fa-arrow-left"></i> <span class="hidden md:inline font-bold text-sm">Tools Lab</span>
+    </a>
+
+    <div class="text-center mt-12 mb-2">
+        <h1 class="text-3xl md:text-5xl font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600 tracking-widest">
+            <i class="fas fa-terminal text-green-500 mr-2"></i>CODE-LE
+        </h1>
+        <p class="text-green-500/70 text-xs md:text-sm">Guess the 5-letter Tech Word</p>
+    </div>
+
+    <div id="message" class="fixed top-24 left-1/2 transform -translate-x-1/2 bg-white text-black px-4 py-2 rounded font-bold opacity-0 transition-opacity z-50"></div>
+
+    <div id="board" class="grid grid-rows-6 gap-1 md:gap-2 mx-auto my-auto"></div>
+
+    <div id="keyboard" class="w-full max-w-lg mx-auto px-1 flex flex-col gap-1.5 mb-4">
+        <div class="flex justify-center gap-1 md:gap-2">
+            <div class="key flex-1" onclick="handleKey('Q')">Q</div><div class="key flex-1" onclick="handleKey('W')">W</div>
+            <div class="key flex-1" onclick="handleKey('E')">E</div><div class="key flex-1" onclick="handleKey('R')">R</div>
+            <div class="key flex-1" onclick="handleKey('T')">T</div><div class="key flex-1" onclick="handleKey('Y')">Y</div>
+            <div class="key flex-1" onclick="handleKey('U')">U</div><div class="key flex-1" onclick="handleKey('I')">I</div>
+            <div class="key flex-1" onclick="handleKey('O')">O</div><div class="key flex-1" onclick="handleKey('P')">P</div>
+        </div>
+        <div class="flex justify-center gap-1 md:gap-2 px-4">
+            <div class="key flex-1" onclick="handleKey('A')">A</div><div class="key flex-1" onclick="handleKey('S')">S</div>
+            <div class="key flex-1" onclick="handleKey('D')">D</div><div class="key flex-1" onclick="handleKey('F')">F</div>
+            <div class="key flex-1" onclick="handleKey('G')">G</div><div class="key flex-1" onclick="handleKey('H')">H</div>
+            <div class="key flex-1" onclick="handleKey('J')">J</div><div class="key flex-1" onclick="handleKey('K')">K</div>
+            <div class="key flex-1" onclick="handleKey('L')">L</div>
+        </div>
+        <div class="flex justify-center gap-1 md:gap-2">
+            <div class="key px-2 md:px-4 bg-gray-700" onclick="handleKey('ENTER')">ENTER</div>
+            <div class="key flex-1" onclick="handleKey('Z')">Z</div><div class="key flex-1" onclick="handleKey('X')">X</div>
+            <div class="key flex-1" onclick="handleKey('C')">C</div><div class="key flex-1" onclick="handleKey('V')">V</div>
+            <div class="key flex-1" onclick="handleKey('B')">B</div><div class="key flex-1" onclick="handleKey('N')">N</div>
+            <div class="key flex-1" onclick="handleKey('M')">M</div>
+            <div class="key px-2 md:px-4 bg-gray-700" onclick="handleKey('BACKSPACE')"><i class="fas fa-backspace"></i></div>
+        </div>
+    </div>
+
+    <script>
+        const TECH_WORDS = ["REACT", "LINUX", "ARRAY", "FLOAT", "MACRO", "PIXEL", "VIRUS", "TOKEN", "LOGIC", "CACHE", "QUERY", "STACK", "QUEUE", "BYTES", "CLOUD", "DEBUG", "PROXY", "SWIFT", "MOUSE", "BOARD"];
+        const targetWord = TECH_WORDS[Math.floor(Math.random() * TECH_WORDS.length)];
+        let currentRow = 0; let currentTile = 0; let isGameOver = false;
+        const board = document.getElementById('board');
+        for (let r = 0; r < 6; r++) {
+            const row = document.createElement('div'); row.className = 'grid grid-cols-5 gap-1 md:gap-2'; row.id = `row-${r}`;
+            for (let c = 0; c < 5; c++) { const tile = document.createElement('div'); tile.className = 'tile'; tile.id = `tile-${r}-${c}`; row.appendChild(tile); }
+            board.appendChild(row);
+        }
+        document.addEventListener('keydown', (e) => {
+            if (isGameOver) return;
+            const key = e.key.toUpperCase();
+            if (key === 'ENTER' || key === 'BACKSPACE' || /^[A-Z]$/.test(key)) handleKey(key);
+        });
+        function handleKey(key) {
+            if (isGameOver) return;
+            if (key === 'BACKSPACE') {
+                if (currentTile > 0) { currentTile--; const tile = document.getElementById(`tile-${currentRow}-${currentTile}`); tile.innerText = ''; tile.classList.remove('active'); }
+            } else if (key === 'ENTER') {
+                if (currentTile === 5) checkRow();
+                else { showMessage("Not enough letters!"); document.getElementById(`row-${currentRow}`).classList.add('shake'); setTimeout(() => document.getElementById(`row-${currentRow}`).classList.remove('shake'), 400); }
+            } else if (currentTile < 5) {
+                const tile = document.getElementById(`tile-${currentRow}-${currentTile}`); tile.innerText = key; tile.classList.add('active'); currentTile++;
+            }
+        }
+        function checkRow() {
+            let guess = ""; const tiles = [];
+            for (let i = 0; i < 5; i++) { const tile = document.getElementById(`tile-${currentRow}-${i}`); guess += tile.innerText; tiles.push(tile); tile.classList.remove('active'); }
+            let targetChars = targetWord.split(''); let guessChars = guess.split('');
+            tiles.forEach((tile, i) => { setTimeout(() => { if (guessChars[i] === targetChars[i]) { tile.classList.add('correct'); updateKeyColor(guessChars[i], 'correct'); targetChars[i] = null; } }, i * 200); });
+            tiles.forEach((tile, i) => { setTimeout(() => { if (!tile.classList.contains('correct')) { const index = targetChars.indexOf(guessChars[i]); if (index !== -1) { tile.classList.add('present'); updateKeyColor(guessChars[i], 'present'); targetChars[index] = null; } else { tile.classList.add('absent'); updateKeyColor(guessChars[i], 'absent'); } } }, i * 200); });
+            setTimeout(() => { if (guess === targetWord) { showMessage("SYSTEM HACKED! 🎉"); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); isGameOver = true; } else { currentRow++; currentTile = 0; if (currentRow > 5) { showMessage(`ACCESS DENIED. Word: ${targetWord}`); isGameOver = true; } } }, 1200);
+        }
+        function updateKeyColor(letter, type) {
+            document.querySelectorAll('.key').forEach(key => {
+                if (key.innerText === letter) {
+                    if (type === 'correct') { key.style.backgroundColor = '#10b981'; key.style.color = 'white'; }
+                    else if (type === 'present' && key.style.backgroundColor !== 'rgb(16, 185, 129)') { key.style.backgroundColor = '#f59e0b'; key.style.color = 'white'; }
+                    else if (type === 'absent' && key.style.backgroundColor !== 'rgb(16, 185, 129)' && key.style.backgroundColor !== 'rgb(245, 158, 11)') { key.style.backgroundColor = '#374151'; }
+                }
+            });
+        }
+        function showMessage(msg) { const el = document.getElementById('message'); el.innerText = msg; el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 2500); }
+    </script>
+</body>
+</html>

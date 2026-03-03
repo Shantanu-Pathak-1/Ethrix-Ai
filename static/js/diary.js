@@ -96,3 +96,24 @@ function closeDiaryModal(event) {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeDiaryModal();
 });
+
+async function writeDiaryNow() {
+    const btn = document.getElementById('writeDiaryBtn');
+    if(btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Likh rahi hu...';
+    
+    try {
+        const res = await fetch('/api/trigger_diary', { method: 'POST' });
+        const data = await res.json();
+        
+        if(data.status === 'success') {
+            alert(data.message);
+            loadDiaryEntries(); // Page refresh kiye bina nayi entry dikhayega
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert("Kuch gadbad ho gayi!");
+    }
+    
+    if(btn) btn.innerHTML = '<i class="fas fa-pen-nib"></i> Write Diary Now';
+}

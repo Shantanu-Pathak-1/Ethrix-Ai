@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Writer - Shanvika</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex h-screen overflow-hidden">
+    <nav class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col hidden md:flex z-20">
+        <div class="p-4 shrink-0">
+            <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500 mb-6 flex items-center gap-2"><i class="fas fa-pen-fancy"></i> Prompt Pro</h2>
+            <div class="space-y-2"><a href="/tools" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 transition text-gray-300"><i class="fas fa-arrow-left w-5"></i> Back to Tools</a></div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto px-4 border-t border-gray-700 pt-4">
+            <h3 class="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider">History</h3>
+            <div id="tool-history-list" class="space-y-2"></div>
+        </div>
+
+        <div class="p-4 border-t border-gray-700 shrink-0">
+            <div class="flex items-center gap-3 p-2 bg-gray-700/50 rounded-xl border border-indigo-900/30">
+                <img src="{{ user.picture if user.picture else url_for('static', filename='images/logo.png') }}" alt="Profile" class="w-9 h-9 rounded-full object-cover border-2 border-indigo-500">
+                <span class="font-medium truncate">{{ user.name }}</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex flex-col h-full bg-gray-900 relative">
+        <header class="p-5 border-b border-gray-800 bg-gray-900/80 z-10 flex justify-between">
+            <h1 class="text-2xl font-bold text-white">Pro Prompt Writer ✍️</h1>
+            <button onclick="window.location.reload()" class="text-gray-400 hover:text-white"><i class="fas fa-plus"></i> New Prompt</button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6 relative" id="main-content-area">
+            <div class="max-w-4xl mx-auto flex flex-col gap-6" id="prompt-container">
+                <div class="text-center text-gray-400 mt-16" id="welcome-msg">
+                    <i class="fas fa-lightbulb text-5xl text-indigo-400 mb-4"></i>
+                    <h3 class="text-2xl text-gray-200 mb-3 font-semibold">Idea batao, Prompt main likhungi!</h3>
+                    <p class="text-lg">Use the Mic 🎙️ or type your simple idea.</p>
+                </div>
+                <div id="loading" style="display: none;" class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-indigo-500 mb-3"></i><p class="text-indigo-400">Enhancing prompt...</p></div>
+            </div>
+        </div>
+
+        <div class="p-5 bg-gray-800 border-t border-gray-700">
+            <div class="max-w-4xl mx-auto flex gap-3 items-center">
+                <button id="mic-btn" onclick="startVoiceCommand('idea-input')" class="w-12 h-12 rounded-full bg-gray-700 border border-gray-600 text-gray-400 hover:text-indigo-400 transition flex items-center justify-center text-xl shrink-0"><i class="fas fa-microphone"></i></button>
+                <input type="text" id="idea-input" class="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-indigo-500" placeholder="e.g., A cute cat on the moon...">
+                <button onclick="writePrompt()" class="bg-gradient-to-r from-indigo-500 to-purple-600 px-8 py-4 rounded-xl font-bold hover:opacity-90 transition shadow-lg"><i class="fas fa-magic"></i></button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let sessionId = 'prompt_tool_' + Date.now();
+        window.onload = loadToolHistory;
+
+        function startVoiceCommand(inputId) {
+            if (!('webkitSpeechRecognition' in window)) { alert("Browser does not support voice!"); return; }
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'en-IN';
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.add('text-indigo-400', 'animate-pulse');
+            recognition.onresult = (e) => { document.getElementById(inputId).value = e.results[0][0].transcript; micBtn.classList.remove('text-indigo-400', 'animate-pulse'); };
+            recognition.onerror = () => micBtn.classList.remove('text-indigo-400', 'animate-pulse');
+            recognition.onend = () => micBtn.classList.remove('text-indigo-400', 'animate-pulse');
+            recognition.start();
+        }
+
+        async function loadToolHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                const list = document.getElementById('tool-history-list');
+                list.innerHTML = '';
+                data.history.filter(c => c.title.toLowerCase().includes('prompt')).forEach(chat => {
+                    list.innerHTML += `<div onclick="loadOldSession('${chat.id}')" class="p-2 hover:bg-gray-700 rounded-lg cursor-pointer text-sm text-gray-300 truncate transition"><i class="fas fa-history text-gray-500 mr-2"></i> ${chat.title.replace('Tool: Prompt Writer - ', '')}</div>`;
+                });
+            } catch(e) {}
+        }
+
+        async function loadOldSession(id) {
+            sessionId = id;
+            const container = document.getElementById('prompt-container');
+            container.innerHTML = '<div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl"></i> Loading...</div>';
+            try {
+                const res = await fetch(`/api/chat/${id}`);
+                const data = await res.json();
+                container.innerHTML = '';
+                data.messages.forEach(msg => {
+                    if (msg.role === 'assistant') {
+                        container.innerHTML += `<div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-4"><div class="flex items-center gap-2 mb-3 border-b border-gray-700 pb-2 text-indigo-400 text-sm"><i class="fas fa-history"></i> Past Prompt</div><div class="text-gray-200 markdown-body">${marked.parse(msg.content)}</div></div>`;
+                    }
+                });
+            } catch(e) {}
+        }
+
+        async function writePrompt() {
+            const input = document.getElementById('idea-input');
+            if(!input.value.trim()) return;
+            const container = document.getElementById('prompt-container');
+            document.getElementById('welcome-msg').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: input.value, session_id: sessionId, mode: 'prompt_writer' }) });
+                const data = await response.json();
+                document.getElementById('loading').style.display = 'none';
+                input.value = '';
+                if(data.reply) {
+                    container.innerHTML += `<div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-4 relative"><div class="flex justify-between items-center mb-3 border-b border-gray-700 pb-2"><span class="text-indigo-400 font-bold"><i class="fas fa-check"></i> Masterpiece Ready</span><button onclick="navigator.clipboard.writeText(\`${data.reply.replace(/`/g, '')}\`);" class="text-gray-400 hover:text-white"><i class="fas fa-copy"></i></button></div><div class="text-gray-200 markdown-body">${marked.parse(data.reply)}</div></div>`;
+                    loadToolHistory();
+                }
+            } catch (error) {}
+        }
+    </script>
+</body>
+</html>

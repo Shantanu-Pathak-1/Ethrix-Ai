@@ -8,6 +8,23 @@ let currentMode = 'chat';
 let isRecording = false;
 let recognition = null;
 let currentFile = null;
+// Naya variable add karo top par
+let lastMessageDate = null; 
+
+// Helper function date calculate karne ke liye
+// Helper function date calculate karne ke liye
+function getDateLabel(timestamp) {
+    let ts = timestamp;
+    // Backend ke time ko strict UTC maan kar IST mein badalne ka logic
+    if (ts && typeof ts === 'string' && !ts.endsWith('Z') && !ts.includes('+')) {
+        ts += 'Z'; 
+    }
+    
+    const date = ts ? new Date(ts) : new Date();
+    
+    // Direct date dikhayega (e.g., "22 Feb 2026")
+    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 // New Global Variables for Image Settings
 let imageSettings = {
@@ -144,6 +161,9 @@ async function loadChat(sid) {
     const chatBox = document.getElementById('chat-box');
     chatBox.innerHTML = '';
     
+    // Nayi chat load hone par date reset
+    lastMessageDate = null; 
+    
     data.messages.forEach(msg => {
         appendMessage(msg.role === 'user' ? 'user' : 'assistant', msg.content, msg.timestamp);
     });
@@ -204,20 +224,33 @@ async function sendMessage() {
     }
 }
 
-// --- APPEND MESSAGE (Time & Actions) ---
+// --- COMPLETE APPEND MESSAGE FUNCTION ---
 function appendMessage(role, text, timestamp = null) {
     const chatBox = document.getElementById('chat-box');
-    const div = document.createElement('div');
-    const msgId = 'msg_' + Date.now();
     
-    let displayTime;
-    if (timestamp) {
-        const dateObj = new Date(timestamp);
-        displayTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else {
-        displayTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    let ts = timestamp;
+    // Timezone Fix: Z lagane se browser exact Real Time (India) nikal lega
+    if (ts && typeof ts === 'string' && !ts.endsWith('Z') && !ts.includes('+')) {
+        ts += 'Z'; 
+    }
+    
+    const msgDateObj = ts ? new Date(ts) : new Date();
+    
+    // Exact 12-hour format time (jaise 10:15 PM)
+    const displayTime = msgDateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const dateLabel = getDateLabel(ts);
+
+    // Date Divider Logic (Agar day change hua toh bas 1 baar divider aayega)
+    if (lastMessageDate !== dateLabel) {
+        const divider = document.createElement('div');
+        divider.className = 'date-divider';
+        divider.innerText = dateLabel;
+        chatBox.appendChild(divider);
+        lastMessageDate = dateLabel;
     }
 
+    const msgId = 'msg_' + Date.now() + Math.floor(Math.random() * 1000);
+    const div = document.createElement('div');
     div.className = role === 'user' ? 'msg-user' : 'msg-ai';
     
     let content = text;
@@ -239,20 +272,27 @@ function appendMessage(role, text, timestamp = null) {
             </div>
         `;
     } else {
-        actionHTML = `<div class="msg-meta" style="border-top:none; justify-content:flex-end;"><span class="msg-time">${displayTime}</span></div>`;
+        // User ke message mein Edit icon aur fix time
+        actionHTML = `
+            <div class="msg-meta" style="border-top:none; justify-content:flex-end; gap: 8px;">
+                <button class="action-btn" onclick="editMyMessage('${msgId}')" title="Edit Message"><i class="fas fa-pen text-[11px]"></i></button>
+                <span class="msg-time">${displayTime}</span>
+            </div>
+        `;
     }
 
+    // Message aur HTML ko add karna
     div.innerHTML = `<div id="${msgId}_content">${content}</div> ${actionHTML}`;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
 
+    // Code blocks ke liye syntax highlight
     if (role === 'assistant') {
         div.querySelectorAll('pre code').forEach((block) => {
-            hljs.highlightElement(block);
+            if (window.hljs) hljs.highlightElement(block);
         });
     }
 }
-
 // --- ACTIONS ---
 function copyText(msgId) {
     const content = document.getElementById(msgId + '_content').innerText;
@@ -336,12 +376,31 @@ function handleFileUpload(input) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(e) {
-        currentFile = { data: e.target.result.split(',')[1], type: file.type };
-        appendMessage('user', `📎 File attached: ${file.name}`);
+        // Data aur file ka naam save karo
+        currentFile = { data: e.target.result.split(',')[1], type: file.type, name: file.name };
+        
+        // Input bar ke upar Preview Box dikhao
+        const previewContainer = document.getElementById('file-preview-container');
+        const previewName = document.getElementById('file-preview-name');
+        if (previewContainer && previewName) {
+            previewName.innerText = file.name;
+            previewContainer.classList.remove('hidden');
+            previewContainer.classList.add('flex'); // Flex layout active karein
+        }
     };
     reader.readAsDataURL(file);
 }
 
+// File Cancel karne ka function
+function removeFile() {
+    currentFile = null;
+    document.getElementById('file-upload').value = '';
+    const previewContainer = document.getElementById('file-preview-container');
+    if (previewContainer) {
+        previewContainer.classList.add('hidden');
+        previewContainer.classList.remove('flex');
+    }
+}
 // --- UPDATED: SET MODE WITH POPUP FOR IMAGE GEN ---
 async function setMode(mode, btn) {
     currentMode = mode;
@@ -428,14 +487,14 @@ async function loadHistory() {
     list.innerHTML = '';
     data.history.forEach(chat => {
         const div = document.createElement('div');
-        div.className = 'history-item truncate text-xs md:text-sm';
-        div.innerHTML = `<i class="far fa-comment-alt mr-2 text-gray-500"></i> ${chat.title}`;
+        div.className = 'history-item';
+        // Yaha par nav-label class add ki hai taaki title hide ho sake
+        div.innerHTML = `<div class="history-icon"><i class="far fa-comment-alt"></i></div><span class="nav-label truncate text-xs md:text-sm flex-1">${chat.title}</span>`;
         div.onclick = () => loadChat(chat.id);
         div.oncontextmenu = (e) => { e.preventDefault(); showContextMenu(e, chat.id); };
         list.appendChild(div);
     });
 }
-
 async function loadProfile() {
     const res = await fetch('/api/profile');
     const data = await res.json();
@@ -457,72 +516,12 @@ async function deleteAllChats() {
         loadHistory(); createNewChat(); closeModal('settings-modal');
     }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    // Check if device has a fine pointer (mouse)
-    if (window.matchMedia("(pointer: fine)").matches) {
-        
-        // 1. Create Cursor Elements
-        const dot = document.createElement("div");
-        dot.className = "cursor-dot";
-        const outline = document.createElement("div");
-        outline.className = "cursor-outline";
-        
-        document.body.appendChild(dot);
-        document.body.appendChild(outline);
-
-        // 2. Move Cursor on MouseMove
-        window.addEventListener("mousemove", (e) => {
-            // Dot follows instantly
-            dot.style.left = `${e.clientX}px`;
-            dot.style.top = `${e.clientY}px`;
-            
-            // Outline follows with a slight smooth delay
-            outline.animate({
-                left: `${e.clientX}px`,
-                top: `${e.clientY}px`
-            }, { duration: 500, fill: "forwards" });
-        });
-
-        // 3. Ripple Animation on Click
-        window.addEventListener("mousedown", (e) => {
-            const ripple = document.createElement("div");
-            ripple.className = "click-ripple";
-            ripple.style.left = `${e.clientX}px`;
-            ripple.style.top = `${e.clientY}px`;
-            document.body.appendChild(ripple);
-            
-            // Shrink the outline slightly on click for feedback
-            outline.style.transform = "translate(-50%, -50%) scale(0.7)";
-            setTimeout(() => {
-                outline.style.transform = "translate(-50%, -50%) scale(1)";
-            }, 150);
-
-            // Remove ripple after animation ends
-            setTimeout(() => {
-                ripple.remove();
-            }, 500);
-        });
-
-        // 4. Hover Effect on Clickable Items
-        // Adds a nice background glow to the outline when hovering over buttons/links
-        const addHoverEffect = () => {
-            const clickables = document.querySelectorAll("a, button, input, textarea, select, .tool-card, .goti, .dice");
-            clickables.forEach(el => {
-                el.addEventListener("mouseenter", () => {
-                    outline.style.width = "50px";
-                    outline.style.height = "50px";
-                    outline.style.backgroundColor = "rgba(236, 72, 153, 0.1)";
-                });
-                el.addEventListener("mouseleave", () => {
-                    outline.style.width = "32px";
-                    outline.style.height = "32px";
-                    outline.style.backgroundColor = "transparent";
-                });
-            });
-        };
-        
-        // Run once, and you can call this again if you dynamically load new buttons!
-        addHoverEffect();
+// Message Edit Function
+function editMyMessage(msgId) {
+    const contentDiv = document.getElementById(msgId + '_content');
+    if(contentDiv) {
+        const text = contentDiv.innerText;
+        document.getElementById('user-input').value = text;
+        document.getElementById('user-input').focus();
     }
-});
+}

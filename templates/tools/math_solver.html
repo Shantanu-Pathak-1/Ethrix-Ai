@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Solver - Shanvika</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex h-screen overflow-hidden">
+    <nav class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col hidden md:flex z-20">
+        <div class="p-4 shrink-0">
+            <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-500 mb-6 flex items-center gap-2"><i class="fas fa-calculator"></i> Math Solver</h2>
+            <div class="space-y-2"><a href="/tools" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 text-gray-300"><i class="fas fa-arrow-left w-5"></i> Back to Tools</a></div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto px-4 border-t border-gray-700 pt-4">
+            <h3 class="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider">History</h3>
+            <div id="tool-history-list" class="space-y-2"></div>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex flex-col h-full bg-gray-900 relative">
+        <header class="p-5 border-b border-gray-800 bg-gray-900/80 flex justify-between">
+            <h1 class="text-2xl font-bold">Smart Math Solver 🧮</h1>
+            <button onclick="window.location.reload()" class="text-gray-400 hover:text-white"><i class="fas fa-plus"></i> New Problem</button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6" id="main-content-area">
+            <div class="max-w-4xl mx-auto flex flex-col gap-6" id="math-container">
+                <div class="text-center text-gray-400 mt-16" id="welcome-msg">
+                    <i class="fas fa-square-root-alt text-6xl text-red-500 mb-4 opacity-80"></i>
+                    <h3 class="text-2xl text-gray-200 font-bold mb-2">Upload Math Image!</h3>
+                    <p>Problem ka photo dalo 📁, ya Mic 🎙️ se type karo.</p>
+                </div>
+                <div id="loading" style="display: none;" class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-red-500 mb-3"></i><p class="text-red-400 font-medium animate-pulse">Solving equation...</p></div>
+            </div>
+        </div>
+
+        <div class="p-5 bg-gray-800 border-t border-gray-700">
+            <div class="max-w-4xl mx-auto flex gap-3 items-center flex-wrap sm:flex-nowrap">
+                <button onclick="document.getElementById('math-img').click()" class="w-12 h-12 rounded-full bg-gray-700 border border-gray-600 text-red-400 hover:bg-red-900/30 transition flex items-center justify-center text-xl shrink-0" title="Upload Image">
+                    <i class="fas fa-image"></i>
+                </button>
+                <input type="file" id="math-img" accept="image/*" class="hidden" onchange="showFileName(this)">
+                
+                <button id="mic-btn" onclick="startVoiceCommand('math-input')" class="w-12 h-12 rounded-full bg-gray-700 border border-gray-600 text-gray-400 hover:text-red-400 transition flex items-center justify-center text-xl shrink-0"><i class="fas fa-microphone"></i></button>
+                
+                <input type="text" id="math-input" class="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-red-500" placeholder="Type problem or upload image...">
+                <button onclick="solveMath()" id="solve-btn" class="bg-gradient-to-r from-red-500 to-pink-600 px-8 py-4 rounded-xl font-bold transition w-full sm:w-auto"><i class="fas fa-magic"></i> Solve</button>
+            </div>
+            <p id="file-name-display" class="text-xs text-red-400 mt-2 ml-16 hidden"><i class="fas fa-camera mr-1"></i> <span id="f-name"></span> selected</p>
+        </div>
+    </main>
+
+    <script>
+        let sessionId = 'math_tool_' + Date.now();
+        window.onload = loadToolHistory;
+
+        function showFileName(input) {
+            if(input.files.length > 0) {
+                document.getElementById('f-name').innerText = input.files[0].name;
+                document.getElementById('file-name-display').classList.remove('hidden');
+            }
+        }
+
+        function startVoiceCommand(inputId) {
+            if (!('webkitSpeechRecognition' in window)) return;
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'en-US';
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.add('text-red-400', 'animate-pulse');
+            recognition.onresult = (e) => { document.getElementById(inputId).value += " " + e.results[0][0].transcript; micBtn.classList.remove('text-red-400', 'animate-pulse'); };
+            recognition.onerror = () => micBtn.classList.remove('text-red-400', 'animate-pulse');
+            recognition.onend = () => micBtn.classList.remove('text-red-400', 'animate-pulse');
+            recognition.start();
+        }
+
+        async function loadToolHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                const list = document.getElementById('tool-history-list');
+                list.innerHTML = '';
+                data.history.filter(c => c.title.toLowerCase().includes('math')).forEach(chat => {
+                    list.innerHTML += `<div onclick="loadOldSession('${chat.id}')" class="p-2 hover:bg-gray-700 rounded-lg cursor-pointer text-sm text-gray-300 truncate transition"><i class="fas fa-history text-gray-500 mr-2"></i> ${chat.title.replace('Tool: Math Solver - ', '')}</div>`;
+                });
+            } catch(e) {}
+        }
+
+        async function loadOldSession(id) {
+            sessionId = id;
+            const container = document.getElementById('math-container');
+            container.innerHTML = '<div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl"></i> Loading...</div>';
+            try {
+                const res = await fetch(`/api/chat/${id}`);
+                const data = await res.json();
+                container.innerHTML = '';
+                data.messages.forEach(msg => {
+                    if (msg.role === 'assistant') {
+                        container.innerHTML += `<div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-4 shadow-xl"><div class="text-red-400 text-sm mb-4"><i class="fas fa-history"></i> Past Solution</div><div class="markdown-body text-white">${marked.parse(msg.content)}</div></div>`;
+                    }
+                });
+            } catch(e) {}
+        }
+
+        async function solveMath() {
+            const input = document.getElementById('math-input').value.trim();
+            const file = document.getElementById('math-img').files[0];
+            if(!input && !file) return;
+
+            document.getElementById('welcome-msg').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('solve-btn').disabled = true;
+
+            let base64Data = null;
+            if(file) {
+                base64Data = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            try {
+                const res = await fetch('/api/chat', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ message: input || 'Solve this image step by step', file_data: base64Data, session_id: sessionId, mode: 'math_solver' }) 
+                });
+                const data = await res.json();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('solve-btn').disabled = false;
+                document.getElementById('math-input').value = '';
+
+                if(data.reply) {
+                    document.getElementById('math-container').innerHTML += `<div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-4 shadow-xl markdown-body text-white"><div class="text-red-400 font-bold mb-3 border-b border-gray-700 pb-2"><i class="fas fa-check"></i> Solution</div>${marked.parse(data.reply)}</div>`;
+                    loadToolHistory();
+                    document.getElementById('main-content-area').scrollTop = document.getElementById('main-content-area').scrollHeight;
+                }
+            } catch (e) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('solve-btn').disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

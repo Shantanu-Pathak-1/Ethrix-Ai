@@ -102,7 +102,7 @@ main { position: relative; z-index: 10; }
     padding: 0 8px; margin-bottom: 4px; border-radius: 12px;
     cursor: pointer; transition: 0.2s; color: #d1d5db; position: relative;
 }
-.history-item:hover { background: rgba(255,255,255,0.1); color: white; }
+.history-item:hover { background: rgba(255,255,255,0.1); color: #ec4899; }
 .history-icon { width: 36px; display: flex; justify-content: center; align-items: center; font-size: 1rem; color: #6b7280; }
 .history-item:hover .history-icon { color: #ec4899; }
 
@@ -236,6 +236,10 @@ body.light-mode .msg-ai { background: #ffffff; border: 1px solid #e2e8f0; color:
 body.light-mode .msg-user { background: linear-gradient(135deg, #3b82f6, #6366f1); color: white !important; }
 body.light-mode .modal-content { background: #ffffff; color: #0f172a; border: 1px solid #e2e8f0; }
 body.light-mode .modal-content input, body.light-mode .modal-content textarea { background: #f1f5f9; color: #000; border: 1px solid #cbd5e1; }
+/* Old Chats Light Mode Fixes */
+body.light-mode .history-item { color: #000000; }
+body.light-mode .history-item:hover { background: rgba(0,0,0,0.05); color: #ec4899; }
+body.light-mode .history-icon { color: #475569; }
 
 /* =========================================
    [CATEGORY] 7. CODE BLOCKS
@@ -279,56 +283,21 @@ code { font-family: 'Consolas', monospace; color: #d4d4d4; }
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .break-words { overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
 
-/* =========================================================
-   🚀 CUSTOM NEON CURSOR & CLICK ANIMATION (DESKTOP ONLY)
-   ========================================================= */
-@media (pointer: fine) {
-    /* Hide default cursor only on devices with a real mouse */
-    body, a, button, input, textarea, select, .tool-card, .goti, .dice {
-        cursor: none !important;
-    }
-
-    /* The tiny glowing dot */
-    .cursor-dot {
-        position: fixed;
-        top: 0; left: 0;
-        width: 8px; height: 8px;
-        background: #ec4899; /* Pinkish-Purple Glow */
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 99999;
-        pointer-events: none;
-        box-shadow: 0 0 10px #ec4899, 0 0 20px #ec4899;
-    }
-
-    /* The following circle */
-    .cursor-outline {
-        position: fixed;
-        top: 0; left: 0;
-        width: 32px; height: 32px;
-        border: 2px solid rgba(236, 72, 153, 0.6);
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 99998;
-        pointer-events: none;
-        transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
-    }
-
-    /* Ripple Effect on Click */
-    .click-ripple {
-        position: fixed;
-        top: 0; left: 0;
-        width: 40px; height: 40px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(236, 72, 153, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
-        transform: translate(-50%, -50%) scale(0);
-        z-index: 99997;
-        pointer-events: none;
-        animation: ripple-anim 0.5s ease-out forwards;
-    }
-
-    @keyframes ripple-anim {
-        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-        100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
-    }
+/* Date Divider */
+.date-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
+.date-divider::before, .date-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.date-divider:not(:empty)::before { margin-right: 15px; }
+.date-divider:not(:empty)::after { margin-left: 15px; }

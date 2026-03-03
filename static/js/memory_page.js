@@ -39,15 +39,24 @@ async function loadMemories() {
         return;
     }
 
+    // 🚀 BUGS FIXED HERE: Direct DOM manipulation instead of innerHTML strings
     data.memories.forEach(mem => {
         const div = document.createElement('div');
         div.className = 'memory-item';
-        div.innerHTML = `
-            <span class="memory-text">${mem}</span>
-            <button class="delete-btn" onclick="deleteMemory('${mem.replace(/'/g, "\\'")}')">
-                <i class="ri-delete-bin-line"></i>
-            </button>
-        `;
+        
+        const textSpan = document.createElement('span');
+        textSpan.className = 'memory-text';
+        textSpan.textContent = mem; // Safe text injection (won't break quotes)
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+        
+        // Exact exact string pass ho raha hai bina break hue!
+        deleteBtn.onclick = () => deleteMemory(mem); 
+        
+        div.appendChild(textSpan);
+        div.appendChild(deleteBtn);
         list.appendChild(div);
     });
 }

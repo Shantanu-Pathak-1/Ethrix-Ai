@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Interviewer - Shanvika</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex h-screen overflow-hidden">
+    <nav class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col hidden md:flex z-20">
+        <div class="p-4 shrink-0">
+            <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 mb-6 flex items-center gap-2"><i class="fas fa-comments"></i> Mock Interview</h2>
+            <div class="space-y-2"><a href="/tools" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 text-gray-300"><i class="fas fa-arrow-left w-5"></i> Back to Tools</a></div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto px-4 border-t border-gray-700 pt-4">
+            <h3 class="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider">History</h3>
+            <div id="tool-history-list" class="space-y-2"></div>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex flex-col h-full bg-gray-900 relative">
+        <header class="p-5 border-b border-gray-800 bg-gray-900/80 z-10 flex justify-between">
+            <h1 class="text-2xl font-bold">AI Mock Interviewer 🎙️</h1>
+            <button onclick="window.location.reload()" class="text-gray-400 hover:text-white"><i class="fas fa-plus"></i> New Interview</button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-4" id="chat-container">
+            <div class="bg-gray-800 p-4 rounded-xl max-w-[80%] border border-gray-700 self-start text-teal-400" id="initial-greet">
+                Hello Shantanu! Main tumhari AI Interviewer hu. Batao aaj kis role ke liye interview dena chahte ho? (Mic 🎙️ use karo!)
+            </div>
+        </div>
+
+        <div class="p-5 bg-gray-800 border-t border-gray-700">
+            <div class="max-w-4xl mx-auto flex gap-3 items-center">
+                <button id="mic-btn" onclick="startVoiceCommand('chat-input')" class="w-12 h-12 rounded-full bg-gray-700 border border-gray-600 text-gray-400 hover:text-teal-400 transition flex items-center justify-center text-xl shrink-0"><i class="fas fa-microphone"></i></button>
+                <input type="text" id="chat-input" class="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-teal-500" placeholder="Type your answer...">
+                <button onclick="sendMessage()" class="bg-gradient-to-r from-teal-500 to-cyan-600 px-6 py-4 rounded-xl font-bold transition"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let sessionId = 'mock_int_' + Date.now();
+        window.onload = loadToolHistory;
+
+        function startVoiceCommand(inputId) {
+            if (!('webkitSpeechRecognition' in window)) return;
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'en-IN';
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.add('text-teal-400', 'animate-pulse');
+            recognition.onresult = (e) => { document.getElementById(inputId).value += " " + e.results[0][0].transcript; micBtn.classList.remove('text-teal-400', 'animate-pulse'); };
+            recognition.onerror = () => micBtn.classList.remove('text-teal-400', 'animate-pulse');
+            recognition.onend = () => micBtn.classList.remove('text-teal-400', 'animate-pulse');
+            recognition.start();
+        }
+
+        async function loadToolHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                const list = document.getElementById('tool-history-list');
+                list.innerHTML = '';
+                data.history.filter(c => c.title.toLowerCase().includes('mock')).forEach(chat => {
+                    list.innerHTML += `<div onclick="loadOldSession('${chat.id}')" class="p-2 hover:bg-gray-700 rounded-lg cursor-pointer text-sm text-gray-300 truncate transition"><i class="fas fa-history text-gray-500 mr-2"></i> ${chat.title.replace('Tool: Mock Interviewer - ', '')}</div>`;
+                });
+            } catch(e) {}
+        }
+
+        async function loadOldSession(id) {
+            sessionId = id;
+            const container = document.getElementById('chat-container');
+            container.innerHTML = '<div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl"></i> Loading History...</div>';
+            try {
+                const res = await fetch(`/api/chat/${id}`);
+                const data = await res.json();
+                container.innerHTML = '';
+                data.messages.forEach(msg => {
+                    if (msg.role === 'user') {
+                        container.innerHTML += `<div class="bg-teal-600/20 p-4 rounded-xl max-w-[80%] border border-teal-500/30 self-end text-white">${msg.content}</div>`;
+                    } else {
+                        container.innerHTML += `<div class="bg-gray-800 p-4 rounded-xl max-w-[80%] border border-gray-700 self-start text-gray-200 markdown-body">${marked.parse(msg.content)}</div>`;
+                    }
+                });
+                container.scrollTop = container.scrollHeight;
+            } catch(e) {}
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if(!msg) return;
+            const container = document.getElementById('chat-container');
+            
+            let greet = document.getElementById('initial-greet');
+            if(greet && sessionId.includes(Date.now().toString().substring(0,5))) { greet.style.display = 'none'; }
+
+            container.innerHTML += `<div class="bg-teal-600/20 p-4 rounded-xl max-w-[80%] border border-teal-500/30 self-end text-white">${msg}</div>`;
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, session_id: sessionId, mode: 'mock_interviewer' }) });
+                const data = await res.json();
+                if(data.reply) {
+                    container.innerHTML += `<div class="bg-gray-800 p-4 rounded-xl max-w-[80%] border border-gray-700 self-start text-gray-200 markdown-body">${marked.parse(data.reply)}</div>`;
+                    container.scrollTop = container.scrollHeight;
+                    loadToolHistory();
+                }
+            } catch(e) {}
+        }
+    </script>
+</body>
+</html>

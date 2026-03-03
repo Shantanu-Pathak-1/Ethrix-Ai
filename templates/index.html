@@ -37,10 +37,10 @@
         </div>
 
         <div class="flex flex-col gap-1 p-2 border-b border-white/5">
-            <div onclick="openToolsModal()" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-white cursor-pointer">
+            <a href="/tools" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-white cursor-pointer" style="text-decoration: none;">
                 <div class="w-6 text-center"><i class="fas fa-flask text-purple-400 text-sm md:text-base"></i></div>
                 <span class="text-sm font-bold nav-label">Tools Lab</span>
-            </div>
+            </a>
 
             <a href="/gallery" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-white">
                 <div class="w-6 text-center"><i class="fas fa-images text-pink-400 text-sm md:text-base"></i></div>
@@ -53,7 +53,7 @@
             </a>
 
             <a href="/diary" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-pink-400">
-                <div class="w-6 text-center"><i class="fas fa-book-heart text-pink-500 text-sm md:text-base"></i></div>
+                <div class="w-6 text-center"><i class="fas fa-book text-pink-500 text-sm md:text-base"></i></div>
                 <span class="text-sm font-bold nav-label">Secret Diary</span>
             </a>
 
@@ -111,16 +111,22 @@
                     <div class="mode-btn flex-shrink-0" onclick="setMode('research', this)">🔍 Research</div>
                 </div>
                 
-                <form class="input-container flex items-center p-1.5 md:p-2 shadow-2xl bg-gray-900/90 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl" onsubmit="event.preventDefault(); sendMessage();">
-                    <button type="button" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-white/10 flex-shrink-0 transition" onclick="document.getElementById('file-upload').click()"><i class="fas fa-paperclip text-sm md:text-base"></i></button>
-                    <input type="file" id="file-upload" class="hidden" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx" onchange="handleFileUpload(this)">
-                    
-                    <input type="text" id="user-input" class="flex-1 bg-transparent border-none outline-none px-2 md:px-3 py-2 md:py-3 text-white min-w-0 placeholder-gray-500 text-sm md:text-base" placeholder="Message Shanvika..." autocomplete="off">
-                    
-                    <button type="button" id="mic-btn" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-pink-500 hover:bg-white/10 flex-shrink-0 transition mr-1" onclick="toggleRecording()"><i class="fas fa-microphone text-sm md:text-base"></i></button>
-                    
-                    <button type="submit" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-white text-black hover:bg-gray-200 shadow-md transition transform active:scale-95 flex-shrink-0"><i class="fas fa-arrow-up text-sm md:text-base"></i></button>
-                </form>
+                <div id="file-preview-container" class="hidden mx-auto md:mx-4 mb-2 w-max max-w-[85%] bg-gray-800/95 border border-gray-600 px-3 py-1.5 rounded-xl shadow-lg items-center gap-3 animate-fade-in backdrop-blur-md">
+    <i class="fas fa-file-alt text-pink-400"></i>
+    <span id="file-preview-name" class="text-xs md:text-sm text-gray-200 truncate max-w-[150px] md:max-w-[200px]"></span>
+    <button type="button" onclick="removeFile()" class="text-gray-400 hover:text-red-500 transition ml-1"><i class="fas fa-times"></i></button>
+</div>
+
+<form class="input-container flex items-center p-1.5 md:p-2 shadow-2xl bg-gray-900/90 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl" onsubmit="event.preventDefault(); sendMessage();">
+    <button type="button" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-white/10 flex-shrink-0 transition" onclick="document.getElementById('file-upload').click()"><i class="fas fa-paperclip text-sm md:text-base"></i></button>
+    <input type="file" id="file-upload" class="hidden" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx" onchange="handleFileUpload(this)">
+    
+    <input type="text" id="user-input" class="flex-1 bg-transparent border-none outline-none px-2 md:px-3 py-2 md:py-3 text-white min-w-0 placeholder-gray-500 text-sm md:text-base" placeholder="Message Shanvika..." autocomplete="off">
+    
+    <button type="button" id="mic-btn" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-pink-500 hover:bg-white/10 flex-shrink-0 transition mr-1" onclick="toggleRecording()"><i class="fas fa-microphone text-sm md:text-base"></i></button>
+    
+    <button type="submit" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-white text-black hover:bg-gray-200 shadow-md transition transform active:scale-95 flex-shrink-0"><i class="fas fa-arrow-up text-sm md:text-base"></i></button>
+</form>
             </div> </div>
     </main>
 
@@ -171,7 +177,6 @@
     <div id="dropdown" class="dropdown-menu bg-[#222] border border-gray-600 text-white shadow-xl z-50"><div class="dropdown-item hover:bg-gray-700" id="act-rename"><i class="fas fa-edit text-blue-400"></i> Rename</div><div class="dropdown-item hover:bg-gray-700 text-red-400" id="act-delete"><i class="fas fa-trash"></i> Delete</div></div>
     <div id="payment-modal" class="modal"><div class="modal-content w-11/12 md:w-full max-w-md bg-[#1e1e1e] border border-gray-700 text-white rounded-2xl relative overflow-hidden"><div class="bg-gradient-to-r from-pink-600 to-purple-600 p-3 md:p-4 text-center"><h2 class="text-lg md:text-xl font-bold text-white"><i class="fas fa-secure"></i> Secure Payment</h2><p class="text-[10px] md:text-xs text-pink-100">Shanvika AI Pro Plan • ₹499.00</p></div><div class="p-4 md:p-6 space-y-3 md:space-y-4"><div id="pay-loader" class="hidden text-center py-4"><i class="fas fa-circle-notch fa-spin text-2xl md:text-3xl text-pink-500"></i><p class="text-[10px] md:text-xs text-gray-400 mt-2">Processing secure transaction...</p></div><button id="pay-btn" onclick="processFakePayment()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 md:py-3 rounded-xl transition shadow-lg transform active:scale-95 mt-2 text-sm md:text-base">Pay ₹499.00</button><button onclick="closeModal('payment-modal')" class="w-full text-gray-500 text-xs hover:text-white mt-2">Cancel Transaction</button></div></div></div>
 
-    {% include "components/tools_modal.html" %}
     <script src="/static/js/tools.js"></script>
     <script src="/static/js/script.js"></script>
 </body>

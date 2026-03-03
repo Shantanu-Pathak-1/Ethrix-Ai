@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About The Creator • Shan Pathak</title>
+    <title>About The Creator • Shan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
@@ -14,27 +14,46 @@
         
         #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; }
 
+        /* Premium Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(10, 10, 10, 0.8); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #ec4899, #8b5cf6); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #db2777, #7c3aed); }
+
+        /* Hide scrollbar for mobile tabs */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
         /* Glass Card */
         .glass {
             background: rgba(20, 20, 20, 0.6);
             backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .glass-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(236, 72, 153, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
-        /* Gradient Text */
-        .text-gradient {
-            background: linear-gradient(to right, #ec4899, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* Timeline Styling for Version History */
+        .timeline-container { position: relative; padding-left: 2rem; margin-top: 1.5rem; }
+        .timeline-line { position: absolute; left: 11px; top: 10px; bottom: 0; width: 2px; background: linear-gradient(to bottom, #ec4899, #8b5cf6, rgba(255,255,255,0.05)); }
+        .timeline-dot { position: absolute; left: -25px; width: 16px; height: 16px; border-radius: 50%; background: #050505; border: 3px solid #6b7280; z-index: 10; transition: border-color 0.3s; }
+        .glass-hover:hover ~ .timeline-dot, .glass-hover:hover .timeline-dot { border-color: #ec4899; }
+        
+        .timeline-dot-latest { 
+            position: absolute; left: -28px; width: 22px; height: 22px; border-radius: 50%; 
+            background: #ec4899; border: 4px solid white; box-shadow: 0 0 15px #ec4899; z-index: 10;
         }
 
-        /* Timeline Styling */
-        .timeline-line { position: absolute; left: 20px; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.1); }
-        .timeline-dot { position: absolute; left: 14px; width: 14px; height: 14px; border-radius: 50%; background: #ec4899; border: 2px solid white; }
-
-        /* Hide Scrollbar */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* List Styling for Changelog */
+        ul.custom-list li { margin-bottom: 0.5rem; display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.85rem; color: #d1d5db; }
+        ul.custom-list li i { margin-top: 0.25rem; font-size: 0.75rem; color: #9ca3af; }
+        @media (min-width: 768px) { ul.custom-list li { font-size: 0.9rem; } }
 
         /* Tab Animation */
         .tab-content { display: none; animation: fadeIn 0.5s ease; }
@@ -46,165 +65,270 @@
 
     <div id="bg-canvas"></div>
 
-    <nav class="p-6 flex justify-between items-center max-w-6xl mx-auto">
-        <a href="/" class="flex items-center gap-2 text-white hover:text-pink-400 transition font-bold">
-            <i class="fas fa-arrow-left"></i> Back to Shanvika
+    <nav class="p-4 md:p-6 flex justify-between items-center max-w-6xl mx-auto">
+        <a href="/" class="flex items-center gap-2 text-white hover:text-pink-400 transition font-bold text-sm md:text-base">
+            <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Back to Shanvika</span><span class="sm:hidden">Back</span>
         </a>
-        <div class="text-xs text-gray-500 uppercase tracking-widest border border-gray-700 px-3 py-1 rounded-full">Project Portfolio</div>
+        <div class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest border border-gray-700 px-3 py-1 rounded-full bg-black/50 backdrop-blur-md text-center">
+            Project Portfolio
+        </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-4 pb-20 flex flex-col md:flex-row gap-8 min-h-[80vh]">
+    <main class="max-w-6xl mx-auto px-4 pb-20 flex flex-col md:flex-row gap-6 md:gap-8 min-h-[80vh]">
         
-        <aside class="w-full md:w-1/4 flex flex-col gap-2">
-            <button onclick="switchTab('creator')" class="tab-btn active text-left p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-3 border-l-4 border-pink-500">
+        <aside class="w-full md:w-1/4 flex flex-row md:flex-col gap-2 z-10 overflow-x-auto no-scrollbar pb-2 md:pb-0 snap-x">
+            <button onclick="switchTab('creator')" class="tab-btn active text-left px-4 py-3 md:p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-2 md:gap-3 border-b-4 md:border-b-0 md:border-l-4 border-pink-500 whitespace-nowrap snap-center text-sm md:text-base">
                 <i class="fas fa-user-astronaut text-pink-400"></i> The Architect
             </button>
-            <button onclick="switchTab('journey')" class="tab-btn text-left p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-3 border-l-4 border-transparent opacity-70 hover:opacity-100">
+            <button onclick="switchTab('journey')" class="tab-btn text-left px-4 py-3 md:p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-2 md:gap-3 border-b-4 md:border-b-0 md:border-l-4 border-transparent opacity-70 hover:opacity-100 whitespace-nowrap snap-center text-sm md:text-base">
                 <i class="fas fa-history text-blue-400"></i> Version History
             </button>
-            <button onclick="switchTab('tech')" class="tab-btn text-left p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-3 border-l-4 border-transparent opacity-70 hover:opacity-100">
+            <button onclick="switchTab('tech')" class="tab-btn text-left px-4 py-3 md:p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-2 md:gap-3 border-b-4 md:border-b-0 md:border-l-4 border-transparent opacity-70 hover:opacity-100 whitespace-nowrap snap-center text-sm md:text-base">
                 <i class="fas fa-code text-green-400"></i> Tech Stack
             </button>
-            <button onclick="switchTab('vision')" class="tab-btn text-left p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-3 border-l-4 border-transparent opacity-70 hover:opacity-100">
+            <button onclick="switchTab('vision')" class="tab-btn text-left px-4 py-3 md:p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-2 md:gap-3 border-b-4 md:border-b-0 md:border-l-4 border-transparent opacity-70 hover:opacity-100 whitespace-nowrap snap-center text-sm md:text-base">
                 <i class="fas fa-rocket text-purple-400"></i> Future Vision
             </button>
         </aside>
 
-        <section class="w-full md:w-3/4 glass rounded-3xl p-8 md:p-12 relative overflow-hidden min-h-[600px]">
+        <section class="w-full md:w-3/4 glass rounded-3xl p-6 sm:p-8 md:p-12 relative overflow-hidden min-h-[500px] z-10">
             
             <div id="creator" class="tab-content active">
-                <div class="flex flex-col md:flex-row gap-8 items-center">
-                    <div class="w-40 h-40 rounded-full border-4 border-pink-500/30 overflow-hidden shadow-[0_0_30px_rgba(236,72,153,0.3)] shrink-0">
-                        <img src="https://ui-avatars.com/api/?name=Shan+Pathak&background=000&color=fff&size=200" class="w-full h-full object-cover">
+                <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
+                    
+                    <div class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-pink-500/30 overflow-hidden shadow-[0_0_30px_rgba(236,72,153,0.3)] shrink-0 group relative">
+                        <img src="/static/images/admin-logo.jpeg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt="Shan">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                            <i class="fas fa-user-secret text-2xl text-white"></i>
+                        </div>
                     </div>
-                    <div>
-                        <h1 class="text-4xl md:text-5xl font-bold mb-2">Shan Pathak</h1>
-                        <p class="text-pink-400 font-mono mb-4">Full Stack Developer • AI Enthusiast</p>
-                        <p class="text-gray-300 leading-relaxed text-lg">
-                            Hi, I built <span class="text-white font-bold">Shanvika AI</span> with a vision to create a truly intelligent companion, not just a bot. 
-                            My passion lies in bridging the gap between complex AI models and beautiful, accessible user interfaces.
-                        </p>
+                    
+                    <div class="flex-1 text-center md:text-left">
+                        <h1 class="text-3xl md:text-5xl font-bold mb-2">Shan</h1>
+                        <p class="text-pink-400 font-mono text-sm md:text-base mb-4">First-Year B.Tech CSE (AIML) • Creative Coder</p>
                         
-                        <div class="flex gap-4 mt-6">
-                            <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-blue-600 transition"><i class="fab fa-linkedin-in"></i></a>
-                            <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-gray-800 transition"><i class="fab fa-github"></i></a>
-                            <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-pink-600 transition"><i class="fas fa-envelope"></i></a>
+                        <div class="space-y-4 text-gray-300 leading-relaxed text-base md:text-lg text-left">
+                            <p>
+                                People often say the first year of college is just for having fun, but I wanted to build something meaningful. I created <span class="text-white font-bold">Shanvika</span> because I was tired of boring documentation and robotic replies. I wanted to build an AI with a soul—one that doesn't just respond, but actually connects.
+                            </p>
+                            <p>
+                                I might be a bit of an introvert in the real world, but when it comes to technology and innovation, I'm unstoppable. Coding is my passion, AI is my future, and Shanvika is the perfect blend of both.
+                            </p>
+                        </div>
+                        
+                        <div class="flex flex-wrap justify-center md:justify-start gap-3 mt-8">
+                            <a href="https://github.com/Shantanu-Pathak-1" target="_blank" class="px-4 py-2 rounded-full glass flex items-center gap-2 hover:bg-gray-800 transition hover:scale-105">
+                                <i class="fab fa-github text-lg md:text-xl"></i> <span class="text-xs md:text-sm font-bold">GitHub</span>
+                            </a>
+                            <a href="https://www.linkedin.com/in/shantanu-pathak-9b465b30b" target="_blank" class="px-4 py-2 rounded-full glass flex items-center gap-2 hover:bg-blue-600/50 transition hover:scale-105">
+                                <i class="fab fa-linkedin text-lg md:text-xl text-blue-400"></i> <span class="text-xs md:text-sm font-bold">LinkedIn</span>
+                            </a>
+                            <a href="https://www.instagram.com/__dark.soul__2?igsh=ZnQ3Ymg1eXIyMHJy" target="_blank" class="px-4 py-2 rounded-full glass flex items-center gap-2 hover:bg-pink-600/50 transition hover:scale-105">
+                                <i class="fab fa-instagram text-lg md:text-xl text-pink-400"></i> <span class="text-xs md:text-sm font-bold">Instagram</span>
+                            </a>
+                            <a href="mailto:shantanupathak94@gmail.com" class="px-4 py-2 rounded-full glass flex items-center gap-2 hover:bg-red-500/50 transition hover:scale-105">
+                                <i class="fas fa-envelope text-lg md:text-xl text-red-400"></i> <span class="text-xs md:text-sm font-bold">Email</span>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div id="journey" class="tab-content">
-                <h2 class="text-3xl font-bold mb-8 flex items-center gap-3"><i class="fas fa-history text-blue-400"></i> The Evolution</h2>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-white/10 pb-4 gap-3">
+                    <h2 class="text-2xl md:text-3xl font-bold flex items-center gap-3"><i class="fas fa-history text-blue-400"></i> Version History</h2>
+                    <span class="badge px-3 py-1 rounded-full text-[10px] md:text-xs font-bold text-pink-400 bg-pink-500/10 border border-pink-500/30">Detailed Changelog</span>
+                </div>
                 
-                <div class="relative pl-8 space-y-10">
+                <div class="timeline-container space-y-8 md:space-y-12">
                     <div class="timeline-line"></div>
 
                     <div class="relative">
-                        <div class="timeline-dot mt-1"></div>
-                        <h3 class="text-xl font-bold text-white">v10.0 - The Jarvis Era</h3>
-                        <p class="text-gray-400 text-sm mb-3">Feb 2026</p>
-                        <p class="text-gray-300 mb-3">Added Voice Input, PWA Support, 3D Landing Page, and Admin Security.</p>
-                        <div class="w-full h-48 bg-gray-800 rounded-xl overflow-hidden border border-white/10 group cursor-pointer">
-                            <img src="https://via.placeholder.com/800x400/111/ec4899?text=Shanvika+v10+Screenshot" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition duration-500">
+                        <div class="timeline-dot-latest mt-4 md:mt-6 animate-pulse"></div>
+                        <div class="glass glass-hover p-5 md:p-6 rounded-2xl relative border border-pink-500/50 shadow-[0_0_20px_rgba(236,72,153,0.15)] bg-gradient-to-br from-pink-500/5 to-transparent">
+                            <div class="absolute -top-3 right-4 md:right-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[10px] md:text-xs px-3 py-1 rounded-full font-bold animate-pulse shadow-lg flex items-center gap-1 md:gap-2">
+                                <i class="fas fa-star text-yellow-300"></i> LATEST
+                            </div>
+                            <h3 class="text-xl md:text-2xl font-bold text-white mb-1">🟣 Beta v3.4</h3>
+                            <p class="text-pink-400 font-mono text-[10px] md:text-xs mb-4">Tri-Model AI engine, custom tools, arcade upgrades & memory hardened</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Tri-Model Architecture:</strong> Groq (Primary) + Gemini 1.5 Flash (Vision/Math) + OpenRouter</span></li>
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Smart Task-Based Routing:</strong> DeepSeek Coder → Coding, Llama/Qwen → Logic</span></li>
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Arcade Updates:</strong> MongoDB High Scores, Flappy Bug 3 modes, Neon Ludo Battle</span></li>
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Custom Tool Builder:</strong> Create & save AI tools with custom prompts</span></li>
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Hybrid Image Engine:</strong> Pollinations AI (Free) & HuggingFace SDXL (Pro Mode)</span></li>
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Memory Hardening:</strong> Hinglish triggers ("yaad rakhna"), On-Demand Secret Diary</span></li>
+                            </ul>
                         </div>
                     </div>
 
                     <div class="relative">
-                        <div class="timeline-dot bg-blue-500 mt-1"></div>
-                        <h3 class="text-xl font-bold text-white">v5.0 - The Visual Update</h3>
-                        <p class="text-gray-400 text-sm mb-3">Jan 2026</p>
-                        <p class="text-gray-300 mb-3">Implemented Image Generation, Anime Mode, and Glassmorphism UI.</p>
-                        <div class="w-full h-48 bg-gray-800 rounded-xl overflow-hidden border border-white/10 group cursor-pointer">
-                            <img src="https://via.placeholder.com/800x400/111/3b82f6?text=Shanvika+v5+Screenshot" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition duration-500">
+                        <div class="timeline-dot mt-4 md:mt-6 border-purple-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl">
+                            <h3 class="text-lg md:text-xl font-bold text-white mb-1">🟣 Beta v3.3</h3>
+                            <p class="text-purple-400 font-mono text-[10px] md:text-xs mb-3">Arcade Zone launched + Admin analytics</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>Smart File Upload Preview Box above input bar.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Admin Analytics & Live System Error Logs.</span></li>
+                                <li><i class="fas fa-circle"></i> <span><strong>Arcade Zone Launched:</strong> 5 Games (Tic-Tac-Toe, Code-le, Flappy Bug, Ludo).</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Microservice Architecture for Arcade.</span></li>
+                            </ul>
                         </div>
                     </div>
 
                     <div class="relative">
-                        <div class="timeline-dot bg-gray-500 mt-1"></div>
-                        <h3 class="text-xl font-bold text-white">v1.0 - The Beginning</h3>
-                        <p class="text-gray-400 text-sm mb-3">Dec 2025</p>
-                        <p class="text-gray-300 mb-3">Basic Chatbot using Python logic. Simple text interface.</p>
-                        <div class="w-full h-48 bg-gray-800 rounded-xl overflow-hidden border border-white/10 group cursor-pointer">
-                            <img src="https://via.placeholder.com/800x400/111/555?text=Shanvika+v1+Screenshot" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition duration-500">
+                        <div class="timeline-dot mt-4 md:mt-6 border-blue-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl">
+                            <h3 class="text-lg md:text-xl font-bold text-white mb-1">🟣 Beta v3.2</h3>
+                            <p class="text-blue-400 font-mono text-[10px] md:text-xs mb-3">Tools Lab expands to 16 tools</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>Tools Dashboard expanded from 4 to 16 tools.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Voice Commands added to every tool.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>6 New Tools: Cold Email Pro, Fitness Coach, Feynman Explainer, etc.</span></li>
+                            </ul>
                         </div>
                     </div>
+
+                    <div class="relative">
+                        <div class="timeline-dot mt-4 md:mt-6 border-green-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl">
+                            <h3 class="text-lg md:text-xl font-bold text-white mb-1">🟣 Beta v3.0 & v3.1</h3>
+                            <p class="text-green-400 font-mono text-[10px] md:text-xs mb-3">Admin panel operational</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>God Mode Fully Activated: Strict email auth.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>4 Admin Superpowers: Promote, Demote, Ban, Unban.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="timeline-dot mt-4 md:mt-6 border-yellow-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl">
+                            <h3 class="text-lg md:text-xl font-bold text-white mb-1">🟣 Beta v2.0 - v2.5</h3>
+                            <p class="text-yellow-400 font-mono text-[10px] md:text-xs mb-3">Tools Lab born, Voice & Emotional Memory</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>Human-Like Voice (Edge TTS): Microsoft Neerja Neural.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Shanvika's Secret Diary & Proactive Messaging.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Interactive Image Studio UI & Multi-Tier Fallbacks.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="timeline-dot mt-4 md:mt-6 border-pink-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl">
+                            <h3 class="text-lg md:text-xl font-bold text-white mb-1">🟣 Beta v1.0 - v1.3</h3>
+                            <p class="text-pink-400 font-mono text-[10px] md:text-xs mb-3">First functional multimodal AI</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>Image & Video Generation, Document Reading.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Custom Instructions Logic & Long-Term Memory (RAG).</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="timeline-dot mt-4 md:mt-6 border-gray-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl opacity-80">
+                            <h3 class="text-lg md:text-xl font-bold text-gray-300 mb-1">⚡ Alpha v0.1 - v0.3</h3>
+                            <p class="text-gray-500 font-mono text-[10px] md:text-xs mb-3">Building the Foundation</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>Live Animated 3D Background & Glassmorphism theme.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Vision Feature: AI can read & analyze images.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
             <div id="tech" class="tab-content">
-                <h2 class="text-3xl font-bold mb-8 flex items-center gap-3"><i class="fas fa-microchip text-green-400"></i> Built With</h2>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition">
-                        <i class="fab fa-python text-4xl text-yellow-400 mb-2"></i>
-                        <span class="font-bold">Python & FastAPI</span>
-                        <span class="text-xs text-gray-400">Backend Core</span>
+                <h2 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8 flex items-center gap-3"><i class="fas fa-microchip text-green-400"></i> Built With</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fab fa-python text-3xl md:text-4xl text-yellow-400 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">Python & FastAPI</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">Backend Core</span>
                     </div>
-                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition">
-                        <i class="fas fa-brain text-4xl text-pink-400 mb-2"></i>
-                        <span class="font-bold">LLMs</span>
-                        <span class="text-xs text-gray-400">Gemini & Llama</span>
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fas fa-brain text-3xl md:text-4xl text-pink-400 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">LLMs</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">Groq & Gemini</span>
                     </div>
-                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition">
-                        <i class="fas fa-database text-4xl text-green-400 mb-2"></i>
-                        <span class="font-bold">MongoDB</span>
-                        <span class="text-xs text-gray-400">Memory Database</span>
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fas fa-database text-3xl md:text-4xl text-green-400 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">MongoDB</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">Memory Database</span>
                     </div>
-                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition">
-                        <i class="fab fa-js text-4xl text-yellow-300 mb-2"></i>
-                        <span class="font-bold">Vanilla JS</span>
-                        <span class="text-xs text-gray-400">Frontend Logic</span>
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fab fa-js text-3xl md:text-4xl text-yellow-300 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">Vanilla JS</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">Frontend Logic</span>
                     </div>
-                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition">
-                        <i class="fas fa-cube text-4xl text-purple-400 mb-2"></i>
-                        <span class="font-bold">Spline 3D</span>
-                        <span class="text-xs text-gray-400">WebGL Experience</span>
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fas fa-cube text-3xl md:text-4xl text-purple-400 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">Spline 3D</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">WebGL Experience</span>
                     </div>
-                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition">
-                        <i class="fas fa-palette text-4xl text-blue-400 mb-2"></i>
-                        <span class="font-bold">Tailwind CSS</span>
-                        <span class="text-xs text-gray-400">Styling</span>
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fas fa-palette text-3xl md:text-4xl text-blue-400 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">Tailwind CSS</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">Styling</span>
                     </div>
                 </div>
             </div>
 
             <div id="vision" class="tab-content">
-                <h2 class="text-3xl font-bold mb-8 flex items-center gap-3"><i class="fas fa-rocket text-purple-400"></i> The Roadmap</h2>
-                <div class="space-y-4">
-                    <div class="p-5 bg-white/5 rounded-xl border-l-4 border-green-500">
-                        <h3 class="font-bold text-lg">Phase 1: Foundation (Completed)</h3>
-                        <p class="text-gray-400 text-sm">Basic Chat, Image Gen, Converters, and Admin Panel.</p>
-                    </div>
-                    <div class="p-5 bg-white/5 rounded-xl border-l-4 border-yellow-500">
-                        <h3 class="font-bold text-lg">Phase 2: Sensory (Current)</h3>
-                        <p class="text-gray-400 text-sm">Voice Input/Output, 3D Landing Page, Long-term Memory.</p>
-                    </div>
-                    <div class="p-5 bg-white/5 rounded-xl border-l-4 border-purple-500 opacity-60">
-                        <h3 class="font-bold text-lg">Phase 3: Autonomy (Future)</h3>
-                        <p class="text-gray-400 text-sm">Shanvika will initiate conversations, schedule tasks, and control smart home devices.</p>
-                    </div>
+                <h2 class="text-2xl md:text-3xl font-bold mb-4 md:mb-6 flex items-center gap-3"><i class="fas fa-rocket text-purple-400"></i> The Roadmap</h2>
+                
+                <div class="space-y-4 text-gray-400 bg-white/5 p-5 md:p-6 rounded-2xl border border-white/10">
+                    <p class="text-base md:text-lg flex items-center"><i class="fas fa-hourglass-half text-pink-400 mr-3"></i> New roadmap details are currently being structured.</p>
+                    <p class="text-xs md:text-sm opacity-70 mt-2 ml-7">Stay tuned for the next phase of evolution!</p>
                 </div>
-            </div>
+
+                </div>
 
         </section>
     </main>
 
     <script>
-        // Tab Logic
+        // Tab Logic Setup (Responsive handling)
         function switchTab(tabId) {
             // Hide all
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('active', 'border-pink-500');
+                el.classList.remove('active', 'border-pink-500', 'border-b-4', 'md:border-l-4');
                 el.classList.add('border-transparent', 'opacity-70');
             });
 
             // Show One
             document.getElementById(tabId).classList.add('active');
             const activeBtn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
+            
+            // Apply responsive active borders (bottom for mobile, left for desktop)
             activeBtn.classList.add('active', 'border-pink-500');
+            
+            if (window.innerWidth < 768) {
+                activeBtn.classList.add('border-b-4');
+            } else {
+                activeBtn.classList.add('md:border-l-4');
+            }
+            
             activeBtn.classList.remove('border-transparent', 'opacity-70');
         }
+
+        // Handle window resize for borders
+        window.addEventListener('resize', () => {
+            const activeBtn = document.querySelector('.tab-btn.active');
+            if(activeBtn) {
+                if (window.innerWidth < 768) {
+                    activeBtn.classList.add('border-b-4');
+                    activeBtn.classList.remove('md:border-l-4');
+                } else {
+                    activeBtn.classList.remove('border-b-4');
+                    activeBtn.classList.add('md:border-l-4');
+                }
+            }
+        });
 
         // Vanta Background (Net Effect)
         document.addEventListener('DOMContentLoaded', () => {
@@ -220,8 +344,8 @@
                     scaleMobile: 1.00,
                     color: 0xec4899,
                     backgroundColor: 0x050505,
-                    points: 12.00,
-                    maxDistance: 22.00,
+                    points: 10.00,
+                    maxDistance: 20.00,
                     spacing: 18.00
                 })
             } catch(e) {}
