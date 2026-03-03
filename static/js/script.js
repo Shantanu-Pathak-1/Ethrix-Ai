@@ -402,30 +402,25 @@ function removeFile() {
         previewContainer.classList.remove('flex');
     }
 }
-// --- UPDATED: SET MODE WITH POPUP FOR IMAGE GEN ---
-// --- UPDATED: SET MODE WITH POPUP FOR IMAGE GEN & ETHRIX AGENT ---
 async function setMode(mode, btn) {
     currentMode = mode;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    // 🌟 1. VANTA.JS SCI-FI BACKGROUND MAGIC 🌟
-    const vantaBg = document.getElementById('vanta-bg');
-    
+    // 🌟 1. ETHRIX AGENT SCI-FI MAGIC 🌟
     if (mode === 'ethrix_agent') {
         document.body.classList.add('sci-fi-theme');
-        if (vantaBg) vantaBg.style.display = 'block';
         
-        // Agar pehle ka koi normal vanta effect chal raha hai toh usko band karo
+        // Purana (Halo/Rings) effect destroy karo
         if (vantaEffect) {
             vantaEffect.destroy();
             vantaEffect = null;
         }
 
-        // Naya Sci-Fi Net Effect Start Karo
-        if (window.VANTA) {
+        // Naya Sci-Fi Net Effect ussi purane background par chalao
+        if (window.VANTA && window.VANTA.NET) {
             vantaEffect = VANTA.NET({
-              el: "#vanta-bg",
+              el: "#vanta-bg", // Tumhara original div!
               mouseControls: true,
               touchControls: true,
               gyroControls: false,
@@ -433,42 +428,35 @@ async function setMode(mode, btn) {
               minWidth: 200.00,
               scale: 1.00,
               scaleMobile: 1.00,
-              color: 0x00ffff, // Neon Cyan glow
-              backgroundColor: 0x020205, // Deep space dark
+              color: 0x00ffff, 
+              backgroundColor: 0x020205, 
               points: 12.00,
               maxDistance: 20.00,
               spacing: 16.00
             });
         }
-        
+
         Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#020205', color: '#0ff' })
             .fire({ icon: 'success', title: '🌌 Ethrix Agent Online' });
-            
-        // 🛠️ INPUT BAR FIX: Agar chup gaya hai toh zabardasti show karo
-        const inputArea = document.querySelector('.input-fixed-bottom');
-        if (inputArea) {
-            inputArea.style.display = 'block'; 
-            inputArea.style.visibility = 'visible';
-            inputArea.style.opacity = '1';
-        }
 
     } else {
-        // Normal website mode par wapas jane ke liye sci-fi theme hatao
+        // Normal mode par wapas jane se sci-fi theme hatao
+        const wasSciFi = document.body.classList.contains('sci-fi-theme');
         document.body.classList.remove('sci-fi-theme');
-        if (vantaBg) vantaBg.style.display = 'none';
         
-        // Agent wala vanta effect destroy kardo
-        if (vantaEffect) {
-            vantaEffect.destroy();
-            vantaEffect = null;
-            // Purana wala Halo/Rings wapas start kar do
-            setTimeout(() => {
-                if(typeof initVanta === 'function') initVanta();
-            }, 100);
+        // Agar agent mode se wapas aaye hain, toh Net hata kar Halo wapas lao
+        if (wasSciFi) {
+            if (vantaEffect) {
+                vantaEffect.destroy();
+                vantaEffect = null;
+            }
+            if (typeof initVanta === 'function') {
+                initVanta(); // Tumhara apna pyara function!
+            }
         }
     }
 
-    // 🎨 2. IF IMAGE GEN IS SELECTED -> SHOW OPTIONS (Tumhara Original Code)
+    // 🎨 2. IF IMAGE GEN IS SELECTED -> SHOW OPTIONS
     if (mode === 'image_gen') {
         const { value: formValues } = await Swal.fire({
             title: '🎨 Image Studio Settings',
@@ -522,6 +510,7 @@ async function setMode(mode, btn) {
         Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 1000 }).fire({ icon: 'info', title: `Mode: ${mode}` });
     }
 }
+
 function toggleRecording() {
     if (!('webkitSpeechRecognition' in window)) { alert("Voice not supported"); return; }
     if (isRecording) { recognition.stop(); isRecording = false; document.getElementById('mic-btn').classList.remove('text-red-500', 'animate-pulse'); return; }
