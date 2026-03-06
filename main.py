@@ -39,6 +39,8 @@ from datetime import datetime, timedelta
 import edge_tts 
 # main.py ke top par
 from image_generation import generate_image_free, generate_image_pro
+import traceback
+from fastapi.responses import JSONResponse
 
 # Local Tool Imports
 from tools_lab import (
@@ -239,6 +241,38 @@ async def generate_daily_diary():
             await diary_collection.insert_one({"user_email": user['email'], "date": datetime.utcnow().strftime('%Y-%m-%d'), "content": diary_entry, "mood": "Reflective", "timestamp": datetime.utcnow()})
     except Exception as e: print(f"Diary Error: {e}")
 
+# 🩺 THE HEALTH CHECK DOCTOR 🩺
+async def run_system_diagnostics():
+    errors_found = []
+    
+    # 1. MongoDB Check
+    try:
+        await db.command("ping")
+    except Exception as e:
+        errors_found.append(f"MongoDB Disconnected: {e}")
+        
+    # 2. Groq API Check
+    try:
+        if not get_groq(): errors_found.append("Groq API is returning None. All keys might be exhausted.")
+    except Exception as e:
+        errors_found.append(f"Groq Init Error: {e}")
+
+    # 3. OpenRouter / Gemini Check
+    if not get_random_openrouter_key(): errors_found.append("OpenRouter Key missing!")
+    if not get_random_gemini_key(): errors_found.append("Gemini Key missing!")
+
+    if errors_found:
+        error_summary = "<br>".join(errors_found)
+        await error_logs_collection.insert_one({
+            "error": "Health Check Failed ❌", 
+            "details": errors_found, 
+            "timestamp": datetime.utcnow()
+        })
+        send_email(ADMIN_EMAIL, "🚨 System Health Check Failed!", f"<h3>System Diagnostics Failed!</h3><p>Shantanu, backend check fail ho gaya hai:</p>{error_summary}")
+        return {"status": "failed", "errors": errors_found}
+    
+    return {"status": "healthy", "message": "All systems are green! 🟢"}
+
 async def check_proactive_messaging():
     try:
         users_cursor = users_collection.find({})
@@ -321,8 +355,13 @@ def startup_event():
     try:
         scheduler.add_job(lambda: asyncio.run(generate_daily_diary()), 'cron', hour=23, minute=59)
         scheduler.add_job(lambda: asyncio.run(check_proactive_messaging()), 'interval', hours=4)
+        
+        # 🚀 ADD THIS LINE: Har 30 minute mein automatically health check hoga
+        scheduler.add_job(lambda: asyncio.run(run_system_diagnostics()), 'interval', minutes=30)
+        
         scheduler.start()
-    except: pass
+    except Exception as e: 
+        print(f"Scheduler Error: {e}")
 
 @app.middleware("http")
 async def fix_google_oauth_redirect(request: Request, call_next):
@@ -338,6 +377,31 @@ oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration', 
     client_kwargs={'scope': 'openid email profile'}
 )
+# 🚨 THE GLOBAL ERROR CATCHER 🚨
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    error_msg = str(exc)
+    full_trace = traceback.format_exc()
+    endpoint = str(request.url.path)
+    
+    # Error ko MongoDB mein save karo
+    await error_logs_collection.insert_one({
+        "error": error_msg,
+        "trace": full_trace,
+        "endpoint": endpoint,
+        "timestamp": datetime.utcnow(),
+        "type": "Unhandled Exception"
+    })
+
+    # Turant Email Bhejo Shantanu ko!
+    subject = f"🚨 CRITICAL ERROR on Ethrix: {endpoint}"
+    body = f"<h3>Shanvika Alert! 🚨</h3><p>Shantanu, ek naya error aaya hai website par, jaldi check karo!</p><b>Endpoint:</b> {endpoint}<br><b>Error:</b> {error_msg}<br><b>Trace:</b><br><pre>{full_trace[:1000]}</pre>"
+    send_email(ADMIN_EMAIL, subject, body)
+    
+    return JSONResponse(
+        status_code=500,
+        content={"status": "error", "message": "Oops! Server mein kuch dikkat aayi hai. Admin ko notify kar diya gaya hai."}
+    )
 
 @app.get("/auth/login")
 async def login(request: Request):
@@ -496,6 +560,25 @@ async def admin_page(request: Request):
         "banned_count": banned_count, "users": users_list, "admin_email": ADMIN_EMAIL,
         "top_tools": top_tools, "max_tool_count": max_tool_count, "recent_errors": recent_errors     
     })
+
+# Yeh line routes ke paas daal dena
+@app.post("/admin/toggle_maintenance")
+async def api_toggle_maintenance(request: Request):
+    user = await get_current_user(request)
+    if not user or user.get('email') != ADMIN_EMAIL: return JSONResponse({"status": "error"}, 403)
+    
+    global MAINTENANCE_MODE
+    MAINTENANCE_MODE = not MAINTENANCE_MODE
+    return {"status": "success", "mode": MAINTENANCE_MODE}
+
+@app.get("/api/admin/run-diagnostics")
+async def api_run_diagnostics(request: Request):
+    user = await get_current_user(request)
+    if not user or user.get('email') != ADMIN_EMAIL: 
+        return JSONResponse({"status": "error", "message": "Unauthorized"}, 403)
+    
+    result = await run_system_diagnostics()
+    return result
 
 @app.get("/tools", response_class=HTMLResponse)
 async def tools_dashboard_page(request: Request):
