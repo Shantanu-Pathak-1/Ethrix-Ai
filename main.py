@@ -64,6 +64,8 @@ PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 MAIL_USERNAME = os.getenv("MAIL_USERNAME") 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
+MAINTENANCE_MODE = True  # 🛡️ Maintenance mode ON hai
+
 # ==================================================================================
 # [CATEGORY] 3. SYSTEM INTELLIGENCE
 # ==================================================================================
@@ -175,11 +177,9 @@ async def perform_research_task(query):
 
 async def extract_and_save_memory(user_email: str, user_message: str):
     try:
-        # 🚀 Naye triggers: "yaad rakhna", "save karlo" etc. add kar diye!
         triggers = ["my name is", "i live in", "i like", "i love", "remember", "save this", "my birthday", "i am", "mera naam", "main rehta hu", "mujhe pasand hai", "yaad rakhna", "yaad rakho", "save kar", "note kar", "isko save"]
         if not any(t in user_message.lower() for t in triggers) and len(user_message.split()) < 4: return
         
-        # 🚀 Prompt strict kar diya taaki AI apne baare mein save na kare
         extraction_prompt = f"Analyze this user message: \"{user_message}\"\nExtract ANY permanent user fact or anything the user explicitly asks to save/remember. Return ONLY the fact as a short sentence. DO NOT save facts about the AI (like 'User knows Ethrix'). If nothing worth remembering, return 'NO_DATA'."
         
         openrouter_key = get_random_openrouter_key()
@@ -187,7 +187,6 @@ async def extract_and_save_memory(user_email: str, user_message: str):
 
         headers = {"Authorization": f"Bearer {openrouter_key}", "Content-Type": "application/json"}
         
-        # 🚀 YAHAN CHANGE KIYA HAI: Fast models ka Round Robin!
         import random
         fast_models = ["zhipu/glm-4-flash", "stepfun/step-1-flash", "meta-llama/llama-3-8b-instruct:free"]
         selected_model = random.choice(fast_models)
@@ -200,7 +199,6 @@ async def extract_and_save_memory(user_email: str, user_message: str):
         if "NO_DATA" not in response and len(response) > 5:
             clean_memory = response.replace("User", "You").replace("user", "You").replace("Ethrix", "me")
             
-            # 🚀 Duplicate Check: Agar pehle se save hai toh dobara nahi karegi
             db_user = await users_collection.find_one({"email": user_email})
             if db_user and clean_memory in db_user.get("memories", []):
                 return 
@@ -296,6 +294,28 @@ app.mount("/static", StaticFiles(directory=os.path.join(os.getcwd(), "static")),
 
 templates = Jinja2Templates(directory="templates")
 
+# 🛡️ NEW FASTAPI MAINTENANCE MIDDLEWARE
+@app.middleware("http")
+async def maintenance_middleware(request: Request, call_next):
+    if MAINTENANCE_MODE:
+        allowed_paths = ["/static", "/login", "/auth/", "/api/guest_login", "/api/send_otp", "/api/verify_otp", "/api/complete_signup", "/api/login_manual"]
+        
+        is_allowed = False
+        if request.url.path == "/": 
+            is_allowed = True
+        for p in allowed_paths:
+            if request.url.path.startswith(p):
+                is_allowed = True
+                break
+        
+        user = request.session.get('user')
+        is_admin = user and user.get('email') == ADMIN_EMAIL
+        
+        if not is_allowed and not is_admin:
+            return templates.TemplateResponse("maintenance.html", {"request": request}, status_code=503)
+            
+    return await call_next(request)
+
 @app.on_event("startup")
 def startup_event():
     try:
@@ -329,10 +349,25 @@ async def auth_callback(request: Request):
     try:
         token = await oauth.google.authorize_access_token(request)
         user = token.get('userinfo')
+        
+        # 🔒 MAINTENANCE LOCK FOR GOOGLE LOGIN
+        if MAINTENANCE_MODE and user['email'] != ADMIN_EMAIL:
+            return templates.TemplateResponse("maintenance.html", {"request": request}, status_code=503)
+
+        existing_user = await users_collection.find_one({"email": user['email']})
+        
+        # 🚨 SEND SHANTANU AN ALERT FOR NEW USER
+        if not existing_user:
+            subject = '🚨 New User Registration on Ethrix AI'
+            body = f"Hello Shantanu,\n\nKisi ne Ethrix AI par naya account banaya hai!\n\nName: {user.get('name', 'New User')}\nEmail: {user['email']}\n\nJaldi check karo boss! 🚀"
+            send_email(ADMIN_EMAIL, subject, body)
+
         request.session['user'] = user
         await users_collection.update_one({"email": user['email']}, {"$set": {"name": user.get('name'), "picture": user.get('picture'), "username": user['email'].split('@')[0]}}, upsert=True)
         return RedirectResponse("/")
-    except: return RedirectResponse("/login")
+    except Exception as e: 
+        print(f"Login error: {e}")
+        return RedirectResponse("/login")
 
 @app.get("/logout")
 async def logout(request: Request): 
@@ -341,6 +376,9 @@ async def logout(request: Request):
 
 @app.post("/api/guest_login")
 async def guest_login(request: Request):
+    if MAINTENANCE_MODE:
+        return JSONResponse({"status": "error", "message": "Site is under maintenance! Guest login disabled."}, 503)
+        
     request.session['user'] = {"email": f"guest_{uuid.uuid4()}@ethrix.ai", "name": "Guest", "picture": "", "is_guest": True}
     return {"status": "success"}
 
@@ -360,7 +398,16 @@ async def verify_otp_endpoint(req: OTPVerifyRequest):
 
 @app.post("/api/complete_signup")
 async def complete_signup(req: SignupRequest, request: Request):
+    if MAINTENANCE_MODE and req.email != ADMIN_EMAIL: 
+        return JSONResponse({"status": "error", "message": "Site is under maintenance!"}, 503)
+
     if await users_collection.find_one({"username": req.username}): return JSONResponse({"status": "error"}, 400)
+    
+    # 🚨 SEND SHANTANU AN ALERT FOR NEW MANUAL SIGNUP
+    subject = '🚨 New User Registration on Ethrix AI'
+    body = f"Hello Shantanu,\n\nKisi ne Ethrix AI par manual account banaya hai!\n\nName: {req.full_name}\nEmail: {req.email}\nUsername: {req.username}\n\nJaldi check karo boss! 🚀"
+    send_email(ADMIN_EMAIL, subject, body)
+
     await users_collection.insert_one({"email": req.email, "username": req.username, "password_hash": get_password_hash(req.password), "name": req.full_name, "picture": "", "memories": [], "custom_instruction": ""})
     request.session['user'] = {"email": req.email, "name": req.full_name}
     return {"status": "success"}
@@ -369,6 +416,11 @@ async def complete_signup(req: SignupRequest, request: Request):
 async def login_manual(req: LoginRequest, request: Request):
     user = await users_collection.find_one({"$or": [{"email": req.identifier}, {"username": req.identifier}]})
     if user and verify_password(req.password, user.get('password_hash')):
+        
+        # 🔒 MAINTENANCE LOCK
+        if MAINTENANCE_MODE and user['email'] != ADMIN_EMAIL:
+            return JSONResponse({"status": "error", "message": "Site is under maintenance! Only admins can login."}, 503)
+            
         request.session['user'] = {"email": user['email'], "name": user['name']}
         return {"status": "success"}
     return JSONResponse({"status": "error"}, 400)
@@ -879,7 +931,6 @@ async def chat_endpoint(req: ChatRequest, request: Request, background_tasks: Ba
                         "user_email": user['email']
                     }
                     
-                    # Tumhara actual agent URL
                     AGENT_URL = os.getenv("HF_AGENT_URL", "https://shantanupathak94-ai-agent-for-ethrix-ai.hf.space/run-agent")
                     
                     resp = await http_client.post(AGENT_URL, headers=headers, json=payload, timeout=40.0)
