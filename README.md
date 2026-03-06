@@ -1,7 +1,7 @@
 ---
 title: Ethrix AI
-colorFrom: light blue
-colorTo: dark blue
+colorFrom: blue
+colorTo: purple
 sdk: docker
 pinned: false
 app_port: 7860
