@@ -4,89 +4,167 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Anime Memory Match • Arcade</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        body { background-color: #050505; color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;}
-        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 95vw; max-width: 400px; height: 50vh; max-height: 400px; margin: 0 auto; }
-        .memory-card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s; cursor: pointer; }
-        .memory-card.flip { transform: rotateY(180deg); }
-        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: center; }
-        .card-back { background: linear-gradient(135deg, #ec4899, #8b5cf6); border: 2px solid rgba(255, 255, 255, 0.2); }
-        .card-back::after { content: '🃏'; font-size: 1.5rem; opacity: 0.6; }
-        .card-front { background: #1e293b; border: 2px solid #ec4899; transform: rotateY(180deg); }
-        .card-front span { font-size: 1.8rem; margin-bottom: 2px; }
-        .card-front p { font-size: 0.65rem; font-weight: bold; color: #fbcfe8; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+JP:wght@400;700&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:     #060912;
+            --pink:   #FF2D78;
+            --purple: #9D4EDD;
+            --cyan:   #00E5FF;
+            --green:  #10b981;
+        }
+
+        html, body { height: 100dvh; overflow: hidden; }
+
+        body {
+            background: var(--bg)
+                radial-gradient(ellipse 70% 40% at 50% 0%, rgba(157,78,221,.1) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 40% at 0% 100%, rgba(255,45,120,.07) 0%, transparent 50%);
+            color: white; font-family: 'Noto Sans JP', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        body::before {
+            content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+            background-image: linear-gradient(rgba(157,78,221,.04) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(157,78,221,.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        body::after {
+            content:''; position:fixed; inset:0; pointer-events:none; z-index:1;
+            background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);
+        }
+
+        .back-btn {
+            position:fixed; top:13px; left:13px; z-index:200;
+            background:rgba(6,9,18,.85); backdrop-filter:blur(12px);
+            border:1px solid rgba(255,45,120,.2); color:rgba(255,255,255,.6);
+            padding:8px 14px; border-radius:28px;
+            font-size:clamp(.65rem,1.7vw,.78rem); font-weight:700; letter-spacing:.06em;
+            text-decoration:none; display:flex; align-items:center; gap:6px;
+            font-family:'Orbitron',monospace; transition:all .25s;
+        }
+        .back-btn:hover { border-color:var(--pink); color:var(--pink); transform:translateX(-2px); }
+
+        /* header */
+        .hdr { position:relative; z-index:10; text-align:center; margin-bottom:clamp(6px,1vh,12px); margin-top:clamp(42px,6.5vh,56px); flex-shrink:0; }
+        .badge { display:inline-flex; align-items:center; gap:5px; background:rgba(255,45,120,.07); border:1px solid rgba(255,45,120,.2); border-radius:20px; padding:3px 12px; font-size:clamp(.53rem,1.3vw,.62rem); letter-spacing:.14em; color:rgba(255,107,157,.8); margin-bottom:4px; font-family:'Orbitron',monospace; }
+        h1 { font-family:'Orbitron',monospace; font-size:clamp(1.2rem,4vw,1.8rem); font-weight:900; background:linear-gradient(135deg,var(--pink),var(--purple) 50%,var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:.07em; }
+
+        /* stats */
+        .stats { position:relative; z-index:10; display:flex; gap:10px; margin-bottom:clamp(6px,1vh,10px); flex-shrink:0; }
+        .spill { background:rgba(8,12,24,.88); border:1px solid rgba(255,45,120,.15); border-radius:10px; padding:clamp(5px,.9vh,8px) clamp(12px,2.5vw,16px); font-family:'Orbitron',monospace; font-size:clamp(.6rem,1.5vw,.68rem); font-weight:700; letter-spacing:.06em; color:rgba(255,255,255,.55); }
+        .spill .fv { color:rgba(255,107,157,.9); font-size:clamp(.78rem,2vw,.9rem); }
+        .spill .mv { color:var(--purple); font-size:clamp(.78rem,2vw,.9rem); }
+
+        /* grid */
+        .grid {
+            position:relative; z-index:10;
+            display:grid; grid-template-columns:repeat(4,1fr);
+            gap:clamp(5px,1.2vw,9px);
+            /* square grid: use smaller of 90vw or 50dvh */
+            width:  min(90vw, 50dvh);
+            height: min(90vw, 50dvh);
+            flex-shrink:0;
+        }
+
+        /* card */
+        .card { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .5s cubic-bezier(.4,0,.2,1); cursor:pointer; }
+        .card.flip { transform:rotateY(180deg); }
+        .face { position:absolute; inset:0; backface-visibility:hidden; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-direction:column; overflow:hidden; }
+        .card-back { background:linear-gradient(135deg,rgba(255,45,120,.25),rgba(157,78,221,.35)); border:1px solid rgba(255,45,120,.3); box-shadow:0 4px 12px rgba(0,0,0,.4); }
+        .card-back::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.06) 0%,transparent 50%); }
+        .card-back::after { content:'🃏'; font-size:clamp(1.1rem,3vw,1.5rem); opacity:.5; }
+        .card:hover:not([data-matched]) .card-back { border-color:rgba(255,45,120,.5); box-shadow:0 4px 18px rgba(255,45,120,.25); }
+        .card-front { background:rgba(12,16,30,.95); border:1px solid rgba(157,78,221,.35); transform:rotateY(180deg); box-shadow:0 4px 12px rgba(0,0,0,.5); }
+        .card-front span { font-size:clamp(1.3rem,min(3.5vw,3dvh),1.9rem); margin-bottom:2px; }
+        .card-front p { font-size:clamp(.46rem,min(1.2vw,1.1dvh),.62rem); font-weight:700; color:rgba(255,182,213,.8); font-family:'Orbitron',monospace; letter-spacing:.02em; padding:0 4px; text-align:center; line-height:1.2; }
+        .card[data-matched] .card-front { background:rgba(16,185,129,.1); border-color:var(--green); box-shadow:0 0 14px rgba(16,185,129,.25); }
+        .card[data-matched] .card-front p { color:rgba(52,211,153,.9); }
+
+        /* restart */
+        .restart-btn {
+            position:relative; z-index:10; flex-shrink:0;
+            margin-top:clamp(8px,1.3vh,14px);
+            background:linear-gradient(135deg,rgba(255,45,120,.2),rgba(157,78,221,.2));
+            border:1px solid rgba(255,45,120,.35); color:rgba(255,182,213,.9);
+            padding:clamp(8px,1.2vh,11px) clamp(18px,4vw,26px); border-radius:24px;
+            font-family:'Orbitron',monospace; font-size:clamp(.62rem,1.6vw,.72rem);
+            font-weight:700; letter-spacing:.1em; cursor:pointer; transition:all .25s;
+            display:flex; align-items:center; gap:7px;
+        }
+        .restart-btn:hover { border-color:var(--pink); box-shadow:0 0 16px rgba(255,45,120,.25); transform:translateY(-2px); }
+        .restart-btn:active { transform:scale(.97); }
     </style>
 </head>
-<body class="p-2">
+<body>
 
-    <a href="/tools" class="fixed top-4 left-4 z-50 bg-gray-800/80 hover:bg-gray-700 text-white p-2 md:px-4 md:py-2 rounded-full border border-gray-600 shadow-lg transition flex items-center gap-2">
-        <i class="fas fa-arrow-left"></i> <span class="hidden md:inline font-bold text-sm">Tools</span>
-    </a>
+    <a href="/tools" class="back-btn"><i class="fas fa-arrow-left"></i><span>Tools Lab</span></a>
 
-    <div class="mb-4 text-center mt-6">
-        <h1 class="text-2xl md:text-3xl font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500">
-            <i class="fas fa-magic mr-2 text-pink-500"></i> Anime Match
-        </h1>
-        <div class="flex gap-4 justify-center text-xs font-bold mt-2">
-            <div class="bg-gray-800 px-3 py-1 rounded-lg border border-gray-700">Flips: <span id="flip-count" class="text-pink-400">0</span></div>
-            <div class="bg-gray-800 px-3 py-1 rounded-lg border border-gray-700">Matches: <span id="match-count" class="text-purple-400">0</span> / 8</div>
-        </div>
+    <div class="hdr">
+        <div class="badge"><i class="fas fa-magic"></i> ARCADE ZONE</div>
+        <h1>ANIME MATCH</h1>
     </div>
 
-    <div class="memory-grid w-full" id="game-board"></div>
+    <div class="stats">
+        <div class="spill">Flips <span class="fv" id="flips">0</span></div>
+        <div class="spill">Matches <span class="mv" id="matches">0</span> / 8</div>
+    </div>
 
-    <button onclick="initGame()" class="mt-6 px-6 py-2 text-sm bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 rounded-xl font-bold transition shadow-[0_0_15px_rgba(236,72,153,0.4)] flex items-center gap-2">
-        <i class="fas fa-redo"></i> Restart
-    </button>
+    <div class="grid" id="board"></div>
+
+    <button onclick="initGame()" class="restart-btn"><i class="fas fa-redo"></i> RESTART</button>
 
     <script>
-        const allCharacters = [
-            { name: "Ayanokōji", emoji: "🧠" }, { name: "Lucifer", emoji: "😈" }, { name: "Sung Jinwoo", emoji: "🗡️" },
-            { name: "Gojo", emoji: "🤞" }, { name: "Zoro", emoji: "⚔️" }, { name: "Levi", emoji: "🛡️" },
-            { name: "Itachi", emoji: "👁️" }, { name: "Light", emoji: "📓" }, { name: "Naruto", emoji: "🍜" },
-            { name: "Luffy", emoji: "🍖" }, { name: "Saitama", emoji: "👊" }
+        const chars=[
+            {name:"Ayanokōji",emoji:"🧠"},{name:"Lucifer",emoji:"😈"},{name:"Sung Jinwoo",emoji:"🗡️"},
+            {name:"Gojo",emoji:"🤞"},{name:"Zoro",emoji:"⚔️"},{name:"Levi",emoji:"🛡️"},
+            {name:"Itachi",emoji:"👁️"},{name:"Light",emoji:"📓"},{name:"Naruto",emoji:"🍜"},
+            {name:"Luffy",emoji:"🍖"},{name:"Saitama",emoji:"👊"}
         ];
 
-        let gameGrid = []; let firstCard = null; let secondCard = null; let lockBoard = false; let flips = 0; let matches = 0;
-        const boardElement = document.getElementById('game-board');
+        let first=null,second=null,lock=false,flips=0,matches=0;
+        const board=document.getElementById('board');
 
-        function initGame() {
-            firstCard = null; secondCard = null; lockBoard = false; flips = 0; matches = 0;
-            document.getElementById('flip-count').innerText = flips; document.getElementById('match-count').innerText = matches;
-            boardElement.innerHTML = '';
-            const shuffledPool = allCharacters.sort(() => 0.5 - Math.random()).slice(0, 8);
-            gameGrid = [...shuffledPool, ...shuffledPool].sort(() => 0.5 - Math.random());
-
-            gameGrid.forEach((character) => {
-                const card = document.createElement('div'); card.classList.add('memory-card'); card.dataset.name = character.name;
-                card.innerHTML = `<div class="card-face card-back"></div><div class="card-face card-front"><span>${character.emoji}</span><p>${character.name}</p></div>`;
-                card.addEventListener('click', flipCard); boardElement.appendChild(card);
+        function initGame(){
+            first=null;second=null;lock=false;flips=0;matches=0;
+            document.getElementById('flips').innerText=0;
+            document.getElementById('matches').innerText=0;
+            board.innerHTML='';
+            const pool=[...chars].sort(()=>.5-Math.random()).slice(0,8);
+            const grid=[...pool,...pool].sort(()=>.5-Math.random());
+            grid.forEach(ch=>{
+                const card=document.createElement('div'); card.className='card'; card.dataset.name=ch.name;
+                card.innerHTML=`<div class="face card-back"></div><div class="face card-front"><span>${ch.emoji}</span><p>${ch.name}</p></div>`;
+                card.addEventListener('click',flipCard);
+                board.appendChild(card);
             });
         }
 
-        function flipCard() {
-            if (lockBoard || this === firstCard) return;
+        function flipCard(){
+            if(lock||this===first||this.dataset.matched)return;
             this.classList.add('flip');
-            if (!firstCard) { firstCard = this; return; }
-            secondCard = this; flips++; document.getElementById('flip-count').innerText = flips; checkForMatch();
+            if(!first){first=this;return;}
+            second=this; flips++; document.getElementById('flips').innerText=flips; check();
         }
 
-        function checkForMatch() {
-            let isMatch = firstCard.dataset.name === secondCard.dataset.name;
-            if (isMatch) {
-                firstCard.removeEventListener('click', flipCard); secondCard.removeEventListener('click', flipCard);
-                firstCard.querySelector('.card-front').style.borderColor = '#10b981'; secondCard.querySelector('.card-front').style.borderColor = '#10b981';
-                matches++; document.getElementById('match-count').innerText = matches;
-                if (matches === 8) setTimeout(() => confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } }), 500);
-                [firstCard, secondCard] = [null, null]; lockBoard = false;
-            } else {
-                lockBoard = true;
-                setTimeout(() => { firstCard.classList.remove('flip'); secondCard.classList.remove('flip'); [firstCard, secondCard] = [null, null]; lockBoard = false; }, 800);
+        function check(){
+            const isMatch=first.dataset.name===second.dataset.name;
+            if(isMatch){
+                first.removeEventListener('click',flipCard); second.removeEventListener('click',flipCard);
+                first.setAttribute('data-matched','true'); second.setAttribute('data-matched','true');
+                matches++; document.getElementById('matches').innerText=matches;
+                if(matches===8)setTimeout(()=>confetti({particleCount:200,spread:90,origin:{y:.6}}),500);
+                first=null;second=null;lock=false;
+            }else{
+                lock=true;
+                setTimeout(()=>{first.classList.remove('flip');second.classList.remove('flip');first=null;second=null;lock=false;},900);
             }
         }
+
         initGame();
     </script>
 </body>

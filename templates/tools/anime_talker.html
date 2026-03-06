@@ -6,47 +6,501 @@
     <title>Anime Talker - Ethrix</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ── CUSTOM CURSORS ─────────────────────────────── */
+        *, *::before, *::after { cursor: url('/static/cursors/anime-cursor.gif'), auto !important; box-sizing: border-box; }
+        a, button, [role="button"], input, select, textarea, label, .cell, .clickable {
+            cursor: url('/static/cursors/anime-pointer.png'), pointer !important;
+        }
+
+        /* ── CSS VARIABLES ──────────────────────────────── */
+        :root {
+            --sakura:    #FF6B9D;
+            --neon-pink: #FF2D78;
+            --neon-red:  #FF1744;
+            --gold:      #FFD700;
+            --cyan:      #00E5FF;
+            --indigo:    #7C4DFF;
+            --dark-base: #0B0F19;
+            --glass-bg:  rgba(11, 15, 25, 0.72);
+            --glass-border: rgba(255, 107, 157, 0.25);
+        }
+
+        /* ── BACKGROUND ─────────────────────────────────── */
+        body {
+            background-color: var(--dark-base);
+            background-image: url('/static/images/anime-bg.jpg');
+            background-attachment: fixed;
+            background-position: center center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: #f0e6f0;
+            font-family: 'Noto Sans JP', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        /* ── NOISE OVERLAY ──────────────────────────────── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(11,15,25,0.45) 0%, rgba(11,15,25,0.2) 50%, rgba(11,15,25,0.6) 100%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ── FLOATING SAKURA PETALS ─────────────────────── */
+        .petal {
+            position: fixed;
+            width: 8px; height: 10px;
+            background: radial-gradient(ellipse at 30% 30%, #ffb7d5, #ff6b9d88);
+            border-radius: 100% 0 100% 0;
+            opacity: 0;
+            animation: petalFall linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        @keyframes petalFall {
+            0%   { transform: translateY(-20px) rotate(0deg) translateX(0); opacity: 0; }
+            10%  { opacity: 0.7; }
+            90%  { opacity: 0.4; }
+            100% { transform: translateY(110vh) rotate(720deg) translateX(80px); opacity: 0; }
+        }
+
+        /* ── SIDEBAR ────────────────────────────────────── */
+        .tools-nav-sidebar {
+            position: relative;
+            z-index: 10;
+            width: 260px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            flex-direction: column;
+            display: none;
+            flex-shrink: 0;
+        }
+        @media (min-width: 768px) { .tools-nav-sidebar { display: flex !important; } }
+
+        .tools-nav-sidebar.mobile-open { display: flex !important; position: fixed; top: 0; left: 0; height: 100vh; }
+
+        .sidebar-brand {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            background: linear-gradient(135deg, var(--sakura), var(--neon-red), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-brand-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, #ff2d78, #7c4dff);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 0 12px rgba(255,45,120,0.5);
+            flex-shrink: 0;
+        }
+
+        .nav-link {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            color: rgba(240,230,240,0.65);
+            font-size: 0.875rem;
+            transition: all 0.25s ease;
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover {
+            background: rgba(255,107,157,0.12);
+            border-color: rgba(255,107,157,0.3);
+            color: var(--sakura);
+        }
+
+        .history-item {
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: rgba(240,230,240,0.55);
+            cursor: url('/static/cursors/anime-pointer.png'), pointer !important;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .history-item:hover {
+            background: rgba(255,45,120,0.1);
+            border-color: rgba(255,45,120,0.2);
+            color: #ffb7d5;
+        }
+
+        /* ── MOBILE TOPBAR ──────────────────────────────── */
+        .tools-mobile-topbar {
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-bottom: 1px solid var(--glass-border) !important;
+        }
+
+        /* ── MAIN CONTENT ───────────────────────────────── */
+        .tools-main-content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        /* ── HEADER ─────────────────────────────────────── */
+        .page-header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1rem, 2.5vw, 1.4rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff 0%, var(--sakura) 50%, var(--neon-red) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.04em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-icon {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, rgba(255,45,120,0.3), rgba(124,77,255,0.3));
+            border: 1px solid rgba(255,107,157,0.4);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .new-topic-btn {
+            background: rgba(255, 45, 120, 0.15);
+            border: 1px solid rgba(255, 45, 120, 0.4);
+            color: var(--sakura);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            cursor: url('/static/cursors/anime-pointer.png'), pointer !important;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .new-topic-btn:hover {
+            background: rgba(255,45,120,0.3);
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 16px rgba(255,45,120,0.35);
+            transform: translateY(-1px);
+        }
+
+        /* ── CHAT CONTAINER ─────────────────────────────── */
+        .tool-page-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,107,157,0.3) transparent;
+        }
+        .tool-page-content::-webkit-scrollbar { width: 5px; }
+        .tool-page-content::-webkit-scrollbar-thumb { background: rgba(255,107,157,0.3); border-radius: 10px; }
+
+        /* ── WELCOME MESSAGE ────────────────────────────── */
+        .welcome-card {
+            background: linear-gradient(135deg, rgba(255,45,120,0.12), rgba(124,77,255,0.08));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,107,157,0.3);
+            border-radius: 20px;
+            padding: 20px 24px;
+            max-width: 85%;
+            align-self: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--neon-pink), var(--indigo), var(--sakura));
+        }
+        .welcome-card-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--sakura);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .welcome-card-body {
+            color: rgba(240,220,240,0.85);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* ── CHAT BUBBLES ───────────────────────────────── */
+        .user-bubble {
+            background: linear-gradient(135deg, rgba(255,45,120,0.2), rgba(124,77,255,0.15));
+            border: 1px solid rgba(255,45,120,0.35);
+            border-radius: 18px 18px 4px 18px;
+            padding: 14px 18px;
+            max-width: 80%;
+            align-self: flex-end;
+            color: #fff;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            backdrop-filter: blur(10px);
+        }
+
+        .ai-bubble {
+            background: rgba(11,15,25,0.65);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,107,157,0.18);
+            border-radius: 18px 18px 18px 4px;
+            padding: 14px 18px;
+            max-width: 80%;
+            align-self: flex-start;
+            color: rgba(240,230,240,0.9);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* ── INPUT BAR ──────────────────────────────────── */
+        .input-bar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            padding: 16px 20px;
+            flex-shrink: 0;
+        }
+        .input-inner {
+            max-width: 860px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .mic-btn {
+            width: 46px; height: 46px;
+            border-radius: 50%;
+            background: rgba(255,107,157,0.1);
+            border: 1px solid rgba(255,107,157,0.3);
+            color: rgba(240,230,240,0.6);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+            cursor: url('/static/cursors/anime-pointer.png'), pointer !important;
+        }
+        .mic-btn:hover { background: rgba(255,45,120,0.2); border-color: var(--neon-pink); color: var(--sakura); }
+        .mic-btn.active { background: rgba(255,45,120,0.3); color: var(--neon-pink); animation: pulse-ring 1.2s infinite; }
+
+        @keyframes pulse-ring {
+            0%   { box-shadow: 0 0 0 0 rgba(255,45,120,0.5); }
+            70%  { box-shadow: 0 0 0 10px rgba(255,45,120,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,45,120,0); }
+        }
+
+        #chat-input {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,107,157,0.25);
+            border-radius: 14px;
+            padding: 12px 18px;
+            color: #f0e6f0;
+            font-size: 0.9rem;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        #chat-input::placeholder { color: rgba(240,230,240,0.35); }
+        #chat-input:focus {
+            border-color: rgba(255,45,120,0.55);
+            box-shadow: 0 0 0 3px rgba(255,45,120,0.12), 0 0 20px rgba(255,45,120,0.08);
+        }
+
+        .send-btn {
+            width: 46px; height: 46px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--neon-pink), var(--indigo));
+            color: #fff;
+            border: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+            cursor: url('/static/cursors/anime-pointer.png'), pointer !important;
+            box-shadow: 0 4px 15px rgba(255,45,120,0.35);
+        }
+        .send-btn:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 6px 20px rgba(255,45,120,0.5); }
+        .send-btn:active { transform: scale(0.97); }
+
+        /* ── SCROLLBAR STYLING FOR SIDEBAR ─────────────── */
+        #tool-history-list { overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,107,157,0.2) transparent; }
+
+        /* ── SECTION HEADERS ────────────────────────────── */
+        .section-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,107,157,0.5);
+            margin-bottom: 8px;
+        }
+
+        /* ── DECORATIVE KANJI ────────────────────────────── */
+        .kanji-watermark {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            font-size: 6rem;
+            color: rgba(255,107,157,0.04);
+            font-family: 'Noto Sans JP', sans-serif;
+            font-weight: 900;
+            pointer-events: none;
+            z-index: 5;
+            user-select: none;
+            line-height: 1;
+        }
+
+        /* ── MOBILE RESPONSIVE ───────────────────────────── */
+        @media (max-width: 767px) {
+            .tools-mobile-topbar { display: flex !important; }
+            .tools-mobile-spacer { display: block; height: 56px; }
+            .tool-page-content { padding: 16px; }
+            .input-bar { padding: 12px 14px; }
+            .page-header { padding: 12px 16px; }
+        }
+
+        /* ── MARKDOWN STYLES ─────────────────────────────── */
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 { color: var(--sakura); font-family: 'Cinzel', serif; margin: 8px 0 4px; }
+        .markdown-body p { margin: 4px 0; }
+        .markdown-body code { background: rgba(255,45,120,0.12); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; }
+        .markdown-body strong { color: #ffb7d5; }
+        .markdown-body ul { padding-left: 20px; }
+        .markdown-body li { margin: 3px 0; }
+    </style>
 </head>
-<body class="bg-gray-900 text-white flex h-screen overflow-hidden">
-    <!-- Mobile top bar -->
-    <div class="tools-mobile-topbar hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-gray-900/95 backdrop-blur-md border-b border-gray-700">
+<body>
+    <!-- Floating Sakura Petals -->
+    <div class="petal" style="left:5%;  animation-duration:8s;  animation-delay:0s;   width:6px; height:8px;"></div>
+    <div class="petal" style="left:15%; animation-duration:11s; animation-delay:2s;"></div>
+    <div class="petal" style="left:28%; animation-duration:9s;  animation-delay:4s;   width:10px; height:12px;"></div>
+    <div class="petal" style="left:42%; animation-duration:13s; animation-delay:1s;"></div>
+    <div class="petal" style="left:57%; animation-duration:8s;  animation-delay:6s;   width:5px; height:7px;"></div>
+    <div class="petal" style="left:70%; animation-duration:12s; animation-delay:3s;"></div>
+    <div class="petal" style="left:82%; animation-duration:10s; animation-delay:5s;"></div>
+    <div class="petal" style="left:93%; animation-duration:9s;  animation-delay:7s;   width:7px; height:9px;"></div>
+
+    <!-- Kanji Watermark -->
+    <div class="kanji-watermark">漫画</div>
+
+    <!-- Mobile Top Bar -->
+    <div class="tools-mobile-topbar hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3">
         <button onclick="document.getElementById('tools-sidebar').classList.toggle('mobile-open')" class="text-white text-xl"><i class="fas fa-bars"></i></button>
-        <span class="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">Ethrix</span>
-        <a href="/tools" class="text-gray-400 hover:text-white text-sm"><i class="fas fa-flask"></i> Tools</a>
+        <span class="sidebar-brand" style="font-size:0.95rem;">⛩️ Ethrix</span>
+        <a href="/tools" class="new-topic-btn" style="padding:6px 12px; font-size:0.75rem;"><i class="fas fa-flask"></i> Tools</a>
     </div>
     <div class="tools-mobile-spacer h-14 md:hidden"></div>
-    <nav id="tools-sidebar" class="tools-nav-sidebar w-64 bg-gray-800 border-r border-gray-700 flex flex-col hidden md:flex z-20">
-        <div class="p-4 shrink-0">
-            <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-red-600 mb-6 flex items-center gap-2"><i class="fas fa-fire-flame-curved"></i> Anime Lore</h2>
-            <div class="space-y-2"><a href="/tools" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 text-gray-300"><i class="fas fa-arrow-left w-5"></i> Back to Tools</a></div>
+
+    <!-- Sidebar -->
+    <nav id="tools-sidebar" class="tools-nav-sidebar">
+        <div style="padding: 20px 16px; flex-shrink: 0; border-bottom: 1px solid var(--glass-border);">
+            <div class="sidebar-brand" style="margin-bottom: 20px;">
+                <div class="sidebar-brand-icon">⛩️</div>
+                Anime Lore
+            </div>
+            <a href="/tools" class="nav-link">
+                <i class="fas fa-arrow-left" style="width:16px; font-size:13px;"></i>
+                Back to Tools
+            </a>
         </div>
-        
-        <div class="flex-1 overflow-y-auto px-4 border-t border-gray-700 pt-4">
-            <h3 class="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider">History</h3>
-            <div id="tool-history-list" class="space-y-2"></div>
+
+        <div style="flex:1; overflow-y:auto; padding: 16px;">
+            <div class="section-label">History</div>
+            <div id="tool-history-list" style="display:flex; flex-direction:column; gap:4px;"></div>
+        </div>
+
+        <!-- Sidebar Footer Decoration -->
+        <div style="padding: 12px 16px; border-top: 1px solid var(--glass-border); text-align:center;">
+            <div style="font-size:1.6rem; opacity:0.4; letter-spacing:0.2em;">⚔️ 🌸 ⚔️</div>
         </div>
     </nav>
 
-    <main class="tools-main-content flex-1 flex flex-col h-full bg-gray-900 relative">
-        <header class="p-5 border-b border-gray-800 bg-gray-900/80 flex justify-between">
-            <h1 class="text-2xl font-bold">Anime Otaku Hub ⛩️</h1>
-            <button onclick="window.location.reload()" class="text-gray-400 hover:text-white"><i class="fas fa-plus"></i> New Topic</button>
+    <!-- Main Content -->
+    <main class="tools-main-content">
+        <header class="page-header">
+            <div class="header-title">
+                <div class="header-icon">⛩️</div>
+                Anime Otaku Hub
+            </div>
+            <button onclick="window.location.reload()" class="new-topic-btn">
+                <i class="fas fa-plus"></i> New Topic
+            </button>
         </header>
 
-        <div class="flex-1 overflow-y-auto tool-page-content p-4 md:p-6 flex flex-col gap-4" id="chat-container">
-            <div class="bg-rose-900/40 p-5 rounded-2xl max-w-[85%] border border-rose-500/30 self-start text-rose-100" id="welcome-msg">
-                <h3 class="font-bold text-lg mb-2 text-rose-300"><i class="fas fa-dragon"></i> Ready to dive into the Anime World?</h3>
-                <p>Kya bolte ho, aaj Ayanokoji jaise mastermind strategies ki baat karein ya Solo Leveling ke epic action scenes discuss karein? Likh kar ya mic se batao! 🎙️ ⚔️</p>
+        <div class="tool-page-content" id="chat-container">
+            <div class="welcome-card" id="welcome-msg">
+                <div class="welcome-card-title">
+                    <i class="fas fa-dragon"></i>
+                    Ready to dive into the Anime World?
+                </div>
+                <div class="welcome-card-body">
+                    Kya bolte ho, aaj Ayanokoji jaise mastermind strategies ki baat karein ya Solo Leveling ke epic action scenes discuss karein? Likh kar ya mic se batao! 🎙️ ⚔️
+                </div>
             </div>
         </div>
 
-        <div class="p-5 bg-gray-800 border-t border-gray-700">
-            <div class="max-w-4xl mx-auto flex gap-3 items-center">
-                <button id="mic-btn" onclick="startVoiceCommand('chat-input')" class="w-12 h-12 rounded-full bg-gray-700 border border-gray-600 text-gray-400 hover:text-rose-400 transition flex items-center justify-center text-xl shrink-0"><i class="fas fa-microphone"></i></button>
-                <input type="text" id="chat-input" class="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-rose-500" placeholder="Talk about an anime, character, or ask for a story explanation...">
-                <button onclick="sendMessage()" class="bg-gradient-to-r from-rose-500 to-red-600 px-6 py-4 rounded-xl font-bold transition"><i class="fas fa-paper-plane"></i></button>
+        <div class="input-bar">
+            <div class="input-inner">
+                <button id="mic-btn" onclick="startVoiceCommand('chat-input')" class="mic-btn">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <input type="text" id="chat-input"
+                    placeholder="Talk about an anime, character, or ask for a story explanation..."
+                    onkeydown="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" class="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </main>
@@ -60,10 +514,10 @@
             const recognition = new webkitSpeechRecognition();
             recognition.lang = 'hi-IN';
             const micBtn = document.getElementById('mic-btn');
-            micBtn.classList.add('text-rose-400', 'animate-pulse');
-            recognition.onresult = (e) => { document.getElementById(inputId).value += " " + e.results[0][0].transcript; micBtn.classList.remove('text-rose-400', 'animate-pulse'); };
-            recognition.onerror = () => micBtn.classList.remove('text-rose-400', 'animate-pulse');
-            recognition.onend = () => micBtn.classList.remove('text-rose-400', 'animate-pulse');
+            micBtn.classList.add('active');
+            recognition.onresult = (e) => { document.getElementById(inputId).value += " " + e.results[0][0].transcript; micBtn.classList.remove('active'); };
+            recognition.onerror = () => micBtn.classList.remove('active');
+            recognition.onend = () => micBtn.classList.remove('active');
             recognition.start();
         }
 
@@ -74,7 +528,7 @@
                 const list = document.getElementById('tool-history-list');
                 list.innerHTML = '';
                 data.history.filter(c => c.title.toLowerCase().includes('anime')).forEach(chat => {
-                    list.innerHTML += `<div onclick="loadOldSession('${chat.id}')" class="p-2 hover:bg-gray-700 rounded-lg cursor-pointer text-sm text-gray-300 truncate transition"><i class="fas fa-history text-gray-500 mr-2"></i> ${chat.title.replace('Tool: Anime Talker - ', '')}</div>`;
+                    list.innerHTML += `<div onclick="loadOldSession('${chat.id}')" class="history-item"><i class="fas fa-history" style="margin-right:6px; opacity:0.5;"></i>${chat.title.replace('Tool: Anime Talker - ', '')}</div>`;
                 });
             } catch(e) {}
         }
@@ -82,16 +536,16 @@
         async function loadOldSession(id) {
             sessionId = id;
             const container = document.getElementById('chat-container');
-            container.innerHTML = '<div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl"></i> Loading...</div>';
+            container.innerHTML = '<div style="text-align:center; color:rgba(255,107,157,0.6); margin-top:40px;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i></div>';
             try {
                 const res = await fetch(`/api/chat/${id}`);
                 const data = await res.json();
                 container.innerHTML = '';
                 data.messages.forEach(msg => {
                     if (msg.role === 'user') {
-                        container.innerHTML += `<div class="bg-red-600/20 p-4 rounded-xl max-w-[80%] border border-red-500/30 self-end text-white">${msg.content}</div>`;
+                        container.innerHTML += `<div class="user-bubble">${msg.content}</div>`;
                     } else {
-                        container.innerHTML += `<div class="bg-gray-800 p-4 rounded-xl max-w-[80%] border border-gray-700 self-start text-gray-200 markdown-body">${marked.parse(msg.content)}</div>`;
+                        container.innerHTML += `<div class="ai-bubble markdown-body">${marked.parse(msg.content)}</div>`;
                     }
                 });
                 container.scrollTop = container.scrollHeight;
@@ -103,24 +557,44 @@
             const msg = input.value.trim();
             if(!msg) return;
             const container = document.getElementById('chat-container');
-            
+
             let welcome = document.getElementById('welcome-msg');
             if(welcome && sessionId.includes(Date.now().toString().substring(0,5))) { welcome.style.display = 'none'; }
 
-            container.innerHTML += `<div class="bg-red-600/20 p-4 rounded-xl max-w-[80%] border border-red-500/30 self-end text-white">${msg}</div>`;
+            container.innerHTML += `<div class="user-bubble">${msg}</div>`;
             input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            // Typing indicator
+            const typingId = 'typing_' + Date.now();
+            container.innerHTML += `<div class="ai-bubble" id="${typingId}" style="display:flex;gap:6px;align-items:center;">
+                <span style="width:7px;height:7px;border-radius:50%;background:var(--sakura);animation:dotPulse 1.2s infinite 0s;display:inline-block;"></span>
+                <span style="width:7px;height:7px;border-radius:50%;background:var(--sakura);animation:dotPulse 1.2s infinite 0.2s;display:inline-block;"></span>
+                <span style="width:7px;height:7px;border-radius:50%;background:var(--sakura);animation:dotPulse 1.2s infinite 0.4s;display:inline-block;"></span>
+            </div>`;
             container.scrollTop = container.scrollHeight;
 
             try {
                 const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, session_id: sessionId, mode: 'anime_talker' }) });
                 const data = await res.json();
+                const typingEl = document.getElementById(typingId);
+                if(typingEl) typingEl.remove();
                 if(data.reply) {
-                    container.innerHTML += `<div class="bg-gray-800 p-4 rounded-xl max-w-[80%] border border-gray-700 self-start text-gray-200 markdown-body">${marked.parse(data.reply)}</div>`;
+                    container.innerHTML += `<div class="ai-bubble markdown-body">${marked.parse(data.reply)}</div>`;
                     container.scrollTop = container.scrollHeight;
                     loadToolHistory();
                 }
-            } catch(e) {}
+            } catch(e) {
+                const typingEl = document.getElementById(typingId);
+                if(typingEl) typingEl.remove();
+            }
         }
     </script>
+    <style>
+        @keyframes dotPulse {
+            0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+            40% { transform: scale(1.1); opacity: 1; }
+        }
+    </style>
 </body>
 </html>

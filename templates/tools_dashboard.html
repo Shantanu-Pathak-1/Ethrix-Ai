@@ -8,14 +8,46 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .tool-card { transition: all 0.3s ease; }
+        /* ── CUSTOM CURSORS ─────────────────────────────── */
+        *, *::before, *::after {
+            cursor: url('/static/cursors/tools-cursor.gif'), auto !important;
+        }
+        a, button, [role="button"], input, select, textarea,
+        label, .tool-card, .clickable {
+            cursor: url('/static/cursors/tools-pointer.png'), pointer !important;
+        }
+
+        /* ── TOOL CARD HOVER EFFECTS ────────────────────── */
+        .tool-card {
+            transition: all 0.3s ease;
+        }
         .tool-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.4);
-            border-color: #a855f7;
+            box-shadow: 0 10px 30px -5px rgba(0, 229, 255, 0.25);
+            border-color: rgba(0, 229, 255, 0.5) !important;
         }
         .tool-icon-wrapper { transition: all 0.3s ease; }
         .tool-card:hover .tool-icon-wrapper { transform: scale(1.1) rotate(5deg); }
+
+        /* ── SIDEBAR ACTIVE LINK ───────────────────────── */
+        .sidebar-active-link {
+            background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(30,144,255,0.1));
+            border: 1px solid rgba(0,229,255,0.3);
+            color: #00E5FF !important;
+        }
+
+        /* ── ARCADE CARD HOVER ──────────────────────────── */
+        .arcade-card {
+            transition: all 0.3s ease;
+        }
+        .arcade-card:hover {
+            transform: translateY(-3px);
+        }
+
+        /* ── CUSTOM SCROLLBAR ───────────────────────────── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1E90FF, #00E5FF); border-radius: 10px; }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex h-screen overflow-hidden">
@@ -23,20 +55,24 @@
     <!-- Mobile top bar -->
     <div class="tools-mobile-topbar hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-gray-900/95 backdrop-blur-md border-b border-gray-700">
         <button onclick="document.getElementById('tools-sidebar').classList.toggle('mobile-open')" class="text-white text-xl"><i class="fas fa-bars"></i></button>
-        <span class="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Ethrix</span>
+        <span class="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Ethrix</span>
         <a href="/" class="text-gray-400 hover:text-white text-sm"><i class="fas fa-home"></i></a>
     </div>
     <!-- Mobile topbar spacer -->
     <div class="tools-mobile-spacer h-14 md:hidden"></div>
+
     <nav id="tools-sidebar" class="tools-nav-sidebar w-64 bg-gray-800 border-r border-gray-700 flex flex-col justify-between hidden md:flex z-20">
         <div class="p-4">
-            <div class="flex justify-between items-center mb-8 mt-2"><h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 text-center">Ethrix</h2><button class="md:hidden text-gray-400 hover:text-white" onclick="document.getElementById('tools-sidebar').classList.remove('mobile-open')"><i class="fas fa-times"></i></button></div>
+            <div class="flex justify-between items-center mb-8 mt-2">
+                <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 text-center">Ethrix</h2>
+                <button class="md:hidden text-gray-400 hover:text-white" onclick="document.getElementById('tools-sidebar').classList.remove('mobile-open')"><i class="fas fa-times"></i></button>
+            </div>
             <div class="space-y-2">
                 <a href="/" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 transition text-gray-300 hover:text-white">
                     <i class="fas fa-home w-5 text-center"></i> 
                     <span class="font-medium">Main Chat</span>
                 </a>
-                <a href="/tools" class="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-purple-500/30 text-purple-400 transition shadow-inner">
+                <a href="/tools" class="flex items-center gap-3 p-3 rounded-xl sidebar-active-link transition shadow-inner">
                     <i class="fas fa-flask w-5 text-center"></i> 
                     <span class="font-medium">Tools Lab</span>
                 </a>
@@ -44,7 +80,7 @@
         </div>
         <div class="p-4 border-t border-gray-700 space-y-2">
             <div class="flex items-center gap-3 p-3 mt-2 rounded-xl bg-gray-700/50 border border-gray-600">
-                <img src="{{ user.picture if user.picture else url_for('static', filename='images/logo.png') }}" alt="Profile" class="w-9 h-9 rounded-full object-cover border-2 border-purple-500">
+                <img src="{{ user.picture if user.picture else url_for('static', filename='images/logo.png') }}" alt="Profile" class="w-9 h-9 rounded-full object-cover border-2 border-cyan-500">
                 <span class="font-medium truncate">{{ user.name }}</span>
             </div>
         </div>
@@ -56,6 +92,7 @@
             <p class="text-gray-400 text-lg">Aaj kya create karein? Apne favorite AI tool ko select karo.</p>
         </header>
 
+        <!-- Custom Tools Section -->
         <div class="mb-12 max-w-7xl mx-auto">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
@@ -69,13 +106,15 @@
                 <p class="text-gray-500 text-sm italic col-span-full">Loading your custom tools...</p>
             </div>
         </div>
+
+        <!-- Standard Tools Section -->
         <div class="flex items-center gap-3 mb-6 max-w-7xl mx-auto mt-8">
-            <h2 class="text-2xl font-bold text-white"><i class="fas fa-layer-group text-purple-500 mr-2"></i> Standard Tools</h2>
+            <h2 class="text-2xl font-bold text-white"><i class="fas fa-layer-group text-cyan-500 mr-2"></i> Standard Tools</h2>
         </div>
         
         <div class="tools-grid-responsive grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto pb-10">
             
-            <a href="/tools/flashcards" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/flashcards" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-purple-500/30">
                     <i class="fas fa-clone text-white"></i>
                 </div>
@@ -84,7 +123,7 @@
 Generate AI-powered flashcards in seconds.</p>
             </a>
 
-            <a href="/tools/image_gen" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/image_gen" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-pink-500/30">
                     <i class="fas fa-image text-white"></i>
                 </div>
@@ -93,7 +132,7 @@ Generate AI-powered flashcards in seconds.</p>
 Create stunning, high-quality images in seconds.</p>
             </a>
 
-            <a href="/tools/resume_builder" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/resume_builder" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-blue-500/30">
                     <i class="fas fa-file-alt text-white"></i>
                 </div>
@@ -102,7 +141,7 @@ Create stunning, high-quality images in seconds.</p>
 Build an ATS-friendly resume that lands your dream job.</p>
             </a>
 
-            <a href="/tools/youtube_summarizer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/youtube_summarizer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-red-500/30">
                     <i class="fab fa-youtube text-white"></i>
                 </div>
@@ -111,7 +150,7 @@ Build an ATS-friendly resume that lands your dream job.</p>
 Turn long YT tutorials into quick, easy summaries.</p>
             </a>
 
-            <a href="/tools/github_review" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/github_review" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-gray-500/30">
                     <i class="fab fa-github text-white"></i>
                 </div>
@@ -120,7 +159,7 @@ Turn long YT tutorials into quick, easy summaries.</p>
 Get AI-powered insights to improve your GitHub.</p>
             </a>
 
-            <a href="/tools/smart_todo" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/smart_todo" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-green-400 to-teal-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-green-500/30">
                     <i class="fas fa-tasks text-white"></i>
                 </div>
@@ -129,7 +168,7 @@ Get AI-powered insights to improve your GitHub.</p>
 Transform messy thoughts into organized task lists.</p>
             </a>
 
-            <a href="/tools/prompt_writer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/prompt_writer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-700 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-purple-500/30">
                     <i class="fas fa-pen-fancy text-white"></i>
                 </div>
@@ -138,7 +177,7 @@ Transform messy thoughts into organized task lists.</p>
 Convert simple thoughts into professional-ready prompts.</p>
             </a>
 
-            <a href="/tools/qr_generator" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/qr_generator" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-gray-100 to-gray-400 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-white/30">
                     <i class="fas fa-qrcode text-black"></i>
                 </div>
@@ -147,16 +186,16 @@ Convert simple thoughts into professional-ready prompts.</p>
 Generate custom QR codes for links and text in seconds.</p>
             </a>
 
-            <a href="/tools/resume_analyzer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/resume_analyzer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-400 to-green-700 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-green-500/30">
                     <i class="fas fa-microscope text-white"></i>
                 </div>
                 <h3 class="text-xl font-bold mb-2 text-gray-100">📊HireScore</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Know your resume’s true impact! 📄📈
+                <p class="text-gray-400 text-sm leading-relaxed">Know your resume's true impact! 📄📈
 Check your ATS score and get instant improvements.</p>
             </a>
 
-            <a href="/tools/currency_converter" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/currency_converter" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-yellow-500/30">
                     <i class="fas fa-coins text-white"></i>
                 </div>
@@ -165,7 +204,7 @@ Check your ATS score and get instant improvements.</p>
 Get live exchange rates and instant currency conversions.</p>
             </a>
 
-            <a href="/tools/password_generator" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/password_generator" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-slate-600 to-slate-900 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-slate-500/30">
                     <i class="fas fa-key text-white"></i>
                 </div>
@@ -174,7 +213,7 @@ Get live exchange rates and instant currency conversions.</p>
 Generate ultra-strong passwords to protect your accounts.</p>
             </a>
 
-            <a href="/tools/grammar_fixer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/grammar_fixer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-pink-500/30">
                     <i class="fas fa-spell-check text-white"></i>
                 </div>
@@ -183,7 +222,7 @@ Generate ultra-strong passwords to protect your accounts.</p>
 Make your English professional and error-free.</p>
             </a>
 
-            <a href="/tools/interview_questions" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/interview_questions" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-orange-500/30">
                     <i class="fas fa-user-tie text-white"></i>
                 </div>
@@ -192,7 +231,7 @@ Make your English professional and error-free.</p>
 Prepare for the toughest questions with smart guidance.</p>
             </a>
 
-            <a href="/tools/mock_interviewer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/mock_interviewer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-cyan-500/30">
                     <i class="fas fa-microphone text-white"></i>
                 </div>
@@ -201,7 +240,7 @@ Prepare for the toughest questions with smart guidance.</p>
 Do live mock interviews and boost your confidence.</p>
             </a>
 
-            <a href="/tools/math_solver" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/math_solver" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-rose-400 to-red-700 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-red-500/30">
                     <i class="fas fa-calculator text-white"></i>
                 </div>
@@ -210,16 +249,16 @@ Do live mock interviews and boost your confidence.</p>
 Break down complex problems with AI guidance.</p>
             </a>
 
-            <a href="/tools/sing_with_me" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/sing_with_me" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-700 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-fuchsia-500/30">
                     <i class="fas fa-music text-white"></i>
                 </div>
                 <h3 class="text-xl font-bold mb-2 text-gray-100">🎵VibeRoom</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Study break? Let’s vibe! 🎶😄
+                <p class="text-gray-400 text-sm leading-relaxed">Study break? Let's vibe! 🎶😄
 Sing along and refresh your mind together.</p>
             </a>
 
-            <a href="/tools/cold_email" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/cold_email" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-cyan-500/30">
                     <i class="fas fa-envelope-open-text text-white"></i>
                 </div>
@@ -228,7 +267,7 @@ Sing along and refresh your mind together.</p>
 Craft high-converting emails for high-paying jobs.</p>
             </a>
 
-            <a href="/tools/fitness_coach" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/fitness_coach" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-orange-500/30">
                     <i class="fas fa-dumbbell text-white"></i>
                 </div>
@@ -237,7 +276,7 @@ Craft high-converting emails for high-paying jobs.</p>
 Get personalized workouts, boxing plans, and diet guidance.</p>
             </a>
 
-            <a href="/tools/feynman_explainer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/feynman_explainer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-blue-500/30">
                     <i class="fas fa-brain text-white"></i>
                 </div>
@@ -246,7 +285,7 @@ Get personalized workouts, boxing plans, and diet guidance.</p>
 Understand AIML and college topics in simple language.</p>
             </a>
 
-            <a href="/tools/code_debugger" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/code_debugger" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-gray-600 to-green-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-green-500/30">
                     <i class="fas fa-bug text-white"></i>
                 </div>
@@ -255,7 +294,7 @@ Understand AIML and college topics in simple language.</p>
 Fix errors and optimize advanced projects effortlessly.</p>
             </a>
 
-            <a href="/tools/movie_talker" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/movie_talker" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-purple-500/30">
                     <i class="fas fa-film text-white"></i>
                 </div>
@@ -264,19 +303,20 @@ Fix errors and optimize advanced projects effortlessly.</p>
 Hear movie storytelling or dive into fun discussions.</p>
             </a>
 
-            <a href="/tools/anime_talker" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 cursor-pointer group">
+            <a href="/tools/anime_talker" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
                 <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-rose-500 to-red-700 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-rose-500/30">
                     <i class="fas fa-fire-flame-curved text-white"></i>
                 </div>
                 <h3 class="text-xl font-bold mb-2 text-gray-100">🐉🎐Akiro Anime Hub </h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Let’s talk fandom! 🎎🔥
+                <p class="text-gray-400 text-sm leading-relaxed">Let's talk fandom! 🎎🔥
 Enjoy fun conversations about your favorite anime and characters.</p>
             </a>
         </div>
 
+        <!-- Arcade Zone Section -->
         <div class="mt-8 mb-8 max-w-7xl mx-auto">
             <div class="flex items-center gap-3 mb-6">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-pink-500/20">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
                     <i class="fas fa-gamepad text-xl"></i>
                 </div>
                 <div>
@@ -287,7 +327,7 @@ Enjoy fun conversations about your favorite anime and characters.</p>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 
-                <a href="/arcade/tic-tac-toe" class="group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-pink-500/40 transition duration-300">
+                <a href="/arcade/tic-tac-toe" class="arcade-card group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-pink-500/40 transition duration-300">
                     <div class="flex items-center gap-4 mb-3">
                         <div class="w-12 h-12 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-2xl group-hover:scale-110 transition"><i class="fas fa-times"></i></div>
                         <h3 class="text-lg font-bold text-gray-200 group-hover:text-pink-400 transition">Tic-Tac-Toe</h3>
@@ -295,7 +335,7 @@ Enjoy fun conversations about your favorite anime and characters.</p>
                     <p class="text-sm text-gray-400">Can you beat the Unbeatable AI in Hard mode?</p>
                 </a>
                 
-                <a href="/arcade/code-le" class="group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-green-500/40 transition duration-300">
+                <a href="/arcade/code-le" class="arcade-card group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-green-500/40 transition duration-300">
                     <div class="flex items-center gap-4 mb-3">
                         <div class="w-12 h-12 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center text-2xl group-hover:scale-110 transition"><i class="fas fa-terminal"></i></div>
                         <h3 class="text-lg font-bold text-gray-200 group-hover:text-green-400 transition">Code-le</h3>
@@ -303,7 +343,7 @@ Enjoy fun conversations about your favorite anime and characters.</p>
                     <p class="text-sm text-gray-400">Guess the 5-letter Tech Word. You have 6 attempts!</p>
                 </a>
 
-                <a href="/arcade/anime-match" class="group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-purple-500/40 transition duration-300">
+                <a href="/arcade/anime-match" class="arcade-card group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-purple-500/40 transition duration-300">
                     <div class="flex items-center gap-4 mb-3">
                         <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-2xl group-hover:scale-110 transition"><i class="fas fa-magic"></i></div>
                         <h3 class="text-lg font-bold text-gray-200 group-hover:text-purple-400 transition">Anime Match</h3>
@@ -311,15 +351,15 @@ Enjoy fun conversations about your favorite anime and characters.</p>
                     <p class="text-sm text-gray-400">Memory card game with Ayanokōji, Lucifer & more.</p>
                 </a>
 
-                <a href="/arcade/flappy-bug" class="group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-blue-500/40 transition duration-300">
+                <a href="/arcade/flappy-bug" class="arcade-card group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-cyan-500/40 transition duration-300">
                     <div class="flex items-center gap-4 mb-3">
-                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-2xl group-hover:scale-110 transition"><i class="fas fa-bug"></i></div>
-                        <h3 class="text-lg font-bold text-gray-200 group-hover:text-blue-400 transition">Flappy Bug</h3>
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-2xl group-hover:scale-110 transition"><i class="fas fa-bug"></i></div>
+                        <h3 class="text-lg font-bold text-gray-200 group-hover:text-cyan-400 transition">Flappy Bug</h3>
                     </div>
                     <p class="text-sm text-gray-400">Dodge the 404 Errors and save the Developer Bug!</p>
                 </a>
 
-                <a href="/arcade/ludo" class="group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-yellow-500/40 transition duration-300">
+                <a href="/arcade/ludo" class="arcade-card group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-yellow-500/40 transition duration-300">
                     <div class="flex items-center gap-4 mb-3">
                         <div class="w-12 h-12 rounded-xl bg-yellow-500/10 text-yellow-400 flex items-center justify-center text-2xl group-hover:scale-110 transition"><i class="fas fa-dice"></i></div>
                         <h3 class="text-lg font-bold text-gray-200 group-hover:text-yellow-400 transition">Ludo Lite</h3>
@@ -330,31 +370,33 @@ Enjoy fun conversations about your favorite anime and characters.</p>
         </div>
     </main>
 
+    <!-- Custom Tool Modal -->
     <div id="customToolModal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-white"><i class="fas fa-magic text-pink-500"></i> Create AI Tool</h3>
+                <h3 class="text-xl font-bold text-white"><i class="fas fa-magic text-cyan-500"></i> Create AI Tool</h3>
                 <button onclick="document.getElementById('customToolModal').classList.add('hidden')" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
             <div class="space-y-4">
                 <div>
                     <label class="text-sm text-gray-400 mb-1 block">Tool Name</label>
-                    <input type="text" id="ct-name" placeholder="e.g. Legal Advisor" class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 outline-none border border-gray-700 focus:border-pink-500">
+                    <input type="text" id="ct-name" placeholder="e.g. Legal Advisor" class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 outline-none border border-gray-700 focus:border-cyan-500">
                 </div>
                 <div>
                     <label class="text-sm text-gray-400 mb-1 block">Short Description</label>
-                    <input type="text" id="ct-desc" placeholder="e.g. Helps with law questions" class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 outline-none border border-gray-700 focus:border-pink-500">
+                    <input type="text" id="ct-desc" placeholder="e.g. Helps with law questions" class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 outline-none border border-gray-700 focus:border-cyan-500">
                 </div>
                 <div>
                     <label class="text-sm text-gray-400 mb-1 block">AI Instructions (Prompt)</label>
-                    <textarea id="ct-inst" rows="4" placeholder="Act as an expert lawyer. Give legal advice strictly based on Indian Law..." class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 outline-none border border-gray-700 focus:border-pink-500"></textarea>
+                    <textarea id="ct-inst" rows="4" placeholder="Act as an expert lawyer. Give legal advice strictly based on Indian Law..." class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 outline-none border border-gray-700 focus:border-cyan-500"></textarea>
                 </div>
-                <button onclick="saveCustomTool()" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold py-3 rounded-lg transition shadow-lg mt-2">
+                <button onclick="saveCustomTool()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 rounded-lg transition shadow-lg mt-2">
                     Create My Tool
                 </button>
             </div>
         </div>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', loadCustomTools);
 
@@ -372,9 +414,9 @@ Enjoy fun conversations about your favorite anime and characters.</p>
 
                 data.tools.forEach(tool => {
                     grid.innerHTML += `
-                        <div onclick="openCustomToolChat('${tool.id}', '${tool.name}')" class="bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 hover:border-yellow-500 hover:-translate-y-1 transition cursor-pointer shadow-lg group">
+                        <div onclick="openCustomToolChat('${tool.id}', '${tool.name}')" class="bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 hover:border-cyan-500 hover:-translate-y-1 transition tool-card shadow-lg group">
                             <div class="w-14 h-14 rounded-xl bg-gray-900 flex items-center justify-center mb-4 group-hover:scale-110 transition shadow-inner">
-                                <i class="${tool.icon || 'fas fa-wrench'} text-2xl text-yellow-400"></i>
+                                <i class="${tool.icon || 'fas fa-wrench'} text-2xl text-cyan-400"></i>
                             </div>
                             <h3 class="text-xl font-bold text-white mb-2">${tool.name}</h3>
                             <p class="text-sm text-gray-400 line-clamp-2 leading-relaxed">${tool.description}</p>
@@ -403,7 +445,7 @@ Enjoy fun conversations about your favorite anime and characters.</p>
                     name: name, 
                     description: desc, 
                     instruction: inst,
-                    icon: "fas fa-bolt" // Default custom icon
+                    icon: "fas fa-bolt"
                 })
             });
 

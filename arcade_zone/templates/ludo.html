@@ -4,479 +4,304 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Neon Ludo Battle • Arcade</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body { 
-            background-color: #050810; 
-            color: white; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            height: 100vh; margin: 0; overflow: hidden; 
-            font-family: 'Orbitron', sans-serif; 
-            touch-action: none;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(239, 68, 68, 0.05), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.05), transparent 25%);
+        :root {
+            --bg:        #050810;
+            --red:       #ef4444;
+            --blue:      #3b82f6;
+            --gold:      #facc15;
+            --green:     #10b981;
+            --yellow:    #f59e0b;
+            --panel:     rgba(10,14,28,0.85);
+            --border:    rgba(255,255,255,0.07);
         }
 
+        html, body { height: 100dvh; overflow: hidden; touch-action: none; }
+
+        body {
+            background: var(--bg)
+                radial-gradient(ellipse 70% 50% at 20% 50%, rgba(239,68,68,0.06) 0%, transparent 55%),
+                radial-gradient(ellipse 70% 50% at 80% 50%, rgba(59,130,246,0.06) 0%, transparent 55%);
+            color: white; font-family: 'Orbitron', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        body::before {
+            content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+            background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        body::after {
+            content:''; position:fixed; inset:0; pointer-events:none; z-index:1;
+            background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);
+        }
+
+        .back-btn {
+            position:fixed; top:14px; left:14px; z-index:200;
+            background:rgba(5,8,16,.88); backdrop-filter:blur(12px);
+            border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,.65);
+            padding:9px 16px; border-radius:30px; text-decoration:none;
+            font-size:clamp(.66rem,1.7vw,.78rem); font-weight:700; letter-spacing:.06em;
+            display:flex; align-items:center; gap:7px;
+            font-family:'Orbitron',monospace; transition:all .25s;
+        }
+        .back-btn:hover { border-color:rgba(255,255,255,.3); color:white; transform:translateX(-2px); }
+
+        /* header */
+        .hdr { position:relative; z-index:10; text-align:center; margin-bottom:clamp(8px,1.4vh,14px); margin-top:clamp(42px,6.5vh,58px); }
+        .badge { display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:3px 12px; font-size:clamp(.55rem,1.3vw,.62rem); letter-spacing:.14em; color:rgba(255,255,255,.4); margin-bottom:6px; }
+        .gtitle { font-size:clamp(1.4rem,4vw,2rem); font-weight:900; background:linear-gradient(135deg,var(--red) 0%,#fff 40%,var(--blue) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:.08em; }
+
+        /* board */
         .ludo-container {
-            position: relative;
-            width: 95vw;
-            max-width: 400px;
-            aspect-ratio: 1/1;
-            padding: 5px;
+            position:relative; z-index:10;
+            /* Use the smaller of 88vw or 50dvh to guarantee fit with panel below */
+            width: min(88vw, 50dvh);
+            aspect-ratio:1/1; padding:4px;
+            background:rgba(5,8,16,.7); border-radius:16px;
+            border:1px solid rgba(255,255,255,.08);
+            box-shadow:0 0 40px rgba(0,0,0,.6);
         }
+        .ludo-grid { display:grid; grid-template-columns:repeat(15,1fr); grid-template-rows:repeat(15,1fr); width:100%; height:100%; gap:2px; }
 
-        /* The Grid: No background, only precise placement */
-        .ludo-grid {
-            display: grid;
-            grid-template-columns: repeat(15, 1fr);
-            grid-template-rows: repeat(15, 1fr);
-            width: 100%;
-            height: 100%;
-            gap: 3px;
-        }
+        .cell { background:#0a0e1a; border:1px solid rgba(255,255,255,.07); border-radius:3px; display:flex; align-items:center; justify-content:center; box-shadow:inset 0 0 5px rgba(0,0,0,.7); position:relative; }
+        .safe-zone { background:rgba(250,204,21,.08); box-shadow:inset 0 0 10px rgba(250,204,21,.25); border-color:rgba(250,204,21,.45); }
+        .safe-zone::after { content:'★'; color:var(--gold); font-size:10px; text-shadow:0 0 6px var(--gold); }
+        .path-red  { background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.35); }
+        .path-blue { background:rgba(59,130,246,.12); border-color:rgba(59,130,246,.35); }
 
-        /* Individual Path Cells */
-        .cell { 
-            background: #0f172a; 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 4px;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: inset 0 0 8px rgba(0,0,0,0.8);
-            position: relative;
-        }
+        .base-container { border-radius:10px; display:flex; align-items:center; justify-content:center; padding:10px; position:relative; }
+        .red-base  { background:rgba(239,68,68,.04); border:2px solid rgba(239,68,68,.5); box-shadow:0 0 16px rgba(239,68,68,.15); }
+        .blue-base { background:rgba(59,130,246,.04); border:2px solid rgba(59,130,246,.5); box-shadow:0 0 16px rgba(59,130,246,.15); }
+        .green-base  { background:rgba(16,185,129,.03); border:2px solid rgba(16,185,129,.2); opacity:.6; }
+        .yellow-base { background:rgba(245,158,11,.03); border:2px solid rgba(245,158,11,.2); opacity:.6; }
+        .base-inner { width:100%; height:100%; background:#050810; border-radius:8px; border:1px solid rgba(255,255,255,.06); display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:8px; padding:10px; box-shadow:inset 0 0 10px rgba(0,0,0,.9); }
+        .spot { width:100%; height:100%; border-radius:50%; border:1px dashed rgba(255,255,255,.15); }
+        .center-home { background:#0a0e1a; border-radius:6px; border:1px solid rgba(255,255,255,.12); position:relative; overflow:hidden; }
+        .center-home::before { content:''; position:absolute; inset:0; background:conic-gradient(rgba(59,130,246,.4) 0deg 90deg,rgba(245,158,11,.15) 90deg 180deg,rgba(239,68,68,.4) 180deg 270deg,rgba(16,185,129,.15) 270deg 360deg); }
 
-        /* Specific Cell Colors */
-        .safe-zone { box-shadow: inset 0 0 15px rgba(250, 204, 21, 0.4); border-color: rgba(250, 204, 21, 0.6); }
-        .safe-zone::after { content: '★'; color: #facc15; font-size: 14px; text-shadow: 0 0 8px #facc15; }
-        
-        .path-red { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.3); }
-        .path-blue { background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.3); }
+        .goti { width:20px; height:20px; border-radius:50%; position:absolute; z-index:50; transition:all .4s cubic-bezier(.34,1.56,.64,1); transform:translate(-50%,-50%); cursor:pointer; border:2px solid rgba(255,255,255,.8); }
+        .goti.red  { background:radial-gradient(circle at 30% 30%,#ff6b6b,#b91c1c); box-shadow:0 0 10px var(--red); }
+        .goti.blue { background:radial-gradient(circle at 30% 30%,#93c5fd,#1d4ed8); box-shadow:0 0 10px var(--blue); }
+        .goti.active-anim { animation:pulseGlow .8s infinite alternate; z-index:100; border-color:var(--gold); }
+        @keyframes pulseGlow { 0%{transform:translate(-50%,-50%) scale(1);box-shadow:0 0 8px #fff;} 100%{transform:translate(-50%,-65%) scale(1.35);box-shadow:0 0 20px var(--gold);} }
 
-        /* Bases (The 4 Corners) */
-        .base-container {
-            border-radius: 15px;
-            display: flex; align-items: center; justify-content: center;
-            padding: 15px;
-            position: relative;
+        /* control panel */
+        .ctrl {
+            position:relative; z-index:10;
+            width: min(88vw, 50dvh);
+            display:flex; justify-content:space-between; align-items:center;
+            margin-top:clamp(7px,1.2vh,13px);
+            background:var(--panel); padding:clamp(8px,1.2vh,12px) 18px;
+            border-radius:14px; border:1px solid var(--border);
+            box-shadow:0 8px 28px rgba(0,0,0,.5); backdrop-filter:blur(14px);
         }
-        
-        .red-base { background: rgba(239, 68, 68, 0.05); border: 2px solid #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.2), inset 0 0 30px rgba(239, 68, 68, 0.2); }
-        .blue-base { background: rgba(59, 130, 246, 0.05); border: 2px solid #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2), inset 0 0 30px rgba(59, 130, 246, 0.2); }
-        .green-base { background: rgba(16, 185, 129, 0.03); border: 2px solid rgba(16, 185, 129, 0.3); opacity: 0.8; }
-        .yellow-base { background: rgba(245, 158, 11, 0.03); border: 2px solid rgba(245, 158, 11, 0.3); opacity: 0.8; }
+        .ptag { text-align:center; font-weight:700; font-size:clamp(9px,1.4vw,12px); transition:.3s; opacity:.35; padding:7px 12px; border-radius:10px; letter-spacing:.06em; }
+        .ptag.active { opacity:1; transform:scale(1.08); background:rgba(255,255,255,.04); }
+        .player-red  { color:var(--red);  text-shadow:0 0 8px var(--red); }
+        .player-blue { color:var(--blue); text-shadow:0 0 8px var(--blue); }
+        .player-red.active  { box-shadow:0 0 14px rgba(239,68,68,.2); border:1px solid rgba(239,68,68,.3); }
+        .player-blue.active { box-shadow:0 0 14px rgba(59,130,246,.2); border:1px solid rgba(59,130,246,.3); }
+        .dice { width:clamp(42px,6vh,52px); height:clamp(42px,6vh,52px); background:linear-gradient(135deg,#fff,#e2e8f0); color:#050810; font-size:clamp(22px,3.5vh,28px); font-weight:900; display:flex; align-items:center; justify-content:center; border-radius:13px; cursor:pointer; box-shadow:0 0 18px rgba(255,255,255,.25); transition:.15s; border:2px solid rgba(255,255,255,.9); }
+        .dice:hover { transform:scale(1.05); box-shadow:0 0 26px rgba(255,255,255,.4); }
+        .dice:active { transform:scale(.9); }
+        .dice.rolling { animation:shake .25s infinite; pointer-events:none; }
+        @keyframes shake { 0%{transform:rotate(12deg);}50%{transform:rotate(-12deg);}100%{transform:rotate(12deg);} }
 
-        .base-inner {
-            width: 100%; height: 100%;
-            background: #050810;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-            gap: 10px;
-            padding: 12px;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+        #status-bar {
+            position:relative; z-index:10;
+            margin-top:clamp(5px,.9vh,12px);
+            font-size:clamp(.6rem,1.5vw,.75rem); color:rgba(255,255,255,.65);
+            font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+            text-align:center; font-family:'Orbitron',monospace;
         }
-
-        .spot {
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            border: 2px dashed rgba(255,255,255,0.2);
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        /* Center Home */
-        .center-home {
-            background: #111827;
-            border-radius: 8px;
-            border: 2px solid rgba(255,255,255,0.2);
-            box-shadow: 0 0 20px rgba(255,255,255,0.1), inset 0 0 20px rgba(0,0,0,0.8);
-            position: relative;
-            overflow: hidden;
-        }
-        /* Center Triangles using CSS borders */
-        .center-home::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: conic-gradient(
-                rgba(59, 130, 246, 0.5) 0deg 90deg, 
-                rgba(245, 158, 11, 0.2) 90deg 180deg, 
-                rgba(239, 68, 68, 0.5) 180deg 270deg, 
-                rgba(16, 185, 129, 0.2) 270deg 360deg
-            );
-        }
-
-        /* Gotis (Tokens) */
-        .goti { 
-            width: 24px; height: 24px; 
-            border-radius: 50%; position: absolute; 
-            z-index: 50; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
-            transform: translate(-50%, -50%); cursor: pointer;
-            border: 2px solid white;
-        }
-        .goti.red { background: radial-gradient(circle at 30% 30%, #ff4d4d, #b91c1c); box-shadow: 0 0 15px #ef4444, 0 4px 8px rgba(0,0,0,0.8); }
-        .goti.blue { background: radial-gradient(circle at 30% 30%, #60a5fa, #1d4ed8); box-shadow: 0 0 15px #3b82f6, 0 4px 8px rgba(0,0,0,0.8); }
-        
-        .goti.active-anim { animation: pulseGlow 0.8s infinite alternate; z-index: 100; border-color: #facc15; }
-        @keyframes pulseGlow { 
-            0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 10px #fff; } 
-            100% { transform: translate(-50%, -60%) scale(1.3); box-shadow: 0 0 25px #facc15, 0 0 40px #fff; } 
-        }
-
-        /* Control Panel */
-        .control-panel { 
-            width: 95vw; max-width: 400px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-top: 25px; background: rgba(15, 23, 42, 0.8); 
-            padding: 12px 25px; border-radius: 20px; 
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
-        }
-        .player-tag { text-align: center; font-weight: bold; font-size: 13px; transition: 0.3s; opacity: 0.4; padding: 8px 15px; border-radius: 12px; }
-        .player-tag.active { opacity: 1; transform: scale(1.1); background: rgba(255,255,255,0.05); }
-        .player-red.active { box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); }
-        .player-blue.active { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.3); }
-        .player-red { color: #ef4444; text-shadow: 0 0 10px #ef4444; }
-        .player-blue { color: #3b82f6; text-shadow: 0 0 10px #3b82f6; }
-        
-        .dice { 
-            width: 55px; height: 55px; background: #fff; color: #050810; 
-            font-size: 32px; font-weight: 900; display: flex; align-items: center; justify-content: center; 
-            border-radius: 14px; cursor: pointer; box-shadow: 0 0 25px rgba(255,255,255,0.3);
-            transition: 0.1s; border: 2px solid #cbd5e1;
-        }
-        .dice:active { transform: scale(0.9); box-shadow: 0 0 10px rgba(255,255,255,0.2); }
-        .dice.rolling { animation: shake 0.3s infinite; pointer-events: none; }
-        @keyframes shake { 0% {transform: rotate(15deg);} 50% {transform: rotate(-15deg);} 100% {transform: rotate(15deg);} }
-
-        #status-bar { margin-top: 20px; font-size: 15px; color: #e2e8f0; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; height: 20px; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
     </style>
 </head>
 <body>
 
-    <a href="/tools" class="fixed top-4 left-4 z-50 bg-gray-800/80 hover:bg-gray-700 text-white p-3 rounded-full border border-gray-600 shadow-lg backdrop-blur-sm transition">
-        <i class="fas fa-arrow-left"></i>
-    </a>
+    <a href="/tools" class="back-btn"><i class="fas fa-arrow-left"></i><span>Tools Lab</span></a>
 
-    <div class="text-center mb-6 mt-6">
-        <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 tracking-widest uppercase" style="filter: drop-shadow(0 0 15px rgba(255,255,255,0.2));">
-            Neon Ludo
-        </h1>
+    <div class="hdr">
+        <div class="badge"><i class="fas fa-dice"></i> ARCADE ZONE</div>
+        <div class="gtitle">NEON LUDO</div>
     </div>
 
     <div class="ludo-container" id="board-container">
-        <div class="ludo-grid" id="grid">
-            </div>
+        <div class="ludo-grid" id="grid"></div>
     </div>
 
-    <div class="control-panel">
-        <div class="player-tag player-red active" id="p-red">
-            <i class="fas fa-user-astronaut text-xl block mb-1"></i> SHANTANU
+    <div class="ctrl">
+        <div class="ptag player-red active" id="p-red">
+            <i class="fas fa-user-astronaut" style="display:block;font-size:clamp(13px,2.2vh,18px);margin-bottom:3px;"></i>
+            SHANTANU
         </div>
         <div class="dice" id="dice" onclick="rollDice()">🎲</div>
-        <div class="player-tag player-blue" id="p-blue">
-            <i class="fas fa-robot text-xl block mb-1"></i> ETHRIX
+        <div class="ptag player-blue" id="p-blue">
+            <i class="fas fa-robot" style="display:block;font-size:clamp(13px,2.2vh,18px);margin-bottom:3px;"></i>
+            ETHRIX
         </div>
     </div>
-    
+
     <div id="status-bar">Your Turn! Roll the Dice.</div>
 
     <script>
-        // --- 1. PRECISE BOARD GENERATION ---
-        // 52 Exact Coordinates for the outer Ludo Track (1-based CSS Grid index: [col, row])
-        const pathCoords = [
-            [7,14], [7,13], [7,12], [7,11], [7,10], // 0-4 (Red start upwards)
-            [6,9], [5,9], [4,9], [3,9], [2,9], [1,9], // 5-10 (Leftwards)
-            [1,8], [1,7], // 11-12 (Up)
-            [2,7], [3,7], [4,7], [5,7], [6,7], // 13-17 (Rightwards)
-            [7,6], [7,5], [7,4], [7,3], [7,2], [7,1], // 18-23 (Upwards)
-            [8,1], [9,1], // 24-25 (Right)
-            [9,2], [9,3], [9,4], [9,5], [9,6], // 26-30 (Blue start downwards)
-            [10,7], [11,7], [12,7], [13,7], [14,7], [15,7], // 31-36 (Rightwards)
-            [15,8], [15,9], // 37-38 (Down)
-            [14,9], [13,9], [12,9], [11,9], [10,9], // 39-43 (Leftwards)
-            [9,10], [9,11], [9,12], [9,13], [9,14], [9,15], // 44-49 (Downwards)
-            [8,15] // 50-51 (Left)
+        const pathCoords=[
+            [7,14],[7,13],[7,12],[7,11],[7,10],
+            [6,9],[5,9],[4,9],[3,9],[2,9],[1,9],
+            [1,8],[1,7],
+            [2,7],[3,7],[4,7],[5,7],[6,7],
+            [7,6],[7,5],[7,4],[7,3],[7,2],[7,1],
+            [8,1],[9,1],
+            [9,2],[9,3],[9,4],[9,5],[9,6],
+            [10,7],[11,7],[12,7],[13,7],[14,7],[15,7],
+            [15,8],[15,9],
+            [14,9],[13,9],[12,9],[11,9],[10,9],
+            [9,10],[9,11],[9,12],[9,13],[9,14],[9,15],
+            [8,15]
         ];
+        const redHomePath=[[8,14],[8,13],[8,12],[8,11],[8,10],[8,9]];
+        const blueHomePath=[[8,2],[8,3],[8,4],[8,5],[8,6],[8,7]];
+        const safeSpots=[0,8,13,21,26,34,39,47];
 
-        const redHomePath = [[8,14], [8,13], [8,12], [8,11], [8,10], [8,9]]; 
-        const blueHomePath = [[8,2], [8,3], [8,4], [8,5], [8,6], [8,7]];
-
-        // Standard Ludo Safe Spots indices
-        const safeSpots = [0, 8, 13, 21, 26, 34, 39, 47];
-
-        const grid = document.getElementById('grid');
-        let html = '';
-
-        // 1. GENERATE ONLY VALID TRACK CELLS
-        for(let r=1; r<=15; r++) {
-            for(let c=1; c<=15; c++) {
-                // Check if this (c,r) is part of the vertical or horizontal track
-                let isVertical = (c >= 7 && c <= 9) && (r <= 6 || r >= 10);
-                let isHorizontal = (r >= 7 && r <= 9) && (c <= 6 || c >= 10);
-                
-                if(isVertical || isHorizontal) {
-                    html += `<div class="cell" id="c-${c}-${r}" style="grid-column: ${c}; grid-row: ${r};"></div>`;
-                }
+        const grid=document.getElementById('grid');
+        let html='';
+        for(let r=1;r<=15;r++){
+            for(let c=1;c<=15;c++){
+                let iv=(c>=7&&c<=9)&&(r<=6||r>=10);
+                let ih=(r>=7&&r<=9)&&(c<=6||c>=10);
+                if(iv||ih) html+=`<div class="cell" id="c-${c}-${r}" style="grid-column:${c};grid-row:${r};"></div>`;
             }
         }
-        
-        // 2. GENERATE THE 4 CORNER BASES AND CENTER EXPLICITLY
-        html += `
-            <div class="base-container green-base" style="grid-area: 1 / 1 / 7 / 7;"></div>
-            <div class="base-container blue-base" style="grid-area: 1 / 10 / 7 / 16;">
-                <div class="base-inner" id="base-blue"></div>
-            </div>
-            <div class="center-home" style="grid-area: 7 / 7 / 10 / 10;"></div>
-            <div class="base-container red-base" style="grid-area: 10 / 1 / 16 / 7;">
-                <div class="base-inner" id="base-red"></div>
-            </div>
-            <div class="base-container yellow-base" style="grid-area: 10 / 10 / 16 / 16;"></div>
+        html+=`
+            <div class="base-container green-base" style="grid-area:1/1/7/7;"></div>
+            <div class="base-container blue-base" style="grid-area:1/10/7/16;"><div class="base-inner" id="base-blue"></div></div>
+            <div class="center-home" style="grid-area:7/7/10/10;"></div>
+            <div class="base-container red-base" style="grid-area:10/1/16/7;"><div class="base-inner" id="base-red"></div></div>
+            <div class="base-container yellow-base" style="grid-area:10/10/16/16;"></div>
         `;
-        
-        grid.innerHTML = html;
+        grid.innerHTML=html;
 
-        // 3. COLOR THE SPECIFIC CELLS
-        safeSpots.forEach(idx => document.getElementById(`c-${pathCoords[idx][0]}-${pathCoords[idx][1]}`).classList.add('safe-zone'));
-        redHomePath.slice(0,5).forEach(p => document.getElementById(`c-${p[0]}-${p[1]}`).classList.add('path-red'));
-        blueHomePath.slice(0,5).forEach(p => document.getElementById(`c-${p[0]}-${p[1]}`).classList.add('path-blue'));
-        document.getElementById(`c-${pathCoords[0][0]}-${pathCoords[0][1]}`).classList.add('path-red'); // Red Start Area
-        document.getElementById(`c-${pathCoords[26][0]}-${pathCoords[26][1]}`).classList.add('path-blue'); // Blue Start Area
+        safeSpots.forEach(i=>document.getElementById(`c-${pathCoords[i][0]}-${pathCoords[i][1]}`).classList.add('safe-zone'));
+        redHomePath.slice(0,5).forEach(p=>document.getElementById(`c-${p[0]}-${p[1]}`).classList.add('path-red'));
+        blueHomePath.slice(0,5).forEach(p=>document.getElementById(`c-${p[0]}-${p[1]}`).classList.add('path-blue'));
+        document.getElementById(`c-${pathCoords[0][0]}-${pathCoords[0][1]}`).classList.add('path-red');
+        document.getElementById(`c-${pathCoords[26][0]}-${pathCoords[26][1]}`).classList.add('path-blue');
 
-
-        // --- 2. GAME STATE & TOKENS ---
-        let turn = 'red'; 
-        let currentRoll = 0;
-        let gameState = 'WAITING_ROLL'; 
-
-        const tokens = {
-            red:  [{id:'r1', pos:-1}, {id:'r2', pos:-1}, {id:'r3', pos:-1}, {id:'r4', pos:-1}],
-            blue: [{id:'b1', pos:-1}, {id:'b2', pos:-1}, {id:'b3', pos:-1}, {id:'b4', pos:-1}]
+        let turn='red', currentRoll=0, gameState='WAITING_ROLL';
+        const tokens={
+            red: [{id:'r1',pos:-1},{id:'r2',pos:-1},{id:'r3',pos:-1},{id:'r4',pos:-1}],
+            blue:[{id:'b1',pos:-1},{id:'b2',pos:-1},{id:'b3',pos:-1},{id:'b4',pos:-1}]
         };
+        const boardContainer=document.getElementById('board-container');
 
-        const boardContainer = document.getElementById('board-container');
-
-        ['red', 'blue'].forEach(color => {
-            const base = document.getElementById(`base-${color}`);
-            tokens[color].forEach(t => {
-                base.innerHTML += `<div class="spot" id="spot-${t.id}"></div>`;
-                const goti = document.createElement('div');
-                goti.className = `goti ${color}`;
-                goti.id = t.id;
-                goti.onclick = () => handleGotiClick(color, t.id);
-                boardContainer.appendChild(goti);
+        ['red','blue'].forEach(color=>{
+            const base=document.getElementById(`base-${color}`);
+            tokens[color].forEach(t=>{
+                base.innerHTML+=`<div class="spot" id="spot-${t.id}"></div>`;
+                const g=document.createElement('div');
+                g.className=`goti ${color}`; g.id=t.id;
+                g.onclick=()=>handleGotiClick(color,t.id);
+                boardContainer.appendChild(g);
             });
         });
 
-        function getCenterPoint(elementId) {
-            const el = document.getElementById(elementId);
-            if(!el) return {x:0, y:0};
-            const rect = el.getBoundingClientRect();
-            const boardRect = boardContainer.getBoundingClientRect();
-            return {
-                x: rect.left - boardRect.left + rect.width / 2,
-                y: rect.top - boardRect.top + rect.height / 2
-            };
+        function getCenterPoint(id){
+            const el=document.getElementById(id);
+            if(!el)return{x:0,y:0};
+            const r=el.getBoundingClientRect(), br=boardContainer.getBoundingClientRect();
+            return{x:r.left-br.left+r.width/2, y:r.top-br.top+r.height/2};
         }
-
-        function drawBoard() {
-            ['red', 'blue'].forEach(color => {
-                tokens[color].forEach(t => {
-                    const gotiEl = document.getElementById(t.id);
-                    gotiEl.classList.remove('active-anim');
-                    gotiEl.style.display = 'block';
-
-                    let targetId = '';
-                    if(t.pos === -1) {
-                        targetId = `spot-${t.id}`;
-                    } else if (t.pos >= 100) {
-                        let homeIdx = t.pos - 100;
-                        if(homeIdx === 5) { gotiEl.style.display = 'none'; return; } 
-                        let path = color === 'red' ? redHomePath : blueHomePath;
-                        targetId = `c-${path[homeIdx][0]}-${path[homeIdx][1]}`;
-                    } else {
-                        targetId = `c-${pathCoords[t.pos][0]}-${pathCoords[t.pos][1]}`;
-                    }
-
-                    const pt = getCenterPoint(targetId);
-                    gotiEl.style.left = pt.x + 'px';
-                    gotiEl.style.top = pt.y + 'px';
+        function drawBoard(){
+            ['red','blue'].forEach(color=>{
+                tokens[color].forEach(t=>{
+                    const g=document.getElementById(t.id);
+                    g.classList.remove('active-anim'); g.style.display='block';
+                    let tid='';
+                    if(t.pos===-1){tid=`spot-${t.id}`;}
+                    else if(t.pos>=100){let hi=t.pos-100;if(hi===5){g.style.display='none';return;}let path=color==='red'?redHomePath:blueHomePath;tid=`c-${path[hi][0]}-${path[hi][1]}`;}
+                    else{tid=`c-${pathCoords[t.pos][0]}-${pathCoords[t.pos][1]}`;}
+                    const pt=getCenterPoint(tid); g.style.left=pt.x+'px'; g.style.top=pt.y+'px';
                 });
             });
-
-            if(turn === 'red' && gameState === 'WAITING_MOVE') {
-                tokens.red.forEach(t => {
-                    if(isValidMove(t, currentRoll, 'red')) {
-                        document.getElementById(t.id).classList.add('active-anim');
-                    }
-                });
+            if(turn==='red'&&gameState==='WAITING_MOVE'){
+                tokens.red.forEach(t=>{if(isValidMove(t,currentRoll,'red'))document.getElementById(t.id).classList.add('active-anim');});
             }
         }
+        setTimeout(drawBoard,500);
+        window.addEventListener('resize',()=>setTimeout(drawBoard,100));
 
-        setTimeout(drawBoard, 500);
-        window.addEventListener('resize', () => { setTimeout(drawBoard, 100); });
-
-        // --- 3. GAME LOGIC ---
-        function setStatus(msg) { document.getElementById('status-bar').innerText = msg; }
-
-        function rollDice() {
-            if(turn !== 'red' || gameState !== 'WAITING_ROLL') return;
-            executeRoll();
+        function setStatus(m){document.getElementById('status-bar').innerText=m;}
+        function rollDice(){if(turn!=='red'||gameState!=='WAITING_ROLL')return;executeRoll();}
+        function executeRoll(){
+            gameState='ANIMATING';
+            const dice=document.getElementById('dice'); dice.classList.add('rolling');
+            setStatus(turn==='red'?'Rolling...':'Ethrix is rolling...');
+            let rolls=0,iv=setInterval(()=>{
+                dice.innerText=Math.floor(Math.random()*6)+1; rolls++;
+                if(rolls>10){clearInterval(iv);dice.classList.remove('rolling');
+                    currentRoll=Math.floor(Math.random()*6)+1;
+                    if(turn==='blue'&&Math.random()>.75)currentRoll=6;
+                    dice.innerText=currentRoll; checkMoves();}
+            },50);
         }
-
-        function executeRoll() {
-            gameState = 'ANIMATING';
-            const dice = document.getElementById('dice');
-            dice.classList.add('rolling');
-            setStatus(turn === 'red' ? 'Rolling...' : 'Ethrix is rolling...');
-
-            let rolls = 0;
-            let rollInterval = setInterval(() => {
-                dice.innerText = Math.floor(Math.random() * 6) + 1;
-                rolls++;
-                if(rolls > 10) {
-                    clearInterval(rollInterval);
-                    dice.classList.remove('rolling');
-                    currentRoll = Math.floor(Math.random() * 6) + 1;
-                    
-                    // Ethrix gets a little lucky sometimes 😉
-                    if(turn === 'blue' && Math.random() > 0.75) currentRoll = 6; 
-                    
-                    dice.innerText = currentRoll;
-                    checkMoves();
-                }
-            }, 50);
+        function isValidMove(g,steps,color){if(g.pos===-1)return steps===6;if(g.pos>=100)return(g.pos-100+steps)<=5;return true;}
+        function checkMoves(){
+            let v=tokens[turn].filter(t=>isValidMove(t,currentRoll,turn));
+            if(v.length===0){setStatus('No moves! Turn passing...');setTimeout(nextTurn,1000);return;}
+            if(turn==='blue'){setStatus('Ethrix is thinking...');setTimeout(()=>doAiMove(v),1000);}
+            else{gameState='WAITING_MOVE';setStatus(`Tap a glowing token to move ${currentRoll} steps.`);drawBoard();}
         }
-
-        function isValidMove(goti, steps, color) {
-            if(goti.pos === -1) return steps === 6; 
-            if(goti.pos >= 100) return (goti.pos - 100 + steps) <= 5; 
-            return true;
+        function handleGotiClick(color,id){
+            if(turn!=='red'||color!=='red'||gameState!=='WAITING_MOVE')return;
+            let g=tokens.red.find(t=>t.id===id);
+            if(!isValidMove(g,currentRoll,'red'))return;
+            moveTokenProcess(g,'red');
         }
-
-        function checkMoves() {
-            let validGotis = tokens[turn].filter(t => isValidMove(t, currentRoll, turn));
-            
-            if(validGotis.length === 0) {
-                setStatus(`No moves! Turn passing...`);
-                setTimeout(nextTurn, 1000);
-                return;
-            }
-
-            if(turn === 'blue') {
-                setStatus(`Ethrix is thinking...`);
-                setTimeout(() => doAiMove(validGotis), 1000);
-            } else {
-                gameState = 'WAITING_MOVE';
-                setStatus(`Tap a glowing token to move ${currentRoll} steps.`);
-                drawBoard();
-            }
+        function doAiMove(valid){
+            let chosen=valid[0];
+            let kill=valid.find(t=>{if(t.pos===-1)return false;let fp=calcFuturePos(t.pos,currentRoll,'blue');if(fp>=100)return false;return isEnemyOnSpot(fp,'red');});
+            let win=valid.find(t=>calcFuturePos(t.pos,currentRoll,'blue')===105);
+            let open=valid.find(t=>t.pos===-1&&currentRoll===6);
+            if(kill)chosen=kill;else if(win)chosen=win;else if(open)chosen=open;else chosen=valid.reduce((p,c)=>c.pos>p.pos?c:p);
+            moveTokenProcess(chosen,'blue');
         }
-
-        function handleGotiClick(color, id) {
-            if(turn !== 'red' || color !== 'red' || gameState !== 'WAITING_MOVE') return;
-            let goti = tokens.red.find(t => t.id === id);
-            if(!isValidMove(goti, currentRoll, 'red')) return;
-            moveTokenProcess(goti, 'red');
-        }
-
-        // --- 4. ETHRIX AI BRAIN ---
-        function doAiMove(validGotis) {
-            let chosen = validGotis[0];
-            
-            let killGoti = validGotis.find(t => {
-                if(t.pos === -1) return false;
-                let futurePos = calculateFuturePos(t.pos, currentRoll, 'blue');
-                if(futurePos >= 100) return false;
-                return isEnemyOnSpot(futurePos, 'red');
-            });
-
-            let winGoti = validGotis.find(t => calculateFuturePos(t.pos, currentRoll, 'blue') === 105);
-            let openGoti = validGotis.find(t => t.pos === -1 && currentRoll === 6);
-
-            if(killGoti) chosen = killGoti;
-            else if(winGoti) chosen = winGoti;
-            else if(openGoti) chosen = openGoti;
-            else chosen = validGotis.reduce((prev, curr) => (curr.pos > prev.pos ? curr : prev));
-
-            moveTokenProcess(chosen, 'blue');
-        }
-
-        // --- 5. MOVEMENT & KILL EXECUTION ---
-        function calculateFuturePos(currentPos, steps, color) {
-            if(currentPos === -1) return color === 'red' ? 0 : 26;
-            let pos = currentPos;
-            for(let i=0; i<steps; i++) {
-                if(pos >= 100) pos++;
-                else {
-                    pos++;
-                    if(pos > 51) pos = 0;
-                    if(color === 'red' && pos === 51) { pos = 100; i++; break; } 
-                    if(color === 'blue' && pos === 25) { pos = 100; i++; break; } 
-                }
+        function calcFuturePos(cp,steps,color){
+            if(cp===-1)return color==='red'?0:26;
+            let pos=cp;
+            for(let i=0;i<steps;i++){
+                if(pos>=100)pos++;
+                else{pos++;if(pos>51)pos=0;if(color==='red'&&pos===51){pos=100;break;}if(color==='blue'&&pos===25){pos=100;break;}}
             }
             return pos;
         }
-
-        function isEnemyOnSpot(pos, enemyColor) {
-            if(safeSpots.includes(pos)) return false; 
-            return tokens[enemyColor].some(t => t.pos === pos);
-        }
-
-        function moveTokenProcess(goti, color) {
-            gameState = 'ANIMATING';
-            
-            if(goti.pos === -1) {
-                goti.pos = color === 'red' ? 0 : 26;
-            } else {
-                goti.pos = calculateFuturePos(goti.pos, currentRoll, color);
+        function isEnemyOnSpot(pos,ec){if(safeSpots.includes(pos))return false;return tokens[ec].some(t=>t.pos===pos);}
+        function moveTokenProcess(goti,color){
+            gameState='ANIMATING';
+            goti.pos=goti.pos===-1?(color==='red'?0:26):calcFuturePos(goti.pos,currentRoll,color);
+            let ec=color==='red'?'blue':'red', killed=false;
+            if(goti.pos>=0&&goti.pos<100&&!safeSpots.includes(goti.pos)){
+                tokens[ec].forEach(e=>{if(e.pos===goti.pos){e.pos=-1;killed=true;}});
             }
-
-            let enemyColor = color === 'red' ? 'blue' : 'red';
-            let killed = false;
-            
-            if(goti.pos >= 0 && goti.pos < 100 && !safeSpots.includes(goti.pos)) {
-                tokens[enemyColor].forEach(e => {
-                    if(e.pos === goti.pos) {
-                        e.pos = -1; 
-                        killed = true;
-                    }
-                });
-            }
-
             drawBoard();
-
-            setTimeout(() => {
-                if(tokens[color].every(t => t.pos === 105)) {
-                    setStatus(color === 'red' ? "🎉 YOU WON THE GAME! 🎉" : "😈 ETHRIX WON! BETTER LUCK NEXT TIME!");
-                    return;
-                }
-
-                if(currentRoll === 6 || killed) {
-                    setStatus(killed ? "🎯 EPIC KILL! Roll Again!" : "🎲 Got a 6! Roll Again!");
-                    gameState = 'WAITING_ROLL';
-                    if(turn === 'blue') setTimeout(executeRoll, 1000);
-                } else {
-                    nextTurn();
-                }
-            }, 500); 
+            setTimeout(()=>{
+                if(tokens[color].every(t=>t.pos===105)){setStatus(color==='red'?"🎉 YOU WON THE GAME! 🎉":"😈 ETHRIX WON! BETTER LUCK NEXT TIME!");return;}
+                if(currentRoll===6||killed){setStatus(killed?"🎯 EPIC KILL! Roll Again!":"🎲 Got a 6! Roll Again!");gameState='WAITING_ROLL';if(turn==='blue')setTimeout(executeRoll,1000);}
+                else nextTurn();
+            },500);
         }
-
-        function nextTurn() {
-            turn = turn === 'red' ? 'blue' : 'red';
+        function nextTurn(){
+            turn=turn==='red'?'blue':'red';
             document.getElementById('p-red').classList.toggle('active');
             document.getElementById('p-blue').classList.toggle('active');
-            document.getElementById('dice').innerText = "🎲";
-            gameState = 'WAITING_ROLL';
-            
-            setStatus(turn === 'red' ? "Your Turn! Tap Dice." : "Ethrix is thinking...");
-            drawBoard(); 
-            
-            if(turn === 'blue') setTimeout(executeRoll, 1000);
+            document.getElementById('dice').innerText='🎲';
+            gameState='WAITING_ROLL';
+            setStatus(turn==='red'?"Your Turn! Tap Dice.":"Ethrix is thinking...");
+            drawBoard();
+            if(turn==='blue')setTimeout(executeRoll,1000);
         }
     </script>
 </body>

@@ -16,6 +16,15 @@
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.59/build/spline-viewer.js"></script>
     
     <style>
+        /* ── CUSTOM CURSORS ─────────────────────────────── */
+        *, *::before, *::after {
+            cursor: url('/static/cursors/landing-cursor.gif'), auto !important;
+        }
+        a, button, [role="button"], input, select, textarea,
+        label, .glass, .badge, .clickable {
+            cursor: url('/static/cursors/landing-pointer.png'), pointer !important;
+        }
+
         /* 👇👇👇 LOGO SIZE SETTINGS 👇👇👇 */
         .logo-responsive {
             width: 45px; height: 45px; border-radius: 50%; object-fit: cover;
@@ -65,34 +74,6 @@
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
         .text-gradient { background: linear-gradient(to right, #1E90FF, #00E5FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         html { scroll-behavior: smooth; }
-
-        /* =========================================================
-           🚀 CUSTOM NEON CURSOR & CLICK ANIMATION (DESKTOP ONLY)
-           ========================================================= */
-        @media (pointer: fine) {
-            body, a, button, input, .glass, .badge { cursor: none !important; }
-            .cursor-dot {
-                position: fixed; top: 0; left: 0; width: 8px; height: 8px;
-                background: #00E5FF; border-radius: 50%; transform: translate(-50%, -50%);
-                z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #00E5FF, 0 0 20px #00E5FF;
-            }
-            .cursor-outline {
-                position: fixed; top: 0; left: 0; width: 32px; height: 32px;
-                border: 2px solid rgba(0, 229, 255, 0.6); border-radius: 50%;
-                transform: translate(-50%, -50%); z-index: 99998; pointer-events: none;
-                transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
-            }
-            .click-ripple {
-                position: fixed; top: 0; left: 0; width: 40px; height: 40px; border-radius: 50%;
-                background: radial-gradient(circle, rgba(0, 229, 255, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
-                transform: translate(-50%, -50%) scale(0); z-index: 99997; pointer-events: none;
-                animation: ripple-anim 0.5s ease-out forwards;
-            }
-            @keyframes ripple-anim {
-                0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-                100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
-            }
-        }
     </style>
 </head>
 <body>
@@ -119,7 +100,7 @@
 
     <section class="min-h-screen flex items-center justify-center px-4 pt-20 relative">
         <div class="text-center max-w-5xl mx-auto">
-            <div class="inline-block px-4 py-1 rounded-full badge text-xs font-bold uppercase tracking-widest mb-6 fade-in-up backdrop-blur-md cursor-pointer hover:bg-cyan-500/20 transition">
+            <div class="inline-block px-4 py-1 rounded-full badge text-xs font-bold uppercase tracking-widest mb-6 fade-in-up backdrop-blur-md hover:bg-cyan-500/20 transition">
                 v10.0 • Now with Voice & Vision
             </div>
             <h1 class="landing-hero-h1 text-4xl md:text-7xl font-bold mb-6 fade-in-up delay-100 leading-tight drop-shadow-2xl">
@@ -150,17 +131,17 @@
                 <p class="text-gray-300 text-lg">Everything you need in one intelligent workspace.</p>
             </div>
             <div class="landing-features-grid grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group cursor-pointer border border-[#00E5FF]/20">
+                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#00E5FF]/20">
                     <div class="w-16 h-16 rounded-2xl bg-[#00E5FF]/20 text-[#00E5FF] flex items-center justify-center text-3xl mb-6 shadow-[0_0_15px_rgba(0,229,255,0.2)]"><i class="fas fa-microphone-alt"></i></div>
                     <h3 class="text-2xl font-bold mb-3">Voice Interaction</h3>
                     <p class="text-gray-400 leading-relaxed">Don't just type. Talk to Ethrix naturally.</p>
                 </div>
-                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group cursor-pointer border border-[#1E90FF]/20">
+                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#1E90FF]/20">
                     <div class="w-16 h-16 rounded-2xl bg-[#1E90FF]/20 text-[#1E90FF] flex items-center justify-center text-3xl mb-6 shadow-[0_0_15px_rgba(30,144,255,0.2)]"><i class="fas fa-brain"></i></div>
                     <h3 class="text-2xl font-bold mb-3">Long-Term Memory</h3>
                     <p class="text-gray-400 leading-relaxed">Ethrix remembers details about you.</p>
                 </div>
-                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group cursor-pointer border border-[#00E5FF]/20">
+                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#00E5FF]/20">
                     <div class="w-16 h-16 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-3xl mb-6 shadow-[0_0_15px_rgba(0,255,255,0.2)]"><i class="fas fa-magic"></i></div>
                     <h3 class="text-2xl font-bold mb-3">Creative Studio</h3>
                     <p class="text-gray-400 leading-relaxed">Generate high-quality images and art.</p>
@@ -174,43 +155,6 @@
     </footer>
 
     <script>
-        // --- CUSTOM NEON CURSOR LOGIC ---
-        document.addEventListener("DOMContentLoaded", () => {
-            if (window.matchMedia("(pointer: fine)").matches) {
-                const dot = document.createElement("div"); dot.className = "cursor-dot";
-                const outline = document.createElement("div"); outline.className = "cursor-outline";
-                document.body.appendChild(dot); document.body.appendChild(outline);
-
-                window.addEventListener("mousemove", (e) => {
-                    dot.style.left = `${e.clientX}px`; dot.style.top = `${e.clientY}px`;
-                    outline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
-                });
-
-                window.addEventListener("mousedown", (e) => {
-                    const ripple = document.createElement("div"); ripple.className = "click-ripple";
-                    ripple.style.left = `${e.clientX}px`; ripple.style.top = `${e.clientY}px`;
-                    document.body.appendChild(ripple);
-                    outline.style.transform = "translate(-50%, -50%) scale(0.7)";
-                    setTimeout(() => outline.style.transform = "translate(-50%, -50%) scale(1)", 150);
-                    setTimeout(() => ripple.remove(), 500);
-                });
-
-                const addHoverEffect = () => {
-                    document.querySelectorAll("a, button, input, .glass, .badge").forEach(el => {
-                        el.addEventListener("mouseenter", () => {
-                            outline.style.width = "50px"; outline.style.height = "50px";
-                            outline.style.backgroundColor = "rgba(0, 229, 255, 0.1)"; /* Cyan Hover */
-                        });
-                        el.addEventListener("mouseleave", () => {
-                            outline.style.width = "32px"; outline.style.height = "32px";
-                            outline.style.backgroundColor = "transparent";
-                        });
-                    });
-                };
-                addHoverEffect();
-            }
-        });
-
         // Theme Logic
         function toggleTheme() {
             document.body.classList.toggle('light-mode');

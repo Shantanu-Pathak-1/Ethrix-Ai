@@ -6,47 +6,552 @@
     <title>Movie Talker - Ethrix</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ── CUSTOM CURSORS ─────────────────────────────── */
+        *, *::before, *::after { cursor: url('/static/cursors/movie-cursor.gif'), auto !important; box-sizing: border-box; }
+        a, button, [role="button"], input, select, textarea, label, .clickable {
+            cursor: url('/static/cursors/movie-pointer.png'), pointer !important;
+        }
+
+        /* ── CSS VARIABLES ──────────────────────────────── */
+        :root {
+            --gold:        #D4AF37;
+            --gold-bright: #FFD700;
+            --gold-dim:    #9A7D2A;
+            --crimson:     #C0392B;
+            --crimson-glow:#E74C3C;
+            --dark-base:   #080A10;
+            --dark-card:   #0E1118;
+            --glass-bg:    rgba(8, 10, 16, 0.78);
+            --glass-border: rgba(212, 175, 55, 0.22);
+            --text-primary: #F5F0E8;
+            --text-muted:   rgba(245, 240, 232, 0.55);
+        }
+
+        /* ── BACKGROUND ─────────────────────────────────── */
+        body {
+            background-color: var(--dark-base);
+            background-image: url('/static/images/movie-bg.jpg');
+            background-attachment: fixed;
+            background-position: center center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        /* ── CINEMATIC OVERLAY ───────────────────────────── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(8,10,16,0.65) 0%, rgba(8,10,16,0.35) 40%, rgba(8,10,16,0.75) 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ── FILM GRAIN OVERLAY ──────────────────────────── */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.06'/%3E%3C/svg%3E");
+            opacity: 0.4;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ── FILM STRIP DECORATION ───────────────────────── */
+        .film-strip {
+            position: fixed;
+            top: 0; bottom: 0;
+            width: 32px;
+            background: rgba(0,0,0,0.5);
+            z-index: 2;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 8px 0;
+        }
+        .film-strip.left  { left: 0; border-right: 1px solid rgba(212,175,55,0.15); }
+        .film-strip.right { right: 0; border-left: 1px solid rgba(212,175,55,0.15); }
+        .film-hole {
+            width: 14px; height: 18px;
+            background: var(--dark-base);
+            border: 1px solid rgba(212,175,55,0.25);
+            border-radius: 2px;
+            margin: 0 auto;
+        }
+
+        /* ── SIDEBAR ─────────────────────────────────────── */
+        .tools-nav-sidebar {
+            position: relative;
+            z-index: 10;
+            width: 260px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid var(--glass-border);
+            flex-direction: column;
+            display: none;
+            flex-shrink: 0;
+        }
+        @media (min-width: 768px) { .tools-nav-sidebar { display: flex !important; } }
+        .tools-nav-sidebar.mobile-open { display: flex !important; position: fixed; top: 0; left: 0; height: 100vh; }
+
+        .sidebar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--gold-bright), var(--gold), var(--gold-dim));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.02em;
+        }
+
+        .sidebar-brand-icon {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, rgba(212,175,55,0.25), rgba(192,57,43,0.2));
+            border: 1px solid rgba(212,175,55,0.4);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 0 12px rgba(212,175,55,0.2);
+            flex-shrink: 0;
+        }
+
+        .nav-link {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            transition: all 0.25s ease;
+            text-decoration: none;
+            border: 1px solid transparent;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .nav-link:hover {
+            background: rgba(212,175,55,0.08);
+            border-color: rgba(212,175,55,0.2);
+            color: var(--gold);
+        }
+
+        .history-item {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            cursor: url('/static/cursors/movie-pointer.png'), pointer !important;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .history-item:hover {
+            background: rgba(212,175,55,0.07);
+            border-color: rgba(212,175,55,0.15);
+            color: var(--gold);
+        }
+
+        /* ── MOBILE TOPBAR ───────────────────────────────── */
+        .tools-mobile-topbar {
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(24px) !important;
+            -webkit-backdrop-filter: blur(24px) !important;
+            border-bottom: 1px solid var(--glass-border) !important;
+        }
+
+        /* ── MAIN ────────────────────────────────────────── */
+        .tools-main-content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        /* ── PAGE HEADER ─────────────────────────────────── */
+        .page-header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 16px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .page-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), var(--crimson-glow), var(--gold), transparent);
+            opacity: 0.5;
+        }
+
+        .header-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1rem, 2.5vw, 1.35rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #FFF8E7 0%, var(--gold-bright) 50%, var(--gold-dim) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.03em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(192,57,43,0.15));
+            border: 1px solid rgba(212,175,55,0.35);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 0 20px rgba(212,175,55,0.15);
+        }
+
+        .new-topic-btn {
+            background: rgba(212,175,55,0.1);
+            border: 1px solid rgba(212,175,55,0.35);
+            color: var(--gold);
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            cursor: url('/static/cursors/movie-pointer.png'), pointer !important;
+            display: flex; align-items: center; gap: 7px;
+            font-family: 'DM Sans', sans-serif;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .new-topic-btn:hover {
+            background: rgba(212,175,55,0.2);
+            border-color: var(--gold-bright);
+            box-shadow: 0 0 16px rgba(212,175,55,0.25);
+        }
+
+        /* ── CHAT CONTAINER ─────────────────────────────── */
+        .tool-page-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(212,175,55,0.2) transparent;
+        }
+        .tool-page-content::-webkit-scrollbar { width: 4px; }
+        .tool-page-content::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.2); border-radius: 10px; }
+
+        /* ── WELCOME CARD ────────────────────────────────── */
+        .welcome-card {
+            background: linear-gradient(135deg, rgba(212,175,55,0.07), rgba(192,57,43,0.06));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(212,175,55,0.2);
+            border-radius: 16px;
+            padding: 22px 26px;
+            max-width: 85%;
+            align-self: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--gold), var(--crimson-glow), var(--gold));
+        }
+        .welcome-card::after {
+            content: '🎬';
+            position: absolute;
+            bottom: -10px; right: 10px;
+            font-size: 5rem;
+            opacity: 0.04;
+            pointer-events: none;
+        }
+        .welcome-card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+            letter-spacing: 0.02em;
+        }
+        .welcome-card-body {
+            color: rgba(245,240,232,0.82);
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+
+        /* ── CHAT BUBBLES ────────────────────────────────── */
+        .user-bubble {
+            background: linear-gradient(135deg, rgba(192,57,43,0.18), rgba(212,175,55,0.1));
+            border: 1px solid rgba(212,175,55,0.22);
+            border-radius: 16px 16px 4px 16px;
+            padding: 14px 20px;
+            max-width: 80%;
+            align-self: flex-end;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            line-height: 1.55;
+            backdrop-filter: blur(12px);
+        }
+
+        .ai-bubble {
+            background: rgba(8,10,16,0.68);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(212,175,55,0.15);
+            border-radius: 16px 16px 16px 4px;
+            padding: 14px 20px;
+            max-width: 80%;
+            align-self: flex-start;
+            color: rgba(245,240,232,0.88);
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+
+        /* ── INPUT BAR ───────────────────────────────────── */
+        .input-bar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid var(--glass-border);
+            padding: 16px 24px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .input-bar::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent);
+        }
+        .input-inner {
+            max-width: 860px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .mic-btn {
+            width: 46px; height: 46px;
+            border-radius: 10px;
+            background: rgba(212,175,55,0.08);
+            border: 1px solid rgba(212,175,55,0.25);
+            color: rgba(245,240,232,0.5);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+            cursor: url('/static/cursors/movie-pointer.png'), pointer !important;
+        }
+        .mic-btn:hover { background: rgba(212,175,55,0.15); border-color: var(--gold); color: var(--gold); }
+        .mic-btn.active { background: rgba(192,57,43,0.2); border-color: var(--crimson-glow); color: var(--crimson-glow); animation: goldPulse 1.2s infinite; }
+
+        @keyframes goldPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(212,175,55,0.4); }
+            70%  { box-shadow: 0 0 0 10px rgba(212,175,55,0); }
+            100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); }
+        }
+
+        #chat-input {
+            flex: 1;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(212,175,55,0.22);
+            border-radius: 10px;
+            padding: 12px 18px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        #chat-input::placeholder { color: rgba(245,240,232,0.3); }
+        #chat-input:focus {
+            border-color: rgba(212,175,55,0.5);
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.08), 0 0 20px rgba(212,175,55,0.06);
+        }
+
+        .send-btn {
+            width: 46px; height: 46px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+            color: var(--dark-base);
+            border: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+            cursor: url('/static/cursors/movie-pointer.png'), pointer !important;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+        }
+        .send-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(212,175,55,0.45); }
+        .send-btn:active { transform: scale(0.96); }
+
+        /* ── SECTION LABELS ──────────────────────────────── */
+        .section-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: rgba(212,175,55,0.45);
+            margin-bottom: 8px;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        /* ── STAR RATING DECORATION ──────────────────────── */
+        .star-row {
+            display: flex; gap: 3px;
+            color: rgba(212,175,55,0.25);
+            font-size: 10px;
+        }
+
+        /* ── MOBILE RESPONSIVE ───────────────────────────── */
+        @media (max-width: 767px) {
+            .tools-mobile-topbar { display: flex !important; }
+            .tools-mobile-spacer { display: block; height: 56px; }
+            .tool-page-content { padding: 16px; }
+            .input-bar { padding: 12px 16px; }
+            .page-header { padding: 12px 18px; }
+            .film-strip { display: none; }
+        }
+
+        /* ── MARKDOWN ────────────────────────────────────── */
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 { color: var(--gold); font-family: 'Playfair Display', serif; margin: 8px 0 4px; }
+        .markdown-body p { margin: 5px 0; }
+        .markdown-body code { background: rgba(212,175,55,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; }
+        .markdown-body strong { color: var(--gold-bright); }
+        .markdown-body ul { padding-left: 20px; }
+        .markdown-body li { margin: 4px 0; }
+        .markdown-body em { color: rgba(245,240,232,0.7); font-style: italic; }
+
+        @keyframes dotPulse {
+            0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+            40% { transform: scale(1.1); opacity: 1; }
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white flex h-screen overflow-hidden">
-    <!-- Mobile top bar -->
-    <div class="tools-mobile-topbar hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-gray-900/95 backdrop-blur-md border-b border-gray-700">
+<body>
+
+    <!-- Film Strip Decorations -->
+    <div class="film-strip left">
+        <div class="film-hole"></div><div class="film-hole"></div><div class="film-hole"></div>
+        <div class="film-hole"></div><div class="film-hole"></div><div class="film-hole"></div>
+        <div class="film-hole"></div><div class="film-hole"></div><div class="film-hole"></div>
+        <div class="film-hole"></div><div class="film-hole"></div><div class="film-hole"></div>
+    </div>
+    <div class="film-strip right">
+        <div class="film-hole"></div><div class="film-hole"></div><div class="film-hole"></div>
+        <div class="film-hole"></div><div class="film-hole"></div><div class="film-hole"></div>
+        <div class="film-hole"></div><div class="film-hole"></div><div class="film-hole"></div>
+        <div class="film-hole"></div><div class="film-hole"></div><div class="film-hole"></div>
+    </div>
+
+    <!-- Mobile Top Bar -->
+    <div class="tools-mobile-topbar hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3">
         <button onclick="document.getElementById('tools-sidebar').classList.toggle('mobile-open')" class="text-white text-xl"><i class="fas fa-bars"></i></button>
-        <span class="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">Ethrix</span>
-        <a href="/tools" class="text-gray-400 hover:text-white text-sm"><i class="fas fa-flask"></i> Tools</a>
+        <span class="sidebar-brand" style="font-size:0.9rem;">🎬 Ethrix</span>
+        <a href="/tools" class="new-topic-btn" style="padding:5px 10px; font-size:0.72rem;"><i class="fas fa-flask"></i> Tools</a>
     </div>
     <div class="tools-mobile-spacer h-14 md:hidden"></div>
-    <nav id="tools-sidebar" class="tools-nav-sidebar w-64 bg-gray-800 border-r border-gray-700 flex flex-col hidden md:flex z-20">
-        <div class="p-4 shrink-0">
-            <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 mb-6 flex items-center gap-2"><i class="fas fa-film"></i> Movie Talker</h2>
-            <div class="space-y-2"><a href="/tools" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 text-gray-300"><i class="fas fa-arrow-left w-5"></i> Back to Tools</a></div>
+
+    <!-- Sidebar -->
+    <nav id="tools-sidebar" class="tools-nav-sidebar">
+        <div style="padding: 20px 16px; flex-shrink:0; border-bottom: 1px solid var(--glass-border);">
+            <div class="sidebar-brand" style="margin-bottom:20px;">
+                <div class="sidebar-brand-icon">🎬</div>
+                Movie Talker
+            </div>
+            <a href="/tools" class="nav-link">
+                <i class="fas fa-arrow-left" style="width:14px; font-size:12px;"></i>
+                Back to Tools
+            </a>
         </div>
-        
-        <div class="flex-1 overflow-y-auto px-4 border-t border-gray-700 pt-4">
-            <h3 class="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider">History</h3>
-            <div id="tool-history-list" class="space-y-2"></div>
+
+        <div style="flex:1; overflow-y:auto; padding: 16px;">
+            <div class="section-label">History</div>
+            <div id="tool-history-list" style="display:flex; flex-direction:column; gap:4px;"></div>
+        </div>
+
+        <div style="padding:14px 16px; border-top:1px solid var(--glass-border);">
+            <div class="star-row" style="justify-content:center; font-size:11px; opacity:0.5;">
+                ★ ★ ★ ★ ★
+            </div>
+            <div style="text-align:center; font-size:0.65rem; color:rgba(212,175,55,0.3); margin-top:4px; letter-spacing:0.1em; font-family:'DM Sans',sans-serif;">ETHRIX CINEMATIC</div>
         </div>
     </nav>
 
-    <main class="tools-main-content flex-1 flex flex-col h-full bg-gray-900 relative">
-        <header class="p-5 border-b border-gray-800 bg-gray-900/80 flex justify-between">
-            <h1 class="text-2xl font-bold">Movie & Series Gossip 🍿</h1>
-            <button onclick="window.location.reload()" class="text-gray-400 hover:text-white"><i class="fas fa-plus"></i> New Topic</button>
+    <!-- Main Content -->
+    <main class="tools-main-content">
+        <header class="page-header">
+            <div class="header-title">
+                <div class="header-icon">🍿</div>
+                Movie &amp; Series Gossip
+            </div>
+            <button onclick="window.location.reload()" class="new-topic-btn">
+                <i class="fas fa-plus"></i> New Topic
+            </button>
         </header>
 
-        <div class="flex-1 overflow-y-auto tool-page-content p-4 md:p-6 flex flex-col gap-4" id="chat-container">
-            <div class="bg-purple-900/40 p-5 rounded-2xl max-w-[85%] border border-purple-500/30 self-start text-purple-100" id="welcome-msg">
-                <h3 class="font-bold text-lg mb-2 text-purple-300"><i class="fas fa-popcorn"></i> Lights, Camera, Action!</h3>
-                <p>Hello Shantanu! Aaj konsi series discuss karni hai? Kya hum Lucifer ke devilish charm ki baat karein ya kisi nayi movie ki gossip karein? Batao batao! 🥰 🎙️</p>
+        <div class="tool-page-content" id="chat-container">
+            <div class="welcome-card" id="welcome-msg">
+                <div class="welcome-card-title">
+                    <i class="fas fa-popcorn"></i>
+                    Lights, Camera, Action!
+                </div>
+                <div class="welcome-card-body">
+                    Hello Shantanu! Aaj konsi series discuss karni hai? Kya hum Lucifer ke devilish charm ki baat karein ya kisi nayi movie ki gossip karein? Batao batao! 🥰 🎙️
+                </div>
             </div>
         </div>
 
-        <div class="p-5 bg-gray-800 border-t border-gray-700">
-            <div class="max-w-4xl mx-auto flex gap-3 items-center">
-                <button id="mic-btn" onclick="startVoiceCommand('chat-input')" class="w-12 h-12 rounded-full bg-gray-700 border border-gray-600 text-gray-400 hover:text-purple-400 transition flex items-center justify-center text-xl shrink-0"><i class="fas fa-microphone"></i></button>
-                <input type="text" id="chat-input" class="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-purple-500" placeholder="Type your thoughts or ask for a story...">
-                <button onclick="sendMessage()" class="bg-gradient-to-r from-purple-500 to-pink-600 px-6 py-4 rounded-xl font-bold transition"><i class="fas fa-paper-plane"></i></button>
+        <div class="input-bar">
+            <div class="input-inner">
+                <button id="mic-btn" onclick="startVoiceCommand('chat-input')" class="mic-btn">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <input type="text" id="chat-input"
+                    placeholder="Type your thoughts or ask for a story..."
+                    onkeydown="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" class="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </main>
@@ -60,10 +565,10 @@
             const recognition = new webkitSpeechRecognition();
             recognition.lang = 'hi-IN';
             const micBtn = document.getElementById('mic-btn');
-            micBtn.classList.add('text-purple-400', 'animate-pulse');
-            recognition.onresult = (e) => { document.getElementById(inputId).value += " " + e.results[0][0].transcript; micBtn.classList.remove('text-purple-400', 'animate-pulse'); };
-            recognition.onerror = () => micBtn.classList.remove('text-purple-400', 'animate-pulse');
-            recognition.onend = () => micBtn.classList.remove('text-purple-400', 'animate-pulse');
+            micBtn.classList.add('active');
+            recognition.onresult = (e) => { document.getElementById(inputId).value += " " + e.results[0][0].transcript; micBtn.classList.remove('active'); };
+            recognition.onerror = () => micBtn.classList.remove('active');
+            recognition.onend = () => micBtn.classList.remove('active');
             recognition.start();
         }
 
@@ -74,7 +579,7 @@
                 const list = document.getElementById('tool-history-list');
                 list.innerHTML = '';
                 data.history.filter(c => c.title.toLowerCase().includes('movie')).forEach(chat => {
-                    list.innerHTML += `<div onclick="loadOldSession('${chat.id}')" class="p-2 hover:bg-gray-700 rounded-lg cursor-pointer text-sm text-gray-300 truncate transition"><i class="fas fa-history text-gray-500 mr-2"></i> ${chat.title.replace('Tool: Movie Talker - ', '')}</div>`;
+                    list.innerHTML += `<div onclick="loadOldSession('${chat.id}')" class="history-item"><i class="fas fa-history" style="margin-right:6px;opacity:0.4;"></i>${chat.title.replace('Tool: Movie Talker - ', '')}</div>`;
                 });
             } catch(e) {}
         }
@@ -82,16 +587,16 @@
         async function loadOldSession(id) {
             sessionId = id;
             const container = document.getElementById('chat-container');
-            container.innerHTML = '<div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl"></i> Loading...</div>';
+            container.innerHTML = '<div style="text-align:center;color:rgba(212,175,55,0.5);margin-top:40px;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i></div>';
             try {
                 const res = await fetch(`/api/chat/${id}`);
                 const data = await res.json();
                 container.innerHTML = '';
                 data.messages.forEach(msg => {
                     if (msg.role === 'user') {
-                        container.innerHTML += `<div class="bg-pink-600/20 p-4 rounded-xl max-w-[80%] border border-pink-500/30 self-end text-white">${msg.content}</div>`;
+                        container.innerHTML += `<div class="user-bubble">${msg.content}</div>`;
                     } else {
-                        container.innerHTML += `<div class="bg-gray-800 p-4 rounded-xl max-w-[80%] border border-gray-700 self-start text-gray-200 markdown-body">${marked.parse(msg.content)}</div>`;
+                        container.innerHTML += `<div class="ai-bubble markdown-body">${marked.parse(msg.content)}</div>`;
                     }
                 });
                 container.scrollTop = container.scrollHeight;
@@ -103,23 +608,36 @@
             const msg = input.value.trim();
             if(!msg) return;
             const container = document.getElementById('chat-container');
-            
+
             let welcome = document.getElementById('welcome-msg');
             if(welcome && sessionId.includes(Date.now().toString().substring(0,5))) { welcome.style.display = 'none'; }
 
-            container.innerHTML += `<div class="bg-pink-600/20 p-4 rounded-xl max-w-[80%] border border-pink-500/30 self-end text-white">${msg}</div>`;
+            container.innerHTML += `<div class="user-bubble">${msg}</div>`;
             input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            const typingId = 'typing_' + Date.now();
+            container.innerHTML += `<div class="ai-bubble" id="${typingId}" style="display:flex;gap:6px;align-items:center;padding:12px 18px;">
+                <span style="width:6px;height:6px;border-radius:50%;background:var(--gold);animation:dotPulse 1.2s infinite 0s;display:inline-block;"></span>
+                <span style="width:6px;height:6px;border-radius:50%;background:var(--gold);animation:dotPulse 1.2s infinite 0.2s;display:inline-block;"></span>
+                <span style="width:6px;height:6px;border-radius:50%;background:var(--gold);animation:dotPulse 1.2s infinite 0.4s;display:inline-block;"></span>
+            </div>`;
             container.scrollTop = container.scrollHeight;
 
             try {
                 const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, session_id: sessionId, mode: 'movie_talker' }) });
                 const data = await res.json();
+                const typingEl = document.getElementById(typingId);
+                if(typingEl) typingEl.remove();
                 if(data.reply) {
-                    container.innerHTML += `<div class="bg-gray-800 p-4 rounded-xl max-w-[80%] border border-gray-700 self-start text-gray-200 markdown-body">${marked.parse(data.reply)}</div>`;
+                    container.innerHTML += `<div class="ai-bubble markdown-body">${marked.parse(data.reply)}</div>`;
                     container.scrollTop = container.scrollHeight;
                     loadToolHistory();
                 }
-            } catch(e) {}
+            } catch(e) {
+                const typingEl = document.getElementById(typingId);
+                if(typingEl) typingEl.remove();
+            }
         }
     </script>
 </body>
