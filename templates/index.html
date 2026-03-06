@@ -3,11 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ethrix  AI</title>
+    <title>Ethrix AI</title>
     
-    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+    
+    <meta name="description" content="Ethrix AI - Your highly intelligent and futuristic personal AI companion.">
+    <meta name="keywords" content="Ethrix AI, AI Assistant, Artificial Intelligence, Tech Startup, Shantanu Pathak">
+    <meta name="robots" content="index, follow">
+    
     <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#0B0F19">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -28,7 +33,7 @@
         
         <div class="h-14 md:h-16 flex items-center justify-between shrink-0 border-b border-white/5 sidebar-header px-4">
             <div class="flex items-center gap-3 overflow-hidden select-none cursor-pointer transition-all duration-300" onclick="window.location.reload()">
-                <img src="/static/images/logo.png" class="w-8 h-8 md:w-10 md:h-10 rounded-full shadow-lg border border-pink-500/30">
+                <img src="/static/images/logo.png" class="w-8 h-8 md:w-10 md:h-10 rounded-full shadow-lg border border-[#00E5FF]/30">
                 <span class="font-bold text-lg md:text-xl tracking-wide whitespace-nowrap nav-label text-white">Ethrix</span>
             </div>
             <button onclick="createNewChat()" class="relative z-50 text-gray-400 hover:text-white hover:bg-white/10 p-2 rounded-full transition nav-label flex-shrink-0">
@@ -38,12 +43,12 @@
 
         <div class="flex flex-col gap-1 p-2 border-b border-white/5">
             <a href="/tools" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-white cursor-pointer" style="text-decoration: none;">
-                <div class="w-6 text-center"><i class="fas fa-flask text-purple-400 text-sm md:text-base"></i></div>
+                <div class="w-6 text-center"><i class="fas fa-flask text-[#00E5FF] text-sm md:text-base"></i></div>
                 <span class="text-sm font-bold nav-label">Tools Lab</span>
             </a>
 
             <a href="/gallery" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-white">
-                <div class="w-6 text-center"><i class="fas fa-images text-pink-400 text-sm md:text-base"></i></div>
+                <div class="w-6 text-center"><i class="fas fa-images text-[#00E5FF] text-sm md:text-base"></i></div>
                 <span class="text-sm font-bold nav-label">My Studio</span>
             </a>
 
@@ -52,8 +57,8 @@
                 <span class="text-sm font-bold nav-label">Brain Control</span>
             </a>
 
-            <a href="/diary" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-pink-400">
-                <div class="w-6 text-center"><i class="fas fa-book text-pink-500 text-sm md:text-base"></i></div>
+            <a href="/diary" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-[#00E5FF]">
+                <div class="w-6 text-center"><i class="fas fa-book text-[#00E5FF] text-sm md:text-base"></i></div>
                 <span class="text-sm font-bold nav-label">Secret Diary</span>
             </a>
 
@@ -67,10 +72,10 @@
 
         <div class="px-3 mb-2 mt-2">
             <div class="relative group">
-                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-pink-400 transition-colors duration-300 text-xs"></i>
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-[#00E5FF] transition-colors duration-300 text-xs"></i>
                 <input type="text" id="chat-search" onkeyup="filterChats()" 
                     placeholder="Search history..." 
-                    class="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:bg-black/40 focus:shadow-[0_0_15px_rgba(236,72,153,0.15)] transition-all duration-300">
+                    class="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-[#00E5FF]/50 focus:bg-black/40 focus:shadow-[0_0_15px_rgba(0,229,255,0.15)] transition-all duration-300">
             </div>
         </div>
 
@@ -97,9 +102,9 @@
 
         <div id="chat-box" class="flex-1 overflow-y-auto p-3 md:p-4 pb-48 md:pb-48 scroll-smooth">
             <div id="welcome-screen" class="flex flex-col items-center justify-center h-full opacity-80 text-center animate-fade-in px-4">
-                <img src="/static/images/logo.png" class="w-20 h-20 md:w-24 md:h-24 rounded-full mb-4 md:mb-6 shadow-[0_0_30px_rgba(236,72,153,0.5)] animate-pulse">
-                <h2 class="text-2xl md:text-3xl font-bold mb-2">Namaste!</h2>
-                <p class="text-sm md:text-base text-gray-400">Main taiyaar hu. Aaj kya create karein?</p>
+                <img src="/static/images/logo.png" class="w-20 h-20 md:w-24 md:h-24 rounded-full mb-4 md:mb-6 shadow-[0_0_30px_rgba(0,229,255,0.5)] animate-pulse border border-[#00E5FF]/50">
+                <h2 class="text-2xl md:text-3xl font-bold mb-2 text-[#00E5FF]">Namaste!</h2>
+                <p class="text-sm md:text-base text-white-400">Main taiyaar hu. Aaj kya create karein?</p>
             </div>
         </div>
 
@@ -114,62 +119,62 @@
             <div class="mode-btn flex-shrink-0" onclick="setMode('ethrix_agent', this)">🌌 Ethrix Agent</div>
         </div>
                 
-        <div id="file-preview-container" class="hidden mx-auto md:mx-4 mb-2 w-max max-w-[85%] bg-gray-800/95 border border-gray-600 px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-3 animate-fade-in backdrop-blur-md">
-            <i class="fas fa-file-alt text-pink-400"></i>
+        <div id="file-preview-container" class="hidden mx-auto md:mx-4 mb-2 w-max max-w-[85%] bg-gray-800/95 border border-[#00E5FF]/30 px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-3 animate-fade-in backdrop-blur-md">
+            <i class="fas fa-file-alt text-[#00E5FF]"></i>
             <span id="file-preview-name" class="text-xs md:text-sm text-gray-200 truncate max-w-[150px] md:max-w-[200px]"></span>
             <button type="button" onclick="removeFile()" class="text-gray-400 hover:text-red-500 transition ml-1"><i class="fas fa-times"></i></button>
         </div>
 
-        <form class="input-container flex items-center p-1.5 md:p-2 shadow-2xl bg-gray-900/90 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl" onsubmit="event.preventDefault(); sendMessage();">
-            <button type="button" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-white/10 flex-shrink-0 transition" onclick="document.getElementById('file-upload').click()"><i class="fas fa-paperclip text-sm md:text-base"></i></button>
+        <form class="input-container flex items-center p-1.5 md:p-2 shadow-2xl bg-[#0B0F19]/90 backdrop-blur-xl border border-[#00E5FF]/20 rounded-2xl md:rounded-3xl" onsubmit="event.preventDefault(); sendMessage();">
+            <button type="button" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-[#00E5FF] hover:bg-white/10 flex-shrink-0 transition" onclick="document.getElementById('file-upload').click()"><i class="fas fa-paperclip text-sm md:text-base"></i></button>
             <input type="file" id="file-upload" class="hidden" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx" onchange="handleFileUpload(this)">
             
             <input type="text" id="user-input" class="flex-1 bg-transparent border-none outline-none px-2 md:px-3 py-2 md:py-3 text-white min-w-0 placeholder-gray-500 text-sm md:text-base" placeholder="Message Ethrix..." autocomplete="off">
             
-            <button type="button" id="mic-btn" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-pink-500 hover:bg-white/10 flex-shrink-0 transition mr-1" onclick="toggleRecording()"><i class="fas fa-microphone text-sm md:text-base"></i></button>
+            <button type="button" id="mic-btn" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-[#00E5FF] hover:bg-white/10 flex-shrink-0 transition mr-1" onclick="toggleRecording()"><i class="fas fa-microphone text-sm md:text-base"></i></button>
             
-            <button type="submit" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-white text-black hover:bg-gray-200 shadow-md transition transform active:scale-95 flex-shrink-0"><i class="fas fa-arrow-up text-sm md:text-base"></i></button>
+            <button type="submit" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] text-white hover:opacity-90 shadow-[0_0_15px_rgba(0,229,255,0.4)] transition transform active:scale-95 flex-shrink-0"><i class="fas fa-arrow-up text-sm md:text-base"></i></button>
         </form>
 
             </div> </div>
     </main>
 
     <div id="settings-modal" class="modal" style="display: none;">
-        <div class="modal-content w-11/12 md:w-full max-w-lg bg-[#1e1e1e] border border-gray-700 text-white max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6">
+        <div class="modal-content w-11/12 md:w-full max-w-lg bg-[#0B0F19] border border-[#00E5FF]/30 text-white max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6">
             
-            <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
-                <h2 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-cog text-pink-500"></i> Settings</h2>
+            <div class="flex justify-between items-center mb-6 border-b border-[#00E5FF]/20 pb-4">
+                <h2 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-cog text-[#00E5FF]"></i> Settings</h2>
                 <button onclick="closeModal('settings-modal')" class="text-gray-400 hover:text-white transition transform hover:rotate-90 text-xl">&times;</button>
             </div>
 
             <div class="space-y-4 mb-6">
-                <div class="flex justify-between items-center bg-gray-800/50 p-3 rounded-xl">
+                <div class="flex justify-between items-center bg-[#121826] p-3 rounded-xl border border-white/5">
                     <span class="text-sm font-medium"><i class="fas fa-moon mr-2 text-purple-400"></i> Dark Mode</span>
                     <button onclick="toggleTheme()" class="text-gray-400 hover:text-white text-sm bg-gray-700 px-3 py-1 rounded-lg transition">Toggle</button>
                 </div>
-                <div class="flex justify-between items-center bg-gray-800/50 p-3 rounded-xl">
-                    <span class="text-sm font-medium"><i class="fas fa-volume-up mr-2 text-green-400"></i> Voice Reply</span>
+                <div class="flex justify-between items-center bg-[#121826] p-3 rounded-xl border border-white/5">
+                    <span class="text-sm font-medium"><i class="fas fa-volume-up mr-2 text-[#00E5FF]"></i> Voice Reply</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="voice-toggle" class="sr-only peer" onchange="toggleVoice()">
-                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00E5FF]"></div>
                     </label>
                 </div>
             </div>
 
-            <div class="bg-gray-800/30 border border-gray-700 p-4 rounded-xl mb-6 text-center space-y-2">
+            <div class="bg-[#121826] border border-[#00E5FF]/20 p-4 rounded-xl mb-6 text-center space-y-2">
                 <a href="/memory-dashboard" class="block w-full bg-yellow-600/20 hover:bg-yellow-600 text-yellow-400 hover:text-white text-sm font-bold py-2 px-4 rounded-lg transition border border-yellow-600/30">
                     <i class="fas fa-brain mr-1"></i> Open Brain Control
                 </a>
-                <a href="/diary" class="block w-full bg-pink-600/20 hover:bg-pink-600 text-pink-400 hover:text-white text-sm font-bold py-2 px-4 rounded-lg transition border border-pink-600/30">
+                <a href="/diary" class="block w-full bg-cyan-600/20 hover:bg-[#00E5FF] hover:text-white text-[#00E5FF] text-sm font-bold py-2 px-4 rounded-lg transition border border-[#00E5FF]/30">
                     <i class="fas fa-book-heart mr-1"></i> Open Secret Diary
                 </a>
             </div>
 
-            <div class="border-t border-gray-700 pt-4 space-y-3">
+            <div class="border-t border-[#00E5FF]/20 pt-4 space-y-3">
                 <button onclick="deleteAllChats()" class="w-full bg-red-900/20 border border-red-800/50 text-red-400 hover:bg-red-600 hover:text-white py-3 rounded-xl font-bold transition text-sm flex items-center justify-center gap-2 group">
                     <i class="fas fa-trash-alt group-hover:animate-bounce"></i> Delete All History
                 </button>
-                <a href="/logout" class="w-full bg-gray-800 border border-gray-600 text-gray-300 hover:bg-white hover:text-black py-3 rounded-xl font-bold transition text-sm flex items-center justify-center gap-2">
+                <a href="/logout" class="w-full bg-[#121826] border border-gray-600 text-gray-300 hover:bg-white hover:text-black py-3 rounded-xl font-bold transition text-sm flex items-center justify-center gap-2">
                     <i class="fas fa-power-off"></i> LOGOUT SYSTEM
                 </a>
             </div>
@@ -177,9 +182,11 @@
         </div>
     </div>
 
-    <div id="profile-modal" class="modal"><div class="modal-content text-center bg-[#1e1e1e] border border-gray-700 text-white w-11/12 md:w-auto"><h2 class="text-lg md:text-xl font-bold mb-4">Edit Profile</h2><div class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full overflow-hidden border-2 border-blue-500"><img id="profile-img-modal" src="" class="w-full h-full object-cover"></div><input type="text" id="profile-name-input" class="w-full bg-black/30 border border-gray-500 rounded p-2 text-center text-white mb-4 text-sm md:text-base"><button onclick="saveProfile()" class="bg-blue-600 w-full py-2 rounded text-white font-bold hover:bg-blue-500 text-sm md:text-base">Save Changes</button></div></div>
-    <div id="dropdown" class="dropdown-menu bg-[#222] border border-gray-600 text-white shadow-xl z-50"><div class="dropdown-item hover:bg-gray-700" id="act-rename"><i class="fas fa-edit text-blue-400"></i> Rename</div><div class="dropdown-item hover:bg-gray-700 text-red-400" id="act-delete"><i class="fas fa-trash"></i> Delete</div></div>
-    <div id="payment-modal" class="modal"><div class="modal-content w-11/12 md:w-full max-w-md bg-[#1e1e1e] border border-gray-700 text-white rounded-2xl relative overflow-hidden"><div class="bg-gradient-to-r from-pink-600 to-purple-600 p-3 md:p-4 text-center"><h2 class="text-lg md:text-xl font-bold text-white"><i class="fas fa-secure"></i> Secure Payment</h2><p class="text-[10px] md:text-xs text-pink-100">Ethrix AI Pro Plan • ₹499.00</p></div><div class="p-4 md:p-6 space-y-3 md:space-y-4"><div id="pay-loader" class="hidden text-center py-4"><i class="fas fa-circle-notch fa-spin text-2xl md:text-3xl text-pink-500"></i><p class="text-[10px] md:text-xs text-gray-400 mt-2">Processing secure transaction...</p></div><button id="pay-btn" onclick="processFakePayment()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 md:py-3 rounded-xl transition shadow-lg transform active:scale-95 mt-2 text-sm md:text-base">Pay ₹499.00</button><button onclick="closeModal('payment-modal')" class="w-full text-gray-500 text-xs hover:text-white mt-2">Cancel Transaction</button></div></div></div>
+    <div id="profile-modal" class="modal"><div class="modal-content text-center bg-[#0B0F19] border border-[#00E5FF]/30 text-white w-11/12 md:w-auto"><h2 class="text-lg md:text-xl font-bold mb-4">Edit Profile</h2><div class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full overflow-hidden border-2 border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.4)]"><img id="profile-img-modal" src="" class="w-full h-full object-cover"></div><input type="text" id="profile-name-input" class="w-full bg-black/30 border border-[#00E5FF]/50 rounded p-2 text-center text-white mb-4 text-sm md:text-base"><button onclick="saveProfile()" class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] w-full py-2 rounded text-white font-bold hover:opacity-90 text-sm md:text-base">Save Changes</button></div></div>
+    
+    <div id="dropdown" class="dropdown-menu bg-[#121826] border border-[#00E5FF]/30 text-white shadow-xl z-50"><div class="dropdown-item hover:bg-[#00E5FF]/20" id="act-rename"><i class="fas fa-edit text-[#00E5FF]"></i> Rename</div><div class="dropdown-item hover:bg-[#00E5FF]/20 text-red-400" id="act-delete"><i class="fas fa-trash"></i> Delete</div></div>
+    
+    <div id="payment-modal" class="modal"><div class="modal-content w-11/12 md:w-full max-w-md bg-[#0B0F19] border border-[#00E5FF]/30 text-white rounded-2xl relative overflow-hidden"><div class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] p-3 md:p-4 text-center"><h2 class="text-lg md:text-xl font-bold text-white"><i class="fas fa-secure"></i> Secure Payment</h2><p class="text-[10px] md:text-xs text-cyan-100">Ethrix AI Pro Plan • ₹499.00</p></div><div class="p-4 md:p-6 space-y-3 md:space-y-4"><div id="pay-loader" class="hidden text-center py-4"><i class="fas fa-circle-notch fa-spin text-2xl md:text-3xl text-[#00E5FF]"></i><p class="text-[10px] md:text-xs text-gray-400 mt-2">Processing secure transaction...</p></div><button id="pay-btn" onclick="processFakePayment()" class="w-full bg-[#00E5FF] hover:bg-[#00bfff] text-black font-bold py-2.5 md:py-3 rounded-xl transition shadow-[0_0_15px_rgba(0,229,255,0.4)] transform active:scale-95 mt-2 text-sm md:text-base">Pay ₹499.00</button><button onclick="closeModal('payment-modal')" class="w-full text-gray-500 text-xs hover:text-[#00E5FF] mt-2">Cancel Transaction</button></div></div></div>
 
     <script src="/static/js/tools.js"></script>
     <script src="/static/js/script.js"></script>

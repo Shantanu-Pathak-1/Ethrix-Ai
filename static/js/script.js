@@ -83,7 +83,7 @@ function initVanta() {
             gyroControls: false,
             minHeight: 200.00,
             minWidth: 200.00,
-            baseColor: 0xec4899, // Pink
+            baseColor: 0x1e90ff, // Pink
             backgroundColor: 0x000000, // Black
             size: 0.8, 
             amplitudeFactor: 1.0,

@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="description" content="Ethrix AI - Your intelligent companion.">
+    <meta name="description" content="Ethrix AI - Your highly intelligent and futuristic personal AI companion.">
+    <meta name="keywords" content="Ethrix AI, AI Assistant, Artificial Intelligence, Tech Startup, Shantanu Pathak">
+    <meta name="robots" content="index, follow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ethrix AI • Your Intelligent Companion</title>
     
-    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
     <meta property="og:image" content="https://shantanupathak94-ethrix-ai.hf.space/static/images/logo.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,23 +19,23 @@
         /* 👇👇👇 LOGO SIZE SETTINGS 👇👇👇 */
         .logo-responsive {
             width: 45px; height: 45px; border-radius: 50%; object-fit: cover;
-            border: 2px solid rgba(236, 72, 153, 0.3); transition: all 0.3s ease;
+            border: 2px solid rgba(0, 229, 255, 0.3); transition: all 0.3s ease;
         }
         @media (min-width: 768px) { .logo-responsive { width: 50px; height: 50px; } }
 
-        /* CORE VARIABLES */
+        /* CORE VARIABLES - UPDATED TO CYAN & DARK BLUE THEME */
         :root {
-            --bg-color: #050505; --text-main: #ffffff; --text-sub: #9ca3af;
-            --glass-bg: rgba(25, 25, 25, 0.4); --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-shadow: rgba(0, 0, 0, 0.3); --badge-bg: rgba(236, 72, 153, 0.1);
-            --badge-border: rgba(236, 72, 153, 0.3); --badge-text: #f472b6;
+            --bg-color: #0B0F19; --text-main: #ffffff; --text-sub: #9ca3af;
+            --glass-bg: rgba(18, 24, 38, 0.6); --glass-border: rgba(0, 229, 255, 0.15);
+            --glass-shadow: rgba(0, 229, 255, 0.1); --badge-bg: rgba(0, 229, 255, 0.1);
+            --badge-border: rgba(0, 229, 255, 0.3); --badge-text: #00E5FF;
         }
 
         body.light-mode {
-            --bg-color: #ffffff; --text-main: #111827; --text-sub: #4b5563;
-            --glass-bg: rgba(255, 255, 255, 0.75); --glass-border: rgba(0, 0, 0, 0.1);
-            --glass-shadow: rgba(0, 0, 0, 0.05); --badge-bg: rgba(236, 72, 153, 0.1);
-            --badge-border: rgba(236, 72, 153, 0.4); --badge-text: #db2777;
+            --bg-color: #f8fafc; --text-main: #111827; --text-sub: #4b5563;
+            --glass-bg: rgba(255, 255, 255, 0.75); --glass-border: rgba(0, 229, 255, 0.2);
+            --glass-shadow: rgba(0, 0, 0, 0.05); --badge-bg: rgba(0, 229, 255, 0.1);
+            --badge-border: rgba(0, 229, 255, 0.4); --badge-text: #00bfff;
         }
 
         body { 
@@ -43,9 +45,9 @@
 
         /* SCROLLBAR */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(20, 20, 20, 0.5); }
-        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #ec4899, #8b5cf6); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #db2777, #7c3aed); }
+        ::-webkit-scrollbar-track { background: rgba(11, 15, 25, 0.5); }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1E90FF, #00E5FF); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #00C6DD, #00E5FF); }
         
         /* 3D Background */
         spline-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; filter: brightness(0.7) contrast(1.1); transition: opacity 0.3s; }
@@ -54,13 +56,14 @@
 
         /* Glass Cards */
         .glass { background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 4px 30px var(--glass-shadow); transition: all 0.3s ease; }
+        .glass:hover { border-color: rgba(0, 229, 255, 0.5); box-shadow: 0 0 20px rgba(0, 229, 255, 0.2); }
         .badge { background: var(--badge-bg); border: 1px solid var(--badge-border); color: var(--badge-text); }
         
         /* Animation */
         .fade-in-up { animation: fadeInUp 1s ease-out forwards; opacity: 0; transform: translateY(30px); }
         .delay-100 { animation-delay: 0.1s; } .delay-200 { animation-delay: 0.3s; } .delay-300 { animation-delay: 0.5s; }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-        .text-gradient { background: linear-gradient(to right, #ec4899, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .text-gradient { background: linear-gradient(to right, #1E90FF, #00E5FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         html { scroll-behavior: smooth; }
 
         /* =========================================================
@@ -70,18 +73,18 @@
             body, a, button, input, .glass, .badge { cursor: none !important; }
             .cursor-dot {
                 position: fixed; top: 0; left: 0; width: 8px; height: 8px;
-                background: #ec4899; border-radius: 50%; transform: translate(-50%, -50%);
-                z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #ec4899, 0 0 20px #ec4899;
+                background: #00E5FF; border-radius: 50%; transform: translate(-50%, -50%);
+                z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #00E5FF, 0 0 20px #00E5FF;
             }
             .cursor-outline {
                 position: fixed; top: 0; left: 0; width: 32px; height: 32px;
-                border: 2px solid rgba(236, 72, 153, 0.6); border-radius: 50%;
+                border: 2px solid rgba(0, 229, 255, 0.6); border-radius: 50%;
                 transform: translate(-50%, -50%); z-index: 99998; pointer-events: none;
                 transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
             }
             .click-ripple {
                 position: fixed; top: 0; left: 0; width: 40px; height: 40px; border-radius: 50%;
-                background: radial-gradient(circle, rgba(236, 72, 153, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
+                background: radial-gradient(circle, rgba(0, 229, 255, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
                 transform: translate(-50%, -50%) scale(0); z-index: 99997; pointer-events: none;
                 animation: ripple-anim 0.5s ease-out forwards;
             }
@@ -107,7 +110,7 @@
                 <button onclick="toggleTheme()" class="w-9 h-9 rounded-full glass flex items-center justify-center hover:scale-110 transition text-yellow-400">
                     <i id="theme-icon" class="fas fa-sun"></i>
                 </button>
-                <a href="/login" class="bg-white text-black hover:bg-gray-200 px-5 py-2 md:px-6 rounded-full font-bold text-sm transition transform hover:scale-105 shadow-lg whitespace-nowrap">
+                <a href="/login" class="bg-white text-black hover:bg-gray-200 px-5 py-2 md:px-6 rounded-full font-bold text-sm transition transform hover:scale-105 shadow-[0_0_15px_rgba(0,229,255,0.3)] whitespace-nowrap">
                     Login / Signup
                 </a>
             </div>
@@ -116,7 +119,7 @@
 
     <section class="min-h-screen flex items-center justify-center px-4 pt-20 relative">
         <div class="text-center max-w-5xl mx-auto">
-            <div class="inline-block px-4 py-1 rounded-full badge text-xs font-bold uppercase tracking-widest mb-6 fade-in-up backdrop-blur-md cursor-pointer hover:bg-pink-500/20 transition">
+            <div class="inline-block px-4 py-1 rounded-full badge text-xs font-bold uppercase tracking-widest mb-6 fade-in-up backdrop-blur-md cursor-pointer hover:bg-cyan-500/20 transition">
                 v10.0 • Now with Voice & Vision
             </div>
             <h1 class="landing-hero-h1 text-4xl md:text-7xl font-bold mb-6 fade-in-up delay-100 leading-tight drop-shadow-2xl">
@@ -127,15 +130,15 @@
                 Experience the next generation of conversational AI. Ethrix listens, remembers, creates art, and codes alongside you.
             </p>
             <div class="landing-cta-row flex flex-col md:flex-row gap-4 justify-center fade-in-up delay-300">
-                <a href="/login" class="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg shadow-purple-500/30 transition transform hover:scale-105 flex items-center justify-center gap-2">
+                <a href="/login" class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] hover:from-[#00bfff] hover:to-[#00e6e6] text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg shadow-cyan-500/30 transition transform hover:scale-105 flex items-center justify-center gap-2">
                     <span>Talk to Ethrix</span> <i class="fas fa-arrow-right"></i>
                 </a>
-                <a href="#features" class="glass px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition backdrop-blur-md">
+                <a href="#features" class="glass px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition backdrop-blur-md text-white">
                     Explore Capabilities
                 </a>
             </div>
         </div>
-        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce opacity-50">
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce opacity-50 text-[#00E5FF]">
             <i class="fas fa-chevron-down text-2xl"></i>
         </div>
     </section>
@@ -147,18 +150,18 @@
                 <p class="text-gray-300 text-lg">Everything you need in one intelligent workspace.</p>
             </div>
             <div class="landing-features-grid grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group cursor-pointer">
-                    <div class="w-16 h-16 rounded-2xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-3xl mb-6 border border-pink-500/20"><i class="fas fa-microphone-alt"></i></div>
+                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group cursor-pointer border border-[#00E5FF]/20">
+                    <div class="w-16 h-16 rounded-2xl bg-[#00E5FF]/20 text-[#00E5FF] flex items-center justify-center text-3xl mb-6 shadow-[0_0_15px_rgba(0,229,255,0.2)]"><i class="fas fa-microphone-alt"></i></div>
                     <h3 class="text-2xl font-bold mb-3">Voice Interaction</h3>
                     <p class="text-gray-400 leading-relaxed">Don't just type. Talk to Ethrix naturally.</p>
                 </div>
-                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group cursor-pointer">
-                    <div class="w-16 h-16 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-3xl mb-6 border border-purple-500/20"><i class="fas fa-brain"></i></div>
+                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group cursor-pointer border border-[#1E90FF]/20">
+                    <div class="w-16 h-16 rounded-2xl bg-[#1E90FF]/20 text-[#1E90FF] flex items-center justify-center text-3xl mb-6 shadow-[0_0_15px_rgba(30,144,255,0.2)]"><i class="fas fa-brain"></i></div>
                     <h3 class="text-2xl font-bold mb-3">Long-Term Memory</h3>
                     <p class="text-gray-400 leading-relaxed">Ethrix remembers details about you.</p>
                 </div>
-                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group cursor-pointer">
-                    <div class="w-16 h-16 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-3xl mb-6 border border-blue-500/20"><i class="fas fa-magic"></i></div>
+                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group cursor-pointer border border-[#00E5FF]/20">
+                    <div class="w-16 h-16 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-3xl mb-6 shadow-[0_0_15px_rgba(0,255,255,0.2)]"><i class="fas fa-magic"></i></div>
                     <h3 class="text-2xl font-bold mb-3">Creative Studio</h3>
                     <p class="text-gray-400 leading-relaxed">Generate high-quality images and art.</p>
                 </div>
@@ -167,7 +170,7 @@
     </section>
 
     <footer class="py-10 border-t border-white/10 text-center text-gray-500 text-sm">
-        <p>&copy; 2026 Ethrix AI. Created with ❤️ by <a href="/about" class="text-pink-500 hover:underline">Shan Pathak</a>.</p>
+        <p>&copy; 2026 Ethrix AI. Created with ❤️ by <a href="/about" class="text-[#00E5FF] hover:underline hover:text-white transition">Shan Pathak</a>.</p>
     </footer>
 
     <script>
@@ -196,7 +199,7 @@
                     document.querySelectorAll("a, button, input, .glass, .badge").forEach(el => {
                         el.addEventListener("mouseenter", () => {
                             outline.style.width = "50px"; outline.style.height = "50px";
-                            outline.style.backgroundColor = "rgba(236, 72, 153, 0.1)";
+                            outline.style.backgroundColor = "rgba(0, 229, 255, 0.1)"; /* Cyan Hover */
                         });
                         el.addEventListener("mouseleave", () => {
                             outline.style.width = "32px"; outline.style.height = "32px";
