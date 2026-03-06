@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from authlib.integrations.starlette_client import OAuth
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -37,10 +38,10 @@ import hashlib
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 import edge_tts 
-# main.py ke top par
-from image_generation import generate_image_free, generate_image_pro
 import traceback
-from fastapi.responses import JSONResponse
+
+# Local Imports
+from image_generation import generate_image_free, generate_image_pro
 
 # Local Tool Imports
 from tools_lab import (
@@ -241,7 +242,7 @@ async def generate_daily_diary():
             await diary_collection.insert_one({"user_email": user['email'], "date": datetime.utcnow().strftime('%Y-%m-%d'), "content": diary_entry, "mood": "Reflective", "timestamp": datetime.utcnow()})
     except Exception as e: print(f"Diary Error: {e}")
 
-# 🩺 THE HEALTH CHECK DOCTOR 🩺
+# 🩺 THE HEALTH CHECK DOCTOR (WITH ANTI-SPAM) 🩺
 async def run_system_diagnostics():
     errors_found = []
     
@@ -263,12 +264,28 @@ async def run_system_diagnostics():
 
     if errors_found:
         error_summary = "<br>".join(errors_found)
+        
+        # Error ko Database mein save karna
         await error_logs_collection.insert_one({
             "error": "Health Check Failed ❌", 
             "details": errors_found, 
             "timestamp": datetime.utcnow()
         })
-        send_email(ADMIN_EMAIL, "🚨 System Health Check Failed!", f"<h3>System Diagnostics Failed!</h3><p>Shantanu, backend check fail ho gaya hai:</p>{error_summary}")
+        
+        # --- 🛡️ EMAIL ANTI-SPAM LOGIC 🛡️ ---
+        error_key = "system_diagnostics_failed"
+        now = datetime.utcnow()
+        
+        # Agar error pehli baar aaya hai ya pichle mail ko 1 ghanta ho gaya hai, tabhi mail bhejenge
+        if error_key not in ALERT_CACHE or (now - ALERT_CACHE[error_key]) > timedelta(minutes=ALERT_COOLDOWN_MINUTES):
+            
+            subject = "🚨 System Health Check Failed!"
+            body = f"<h3>System Diagnostics Failed!</h3><p>Shantanu, backend check fail ho gaya hai:</p>{error_summary}"
+            
+            # Agar email successfully chala gaya, toh time yaad rakh lo
+            if send_email(ADMIN_EMAIL, subject, body):
+                ALERT_CACHE[error_key] = now
+                
         return {"status": "failed", "errors": errors_found}
     
     return {"status": "healthy", "message": "All systems are green! 🟢"}
@@ -377,32 +394,75 @@ oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration', 
     client_kwargs={'scope': 'openid email profile'}
 )
-# 🚨 THE GLOBAL ERROR CATCHER 🚨
+
+# --- EMAIL SPAM PREVENTION CACHE ---
+ALERT_CACHE = {} 
+ALERT_COOLDOWN_MINUTES = 60 # Ek specific error ka email 1 ghante mein sirf ek baar aayega
+
+# 🚨 THE SMART GLOBAL ERROR CATCHER 🚨
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    error_msg = str(exc)
-    full_trace = traceback.format_exc()
     endpoint = str(request.url.path)
     
-    # Error ko MongoDB mein save karo
-    await error_logs_collection.insert_one({
-        "error": error_msg,
-        "trace": full_trace,
-        "endpoint": endpoint,
-        "timestamp": datetime.utcnow(),
-        "type": "Unhandled Exception"
-    })
+    # 1. FastAPI ke normal HTTP errors ko bypass karo (404 etc)
+    if isinstance(exc, StarletteHTTPException):
+        if endpoint.startswith("/api/"):
+            return JSONResponse({"status": "error", "message": str(exc.detail)}, status_code=exc.status_code)
+        return HTMLResponse(content=f"<h2 style='color:white; text-align:center; margin-top:50px;'>{exc.status_code} - {exc.detail}</h2>", status_code=exc.status_code)
 
-    # Turant Email Bhejo Shantanu ko!
-    subject = f"🚨 CRITICAL ERROR on Ethrix: {endpoint}"
-    body = f"<h3>Shanvika Alert! 🚨</h3><p>Shantanu, ek naya error aaya hai website par, jaldi check karo!</p><b>Endpoint:</b> {endpoint}<br><b>Error:</b> {error_msg}<br><b>Trace:</b><br><pre>{full_trace[:1000]}</pre>"
-    send_email(ADMIN_EMAIL, subject, body)
+    error_msg = str(exc)
+    full_trace = traceback.format_exc()
     
-    return JSONResponse(
-        status_code=500,
-        content={"status": "error", "message": "Oops! Server mein kuch dikkat aayi hai. Admin ko notify kar diya gaya hai."}
-    )
+    # 2. Faltu routes ignore karo
+    if "favicon" in endpoint or endpoint.startswith("/static/"):
+        return HTMLResponse(status_code=404)
 
+    try:
+        # DB mein hamesha save karo
+        await error_logs_collection.insert_one({
+            "error": error_msg,
+            "trace": full_trace,
+            "endpoint": endpoint,
+            "timestamp": datetime.utcnow(),
+            "type": "Unhandled Exception"
+        })
+        
+        # --- 🛡️ ANTI-SPAM LOGIC 🛡️ ---
+        error_key = f"{endpoint}_{error_msg}" # Har unique error ki ek pehchan
+        now = datetime.utcnow()
+        
+        # Agar yeh error pehli baar aaya hai, YA 1 ghanta beet chuka hai, tabhi mail bhejo
+        if error_key not in ALERT_CACHE or (now - ALERT_CACHE[error_key]) > timedelta(minutes=ALERT_COOLDOWN_MINUTES):
+            
+            subject = f"🚨 CRITICAL ERROR on Ethrix: {endpoint}"
+            body = f"<h3>Shanvika Alert! 🚨</h3><p>Shantanu, ek naya error aaya hai!</p><b>Endpoint:</b> {endpoint}<br><b>Error:</b> {error_msg}<br><b>Trace:</b><br><pre>{full_trace[:1000]}</pre>"
+            
+            # Agar email successfully chala gaya, toh time yaad rakh lo
+            if send_email(ADMIN_EMAIL, subject, body):
+                ALERT_CACHE[error_key] = now 
+                
+    except Exception as log_err:
+        print("Logging Module Error:", log_err)
+
+    # UI Safe Response
+    if endpoint.startswith("/api/"):
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": "Oops! Server mein kuch दिक्कत aayi hai."}
+        )
+    else:
+        return HTMLResponse(
+            content="""
+            <div style="font-family:sans-serif; text-align:center; padding:10%; background:#050505; color:#fff; height:100vh;">
+                <h1 style="color:#ec4899; font-size: 3rem;">⚠️ Server Error ⚠️</h1>
+                <p style="color:#a1a1aa; font-size: 1.2rem;">Oops! Kuch technical dikkat aayi hai. Shantanu ko mail chala gaya hai!</p>
+                <br><br>
+                <a href="/" style="background:#18181b; color:#fff; text-decoration:none; border:1px solid #3f3f46; padding:12px 24px; border-radius:8px; font-weight:bold; margin-right:15px;">Go to Landing Page</a>
+                <a href="/login" style="background:#ec4899; color:#fff; text-decoration:none; padding:12px 24px; border-radius:8px; font-weight:bold;">Login Page</a>
+            </div>
+            """,
+            status_code=500
+        )
 @app.get("/auth/login")
 async def login(request: Request):
     redirect_uri = str(request.url_for('auth_callback')).replace("http://", "https://")

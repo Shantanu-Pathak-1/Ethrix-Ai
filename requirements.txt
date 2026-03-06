@@ -26,3 +26,5 @@ pinecone
 numpy
 edge-tts
 lyricsgenius
+beautifulsoup4
+aiohttp
