@@ -128,7 +128,7 @@ try:
 except: pass
 
 client = AsyncIOMotorClient(MONGO_URL)
-db = client.ethrix_db
+db = client.shanvika_db
 users_collection = db.users
 chats_collection = db.chats
 otp_collection = db.otps 
