@@ -38,6 +38,7 @@ from datetime import datetime, timedelta
 import edge_tts 
 import traceback
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 # Local Imports
 from image_generation import generate_image_free, generate_image_pro
 
