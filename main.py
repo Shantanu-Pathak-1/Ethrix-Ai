@@ -395,9 +395,15 @@ try:
 except Exception as e:
     print(f"Arcade module offline (Safe Mode Active): {e}")
 
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True, same_site="lax")
+# 🚨 CORRECT MIDDLEWARE STACK 🚨
+# 1. Sabse pehle hum Maintenance lagayenge (Yeh sabse andar rahega)
 app.add_middleware(MaintenanceMiddleware)
+
+# 2. Fir Session (Taaki Maintenance ko session ka data mil sake)
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True, same_site="lax")
+
+# 3. Aur sabse last mein CORS (FastAPI isko sabse pehle run karega!)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 if not os.path.exists("static"): 
     os.makedirs("static")
