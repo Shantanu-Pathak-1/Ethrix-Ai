@@ -3,298 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethrix • Command Center</title>
+    <title>Ethrix Admin • Command Core</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { background-color: #050505; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+        .neon-text { text-shadow: 0 0 12px rgba(59, 130, 246, 0.8); }
+        tr { transition: 0.3s; }
+        tr:hover { background: rgba(255, 255, 255, 0.05); }
         
-        body { 
-            background-color: #09090b; 
-            color: #e4e4e7; 
-            font-family: 'Inter', sans-serif; 
-            overflow-x: hidden; 
-        }
+        /* 🔒 THE ORIGINAL LOCK SCREEN OVERLAY 🔒 */
+        #lock-screen { position: fixed; inset: 0; z-index: 50; background: #000; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.5s; }
         
-        .surface { 
-            background: #18181b; 
-            border: 1px solid #27272a; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); 
-        }
-        
-        /* 💖 THE CLASSIC GOD MODE LOCK SCREEN 💖 */
-        #lock-screen { 
-            position: fixed; inset: 0; z-index: 50; 
-            background: #050505; 
-            display: flex; align-items: center; justify-content: center; flex-direction: column; 
-            transition: opacity 0.5s ease;
-        }
-        
-        .god-mode-title {
-            color: #ff00ff;
-            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff;
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            font-family: monospace;
-            margin-bottom: 10px;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-        }
+        /* Animations */
+        @keyframes pulse-border { 0% { border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); } 50% { border-color: rgba(59, 130, 246, 1); box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); } 100% { border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); } }
+        .animate-border { animation: pulse-border 2.5s infinite; }
 
-        .god-mode-input {
-            background: rgba(255, 0, 255, 0.05);
-            border: 2px solid #ff00ff;
-            color: #ff00ff;
-            padding: 12px 20px;
-            font-size: 1.2rem;
-            text-align: center;
-            outline: none;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
-            width: 100%;
-            max-width: 300px;
-            margin-bottom: 25px;
-            letter-spacing: 3px;
-            transition: all 0.3s;
-        }
-
-        .god-mode-input:focus {
-            box-shadow: 0 0 25px rgba(255, 0, 255, 0.6);
-            background: rgba(255, 0, 255, 0.1);
-        }
-
-        .god-mode-btn {
-            background: #ff00ff;
-            color: #000;
-            border: none;
-            padding: 12px 40px;
-            font-size: 1.2rem;
-            font-weight: 900;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 0 20px #ff00ff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.2s;
-        }
-
-        .god-mode-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px #ff00ff;
-        }
-        
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #09090b; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+        ::-webkit-scrollbar-track { background: rgba(20, 20, 20, 0.5); }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #3b82f6, #6366f1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #2563eb, #4f46e5); }
 
-        .loader {
-            border: 2px solid #27272a; border-top: 2px solid #3b82f6;
-            border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite;
-            display: inline-block; vertical-align: middle; margin-right: 8px;
-        }
+        .loader { border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid #3b82f6; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen bg-[url('https://res.cloudinary.com/dovr8s3s5/image/upload/v1709586737/abstract-bg_dark.jpg')] bg-cover bg-fixed">
 
     <div id="lock-screen">
-        <h1 class="god-mode-title">GOD MODE</h1>
-        <p style="color: #a1a1aa; font-family: monospace; margin-bottom: 30px; letter-spacing: 2px; text-align: center; font-size: 0.9rem;">ENTER SHANTANU'S AUTHORIZATION CODE</p>
-        <input type="password" id="admin-pass" class="god-mode-input" placeholder="••••••••">
-        <button onclick="unlockPanel()" class="god-mode-btn">AUTHENTICATE</button>
+        <div class="text-center">
+            <div class="text-6xl mb-4 text-blue-500 animate-bounce"><i class="fas fa-fingerprint"></i></div>
+            <h2 class="text-2xl font-bold mb-4 tracking-widest text-white">SYSTEM LOCKED</h2>
+            <input type="password" id="admin-pass" placeholder="Enter Access Code" 
+                class="bg-gray-900 border border-gray-700 text-blue-100 px-4 py-2 rounded-lg text-center focus:border-blue-500 outline-none w-64 tracking-widest transition-colors">
+            <button onclick="unlockPanel()" class="block w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg font-bold transition shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(37,99,235,0.6)]">UNLOCK</button>
+        </div>
     </div>
 
-    <div id="dashboard" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 hidden opacity-0 transition-opacity duration-700">
+    <div id="dashboard" class="max-w-7xl mx-auto p-4 sm:p-6 hidden opacity-0 transition-opacity duration-1000">
         
-        <div class="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-6 lg:mb-8 surface p-4 lg:p-6 rounded-xl border-l-4 border-l-blue-500">
-            <div>
-                <h1 class="text-xl lg:text-2xl font-bold text-white tracking-tight">Ethrix Command Center</h1>
-                <p class="text-xs lg:text-sm text-gray-400 mt-1 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    System Core Online
-                </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-6 sm:mb-8 glass p-4 sm:p-6 rounded-2xl">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-900/30 flex items-center justify-center text-blue-400 text-xl animate-border border border-blue-500/50 shrink-0">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-wide">Ethrix <span class="text-blue-400 neon-text">Command Core</span></h1>
+                    <p class="text-xs text-gray-400">System Status: <span class="text-green-400 font-bold animate-pulse">OPTIMAL</span></p>
+                </div>
             </div>
-            <div class="flex w-full sm:w-auto gap-3">
-                <a href="/" class="w-full sm:w-auto text-center px-4 py-2 bg-[#27272a] hover:bg-[#3f3f46] rounded text-sm font-medium transition-colors border border-gray-700">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Exit Panel
-                </a>
+            <a href="/" class="w-full sm:w-auto text-center bg-gray-800 hover:bg-gray-700 px-5 py-2.5 rounded-full text-white text-sm font-bold border border-gray-600 transition hover:scale-105">
+                <i class="fas fa-sign-out-alt mr-2"></i> Exit Panel
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div class="glass p-5 sm:p-6 rounded-2xl relative overflow-hidden group">
+                <div class="absolute -right-6 -top-6 text-8xl text-blue-500/10 group-hover:scale-110 transition"><i class="fas fa-users"></i></div>
+                <div class="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">Total Users</div>
+                <div class="text-4xl sm:text-5xl font-bold mt-2 text-white">{{ total_users }}</div>
+            </div>
+            <div class="glass p-5 sm:p-6 rounded-2xl relative overflow-hidden group">
+                <div class="absolute -right-6 -top-6 text-8xl text-indigo-500/10 group-hover:scale-110 transition"><i class="fas fa-comments"></i></div>
+                <div class="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">Total Messages</div>
+                <div class="text-4xl sm:text-5xl font-bold mt-2 text-indigo-400">{{ total_chats }}</div>
+            </div>
+            <div class="glass p-5 sm:p-6 rounded-2xl relative overflow-hidden group">
+                <div class="absolute -right-6 -top-6 text-8xl text-red-500/10 group-hover:scale-110 transition"><i class="fas fa-ban"></i></div>
+                <div class="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">Restricted</div>
+                <div class="text-4xl sm:text-5xl font-bold mt-2 text-red-400">{{ banned_count }}</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
-            <div class="surface p-5 lg:p-6 rounded-xl flex items-center justify-between">
-                <div>
-                    <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Users</div>
-                    <div class="text-3xl font-bold text-white">{{ total_users }}</div>
-                </div>
-                <div class="text-gray-600 text-4xl"><i class="fas fa-users"></i></div>
-            </div>
-            <div class="surface p-5 lg:p-6 rounded-xl flex items-center justify-between">
-                <div>
-                    <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Chat Volume</div>
-                    <div class="text-3xl font-bold text-white">{{ total_chats }}</div>
-                </div>
-                <div class="text-gray-600 text-4xl"><i class="fas fa-database"></i></div>
-            </div>
-            <div class="surface p-5 lg:p-6 rounded-xl flex items-center justify-between">
-                <div>
-                    <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Restricted</div>
-                    <div class="text-3xl font-bold text-red-400">{{ banned_count }}</div>
-                </div>
-                <div class="text-gray-600 text-4xl"><i class="fas fa-user-shield"></i></div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             
-            <div class="surface p-5 lg:p-6 rounded-xl lg:col-span-1">
-                <h3 class="font-semibold text-sm uppercase tracking-wider text-gray-400 mb-5 border-b border-gray-800 pb-2">System Controls</h3>
-                
+            <div class="glass rounded-2xl p-6 lg:col-span-1">
+                <h3 class="font-bold text-lg mb-5 text-white"><i class="fas fa-sliders-h mr-2 text-blue-400"></i> System Controls</h3>
                 <div class="space-y-4">
-                    <button id="btn-diagnostics" onclick="runDiagnostics()" class="w-full flex items-center justify-between p-3 bg-black border border-gray-800 rounded hover:border-blue-500 transition-colors group">
-                        <span class="text-sm font-medium text-gray-300 group-hover:text-white"><i class="fas fa-stethoscope text-blue-500 mr-2"></i> Run Health Check</span>
-                        <i class="fas fa-chevron-right text-gray-600 text-xs"></i>
+                    <button id="btn-diagnostics" onclick="runDiagnostics()" class="w-full flex items-center justify-between p-4 bg-black/40 border border-gray-700/50 rounded-xl hover:border-blue-500 transition-colors group">
+                        <span class="text-sm font-bold text-gray-300 group-hover:text-white"><i class="fas fa-stethoscope text-blue-400 mr-2"></i> Health Diagnostics</span>
+                        <i class="fas fa-chevron-right text-gray-600 group-hover:text-blue-400"></i>
                     </button>
 
-                    <button onclick="toggleMaintenance()" class="w-full flex items-center justify-between p-3 bg-black border border-gray-800 rounded hover:border-yellow-500 transition-colors group">
-                        <span class="text-sm font-medium text-gray-300 group-hover:text-white"><i class="fas fa-tools text-yellow-500 mr-2"></i> Maintenance Toggle</span>
-                        <i class="fas fa-power-off text-gray-600 text-xs group-hover:text-yellow-500"></i>
+                    <button onclick="toggleMaintenance()" class="w-full flex items-center justify-between p-4 bg-black/40 border border-gray-700/50 rounded-xl hover:border-yellow-500 transition-colors group">
+                        <span class="text-sm font-bold text-gray-300 group-hover:text-white"><i class="fas fa-tools text-yellow-500 mr-2"></i> Maintenance Toggle</span>
+                        <i class="fas fa-power-off text-gray-600 group-hover:text-yellow-500"></i>
                     </button>
                 </div>
             </div>
 
-            <div class="surface p-0 rounded-xl flex flex-col lg:col-span-2 overflow-hidden border border-gray-800">
-                <div class="flex justify-between items-center p-4 border-b border-gray-800 bg-[#121214]">
-                    <h3 class="font-semibold text-sm uppercase tracking-wider text-gray-400"><i class="fas fa-terminal mr-2"></i> Live System Logs</h3>
-                    <span class="flex h-2 w-2 relative">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                    </span>
+            <div class="glass rounded-2xl p-0 flex flex-col lg:col-span-2 overflow-hidden border border-red-900/30">
+                <div class="flex justify-between items-center p-5 border-b border-red-900/30 bg-black/40">
+                    <h3 class="font-bold text-lg text-white"><i class="fas fa-bug mr-2 text-red-500"></i> Live Error Logs</h3>
+                    <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span>
                 </div>
-                <div class="bg-black p-4 flex-1 overflow-y-auto font-mono text-[11px] leading-relaxed space-y-3 max-h-[300px]">
+                <div class="bg-black/60 p-4 flex-1 overflow-y-auto font-mono text-[11px] sm:text-xs space-y-3 max-h-[250px]">
                     {% for log in recent_errors %}
-                    <div class="flex flex-col sm:flex-row items-start gap-2 sm:gap-3 hover:bg-gray-900/50 p-2 rounded transition-colors border-l-2 border-red-500/50">
-                        <span class="text-gray-600 shrink-0 whitespace-nowrap">[{{ log.timestamp.strftime('%H:%M:%S') }}]</span>
-                        <div class="flex flex-col gap-1 w-full">
-                            <span class="text-blue-400 font-bold">{{ log.endpoint if log.endpoint else 'BACKGROUND TASK' }}</span>
-                            <span class="text-red-400">{{ log.error }}</span>
-                            
-                            {% if log.details %}
-                                <div class="text-yellow-500 bg-yellow-900/10 p-2 rounded mt-1 border border-yellow-900/30">
-                                    {% for detail in log.details %}
-                                        <div class="flex gap-1"><span class="text-yellow-700">➜</span> {{ detail }}</div>
-                                    {% endfor %}
-                                </div>
-                            {% elif log.trace %}
-                                <div class="text-gray-500 bg-gray-900 p-2 rounded mt-1 overflow-hidden max-h-[60px] hover:max-h-[500px] transition-all cursor-ns-resize border border-gray-800" title="Click/Hover to expand trace">
-                                    {{ log.trace }}
-                                </div>
-                            {% endif %}
-                        </div>
+                    <div class="border-l-2 border-red-500/50 pl-3 py-1 hover:bg-white/5 transition rounded">
+                        <div class="text-gray-500 mb-1">[{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}] <span class="text-yellow-500 ml-2 font-bold">{{ log.endpoint if log.endpoint else 'BACKGROUND TASK' }}</span></div>
+                        <div class="text-red-400 break-words font-bold">{{ log.error }}</div>
+                        
+                        {% if log.details %}
+                            <div class="text-yellow-400 bg-yellow-900/20 p-2 rounded mt-2 border border-yellow-900/50">
+                                {% for detail in log.details %}
+                                    <div class="flex gap-1"><span class="text-yellow-600">➜</span> {{ detail }}</div>
+                                {% endfor %}
+                            </div>
+                        {% elif log.trace %}
+                            <div class="text-gray-500 bg-gray-900/50 p-2 rounded mt-2 overflow-hidden max-h-[60px] hover:max-h-[300px] transition-all cursor-ns-resize border border-gray-800" title="Expand Trace">
+                                {{ log.trace }}
+                            </div>
+                        {% endif %}
                     </div>
                     {% else %}
-                    <div class="text-green-500 flex items-center justify-center h-full opacity-70 py-10 text-sm">
-                        > System operating optimally. No errors detected.
+                    <div class="text-green-500 flex items-center justify-center h-full py-8 text-sm">
+                        <i class="fas fa-shield-check text-xl mr-2"></i> System is stable. No recent crashes.
                     </div>
                     {% endfor %}
                 </div>
             </div>
         </div>
 
-        <div class="surface p-5 lg:p-6 rounded-xl mb-6 lg:mb-8">
-            <h3 class="font-semibold text-sm uppercase tracking-wider text-gray-400 mb-5 border-b border-gray-800 pb-2 flex justify-between">
-                <span>Module Utilization</span>
-                <span class="text-xs text-gray-600 normal-case font-normal">(Use tools on site to populate data)</span>
+        <div class="glass rounded-2xl p-6 mb-8">
+            <h3 class="font-bold text-lg mb-5 text-white flex justify-between items-center">
+                <span><i class="fas fa-chart-line mr-2 text-indigo-400"></i> Module Utilization</span>
+                <span class="text-xs text-gray-500 font-normal hidden sm:block">(Use tools to populate data)</span>
             </h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for tool in top_tools %}
                 <div>
-                    <div class="flex justify-between text-xs mb-2">
-                        <span class="text-gray-300 capitalize font-medium">{{ tool.tool_name.replace('_', ' ') }}</span>
-                        <span class="text-blue-400 font-bold">{{ tool.count }} uses</span>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-gray-300 font-bold capitalize">{{ tool.tool_name.replace('_', ' ') }}</span>
+                        <span class="text-blue-400 font-mono">{{ tool.count }} hits</span>
                     </div>
-                    <div class="w-full bg-gray-900 rounded-full h-2 border border-gray-800">
-                        <div class="bg-gradient-to-r from-blue-600 to-pink-500 h-2 rounded-full" style="width: {{ (tool.count / max_tool_count * 100) if max_tool_count else 0 }}%"></div>
+                    <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full" style="width: {{ (tool.count / max_tool_count * 100) if max_tool_count else 0 }}%"></div>
                     </div>
                 </div>
                 {% else %}
-                <div class="text-gray-500 text-sm py-4 col-span-full text-center bg-black/20 rounded-lg border border-dashed border-gray-800">
-                    <i class="fas fa-chart-bar text-gray-600 text-2xl mb-2"></i><br>
-                    No module data available yet. <br><span class="text-xs">Go to Tools Lab and use a feature to generate stats!</span>
-                </div>
+                <div class="text-gray-500 text-sm italic py-4 text-center col-span-full">No tool usage recorded yet. Start using tools on the site!</div>
                 {% endfor %}
             </div>
         </div>
 
-        <div class="surface rounded-xl overflow-hidden border border-gray-800 mb-10">
-            <div class="p-4 lg:p-5 border-b border-gray-800 bg-[#121214] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <h3 class="font-semibold text-sm uppercase tracking-wider text-gray-400">User Directory</h3>
-                <div class="text-xs text-gray-500 bg-black px-3 py-1 rounded-full border border-gray-800">Showing top 50 records</div>
+        <div class="glass rounded-2xl overflow-hidden mb-10">
+            <div class="p-4 sm:p-5 border-b border-white/10 bg-white/5 flex justify-between items-center">
+                <h3 class="font-bold text-lg text-white"><i class="fas fa-database mr-2 text-blue-400"></i> User Database</h3>
+                <span class="bg-black/50 px-3 py-1 rounded-full text-xs text-gray-400 border border-gray-700">Top 50 Records</span>
             </div>
             
             <div class="overflow-x-auto w-full">
-                <table class="w-full text-left text-sm whitespace-nowrap min-w-[800px]">
-                    <thead class="bg-black text-gray-500 text-xs border-b border-gray-800 uppercase tracking-wider">
+                <table class="w-full text-left min-w-[800px]">
+                    <thead class="bg-black/40 text-gray-400 uppercase text-xs tracking-wider">
                         <tr>
-                            <th class="px-6 py-4 font-medium">Account Details</th>
-                            <th class="px-6 py-4 font-medium">Access Tier</th>
-                            <th class="px-6 py-4 font-medium">Engagement</th>
-                            <th class="px-6 py-4 font-medium">Status</th>
-                            <th class="px-6 py-4 font-medium text-right">Operations</th>
+                            <th class="px-6 py-4">Identity</th>
+                            <th class="px-6 py-4">Plan</th>
+                            <th class="px-6 py-4">Usage</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4 text-right">Control</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-800/50">
                         {% for user in users %}
-                        <tr class="hover:bg-white/[0.02] transition-colors group">
+                        <tr class="hover:bg-white/5 group">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <img src="{{ user.picture }}" class="w-9 h-9 rounded-full border border-gray-700 object-cover bg-gray-900" onerror="this.src='/static/images/logo.png'">
+                                    <img src="{{ user.picture }}" class="w-10 h-10 rounded-full border-2 border-gray-700 object-cover bg-gray-900" onerror="this.src='/static/images/logo.png'">
                                     <div>
-                                        <div class="font-medium text-gray-200">{{ user.name }}</div>
+                                        <div class="font-bold text-white">{{ user.name }}</div>
+                                        <div class="text-xs text-blue-400">@{{ user.username if user.username else 'N/A' }}</div>
                                         <div class="text-xs text-gray-500">{{ user.email }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
                                 {% if user.email == admin_email %}
-                                    <span class="text-[10px] uppercase tracking-widest font-bold bg-white text-black px-2.5 py-1 rounded">Owner</span>
+                                    <span class="text-indigo-400 text-xs font-bold border border-indigo-500/30 px-2.5 py-1 rounded bg-indigo-500/10">OWNER</span>
                                 {% elif user.is_pro %}
-                                    <span class="text-[10px] uppercase tracking-widest font-bold text-blue-400 border border-blue-900 bg-blue-900/20 px-2.5 py-1 rounded">Pro Tier</span>
+                                    <span class="text-yellow-400 text-xs font-bold border border-yellow-500/30 px-2.5 py-1 rounded bg-yellow-500/10"><i class="fas fa-crown"></i> PRO</span>
                                 {% else %}
-                                    <span class="text-[10px] uppercase tracking-widest font-bold text-gray-400 border border-gray-700 bg-gray-800 px-2.5 py-1 rounded">Free</span>
+                                    <span class="text-gray-400 text-xs font-bold border border-gray-600/30 px-2.5 py-1 rounded bg-gray-800/30">FREE</span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4">
-                                <span class="bg-black px-3 py-1 rounded text-gray-400 text-xs border border-gray-800 font-mono">{{ user.msg_count }} queries</span>
-                            </td>
+                            <td class="px-6 py-4"><span class="bg-black/60 text-gray-300 px-3 py-1 rounded-full text-xs font-mono border border-gray-700">{{ user.msg_count }} msgs</span></td>
                             <td class="px-6 py-4">
                                 {% if user.is_banned %}
-                                    <span class="flex items-center gap-1.5 text-xs text-red-400 font-medium"><span class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"></span> Blocked</span>
+                                    <span class="text-red-400 text-xs font-bold bg-red-900/20 px-2.5 py-1 rounded border border-red-900 flex items-center gap-1.5 w-max"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> BANNED</span>
                                 {% else %}
-                                    <span class="flex items-center gap-1.5 text-xs text-green-400 font-medium"><span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> Active</span>
+                                    <span class="text-green-400 text-xs font-bold bg-green-900/20 px-2.5 py-1 rounded border border-green-900 flex items-center gap-1.5 w-max"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> ACTIVE</span>
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 text-right">
                                 {% if user.email != admin_email %}
-                                    <div class="flex justify-end gap-3 opacity-100 sm:opacity-50 group-hover:opacity-100 transition-opacity">
+                                    <div class="flex justify-end gap-2 opacity-100 sm:opacity-50 group-hover:opacity-100 transition-opacity">
                                         {% if user.is_pro %}
-                                            <button onclick="confirmAction('demote', '{{ user.email }}')" title="Revoke Pro Access" class="text-gray-500 hover:text-yellow-500 hover:bg-yellow-500/10 p-2 rounded transition-colors"><i class="fas fa-arrow-down"></i></button>
+                                            <button onclick="confirmAction('demote', '{{ user.email }}')" title="Revoke Pro" class="w-8 h-8 flex items-center justify-center rounded-lg bg-yellow-600/20 hover:bg-yellow-600 border border-yellow-600/50 text-yellow-400 hover:text-white transition"><i class="fas fa-level-down-alt"></i></button>
                                         {% else %}
-                                            <button onclick="confirmAction('promote', '{{ user.email }}')" title="Grant Pro Access" class="text-gray-500 hover:text-blue-500 hover:bg-blue-500/10 p-2 rounded transition-colors"><i class="fas fa-arrow-up"></i></button>
+                                            <button onclick="confirmAction('promote', '{{ user.email }}')" title="Grant Pro" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600/20 hover:bg-blue-600 border border-blue-600/50 text-blue-400 hover:text-white transition"><i class="fas fa-crown"></i></button>
                                         {% endif %}
 
-                                        <div class="w-px h-6 bg-gray-800 my-auto"></div>
-
                                         {% if user.is_banned %}
-                                            <button onclick="confirmAction('unban', '{{ user.email }}')" title="Restore Access" class="text-gray-500 hover:text-green-500 hover:bg-green-500/10 p-2 rounded transition-colors"><i class="fas fa-user-check"></i></button>
+                                            <button onclick="confirmAction('unban', '{{ user.email }}')" title="Unban User" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-600/20 hover:bg-green-600 border border-green-600/50 text-green-400 hover:text-white transition"><i class="fas fa-unlock"></i></button>
                                         {% else %}
-                                            <button onclick="confirmAction('ban', '{{ user.email }}')" title="Revoke Access" class="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-2 rounded transition-colors"><i class="fas fa-user-slash"></i></button>
+                                            <button onclick="confirmAction('ban', '{{ user.email }}')" title="Ban User" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-600/20 hover:bg-red-600 border border-red-600/50 text-red-400 hover:text-white transition"><i class="fas fa-ban"></i></button>
                                         {% endif %}
                                     </div>
                                 {% else %}
-                                    <span class="text-gray-600 text-[10px] uppercase tracking-widest font-bold">Admin Protected</span>
+                                    <span class="text-gray-500 text-xs italic tracking-widest">PROTECTED</span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -317,18 +235,10 @@
                 setTimeout(() => {
                     lock.remove();
                     dash.classList.remove('hidden');
-                    setTimeout(() => dash.classList.remove('opacity-0'), 50);
-                }, 400);
+                    setTimeout(() => dash.classList.remove('opacity-0'), 100);
+                }, 500);
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Access Denied',
-                    text: 'Incorrect Authorization Code.',
-                    background: '#09090b',
-                    color: '#fff',
-                    confirmButtonColor: '#ff00ff',
-                    customClass: { popup: 'border border-pink-900' }
-                });
+                Swal.fire({ icon: 'error', title: 'ACCESS DENIED', text: 'Incorrect Password', background: '#111', color: '#fff', confirmButtonColor: '#3b82f6' });
                 document.getElementById('admin-pass').value = "";
             }
         }
@@ -341,7 +251,7 @@
         async function runDiagnostics() {
             const btn = document.getElementById('btn-diagnostics');
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<span class="text-sm font-medium text-blue-400"><div class="loader"></div> Running Scans...</span>`;
+            btn.innerHTML = `<span class="text-sm font-bold text-blue-400"><div class="loader"></div> Running Scans...</span>`;
             
             try {
                 const response = await fetch('/api/admin/run-diagnostics');
@@ -351,25 +261,18 @@
                     Swal.fire({
                         icon: 'success', title: 'System Healthy',
                         text: 'All backend systems, databases, and APIs are fully operational.',
-                        background: '#09090b', color: '#fff',
-                        confirmButtonColor: '#10b981',
-                        customClass: { popup: 'border border-gray-800' }
+                        background: '#111', color: '#fff', confirmButtonColor: '#10b981'
                     });
                 } else {
                     let errorList = data.errors ? data.errors.join('<br>➜ ') : 'Unknown Server Error';
                     Swal.fire({
                         icon: 'error', title: 'System Failure Detected',
-                        html: `<div class="text-left text-xs font-mono text-red-400 bg-black p-4 rounded mt-2 border border-red-900/50">➜ ${errorList}</div>`,
-                        background: '#09090b', color: '#fff',
-                        confirmButtonColor: '#ef4444',
-                        customClass: { popup: 'border border-red-900' }
+                        html: `<div class="text-left text-xs font-mono text-red-400 bg-black/50 p-4 rounded mt-2 border border-red-900/50">➜ ${errorList}</div>`,
+                        background: '#111', color: '#fff', confirmButtonColor: '#ef4444'
                     });
                 }
             } catch (err) {
-                Swal.fire({
-                    icon: 'warning', title: 'Connection Timeout', text: 'Could not reach diagnostic endpoint. Check your internet or server status.',
-                    background: '#09090b', color: '#fff', confirmButtonColor: '#f59e0b'
-                });
+                Swal.fire({ icon: 'warning', title: 'Connection Timeout', text: 'Could not reach diagnostic endpoint.', background: '#111', color: '#fff', confirmButtonColor: '#f59e0b' });
             } finally {
                 btn.innerHTML = originalHTML;
             }
@@ -385,9 +288,7 @@
                 confirmButtonColor: '#eab308',
                 cancelButtonColor: '#3f3f46',
                 confirmButtonText: 'Yes, Toggle it!',
-                background: '#09090b',
-                color: '#fff',
-                customClass: { popup: 'border border-gray-800' }
+                background: '#111', color: '#fff'
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
@@ -398,35 +299,35 @@
                             Swal.fire({
                                 title: 'Status Updated!', 
                                 text: `Maintenance mode is now ${data.mode ? 'ON 🔴' : 'OFF 🟢'}`,
-                                icon: 'success', background: '#09090b', color: '#fff', confirmButtonColor: '#3b82f6'
+                                icon: 'success', background: '#111', color: '#fff', confirmButtonColor: '#3b82f6'
                             });
                         } else {
                             throw new Error("Failed");
                         }
                     } catch (e) {
-                        Swal.fire({title: 'Error', text: 'Failed to update maintenance mode. Check server logs.', icon: 'error', background: '#09090b', color: '#fff'});
+                        Swal.fire({title: 'Error', text: 'Failed to update maintenance mode. Check server logs.', icon: 'error', background: '#111', color: '#fff'});
                     }
                 }
             });
         }
 
-        // USER OPERATIONS (Ban, Demote, Promote)
+        // CONTROL ACTIONS
         async function confirmAction(action, email) {
             let actionText = action.toUpperCase();
-            let confirmColor = '#3f3f46';
-            if(action === 'ban') confirmColor = '#ef4444';
-            if(action === 'demote') confirmColor = '#eab308';
+            let confirmColor = '#3085d6';
+            if(action === 'ban') confirmColor = '#d33';
+            if(action === 'demote') confirmColor = '#d97706';
             if(action === 'promote') confirmColor = '#3b82f6';
 
             const { value: password } = await Swal.fire({
-                title: 'Confirm Operation',
-                text: `Authorization required to ${action} this account.`,
+                title: 'Security Check',
+                text: `Enter password to ${actionText} this user`,
                 input: 'password',
-                inputPlaceholder: 'Enter Access Code',
-                background: '#09090b', color: '#fff',
+                inputPlaceholder: 'Enter Authorization Code',
+                background: '#111',
+                color: '#fff',
                 confirmButtonColor: confirmColor,
-                showCancelButton: true,
-                customClass: { popup: 'border border-gray-800', input: 'bg-black text-white border-gray-700 text-center tracking-widest' }
+                showCancelButton: true
             });
 
             if (password === SECRET_PASS) {
@@ -441,7 +342,7 @@
                 document.body.appendChild(form);
                 form.submit();
             } else if (password) {
-                Swal.fire({ icon: 'error', title: 'Invalid Code', background: '#09090b', color: '#fff' });
+                Swal.fire({ icon: 'error', title: 'Wrong Password!', background: '#111', color: '#fff' });
             }
         }
     </script>
