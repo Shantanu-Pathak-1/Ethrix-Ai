@@ -318,9 +318,9 @@ code { font-family: 'Consolas', monospace; color: #d4d4d4; }
    ========================================================= */
 @media (pointer: fine) {
     /* Hide default cursor only on devices with a real mouse */
-    body, a, button, input, textarea, select, .tool-card, .goti, .dice {
-        cursor: none !important;
-    }
+    * {
+    cursor: none !important;
+}
 
     /* The tiny glowing dot */
     .cursor-dot {
