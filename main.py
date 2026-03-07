@@ -9,6 +9,9 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, Stre
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from authlib.integrations.starlette_client import OAuth
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -21,7 +24,6 @@ import httpx
 import base64 
 from groq import Groq
 from duckduckgo_search import DDGS
-import google.generativeai as genai 
 import io
 import PyPDF2
 from docx import Document
@@ -37,72 +39,9 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 import edge_tts 
 import traceback
-from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
+
 # Local Imports
 from image_generation import generate_image_free, generate_image_pro
-
-from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi.responses import HTMLResponse
-
-class MaintenanceMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        if MAINTENANCE_MODE:
-            # Sabhi zaroori paths jahan maintenance mode mein bhi jana allow hai
-            allowed_paths = ["/static", "/login", "/auth/", "/api/guest_login", "/api/send_otp", "/api/verify_otp", "/api/complete_signup", "/api/login_manual", "/admin/toggle_maintenance"]
-            
-            is_allowed = False
-            if request.url.path == "/": 
-                is_allowed = True
-            for p in allowed_paths:
-                if request.url.path.startswith(p):
-                    is_allowed = True
-                    break
-            
-            # Ab yahan error nahi aayega kyunki session pehle hi load ho chuka hoga!
-            user = request.session.get('user')
-            is_admin = user and user.get('email') == ADMIN_EMAIL
-            
-            if not is_allowed and not is_admin:
-                return HTMLResponse(
-                    content="""
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>System Maintenance • Ethrix</title>
-                        <style>
-                            body { background-color: #09090b; color: #e4e4e7; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-                            .container { text-align: center; background: #18181b; padding: 40px; border-radius: 12px; border: 1px solid #27272a; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-                            h1 { color: #3b82f6; font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; letter-spacing: 0.5px; }
-                            p { color: #a1a1aa; font-size: 0.95rem; margin-bottom: 30px; line-height: 1.6; }
-                            .btn-group { display: flex; gap: 15px; justify-content: center; }
-                            .btn { padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.85rem; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
-                            .btn-primary { background: #3b82f6; color: #fff; border: 1px solid #3b82f6; }
-                            .btn-primary:hover { background: #2563eb; }
-                            .btn-secondary { background: transparent; color: #e4e4e7; border: 1px solid #3f3f46; }
-                            .btn-secondary:hover { background: #27272a; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <h1>⚙️ System Under Maintenance</h1>
-                            <p>We are currently upgrading our core infrastructure to serve you better. We apologize for the temporary disruption. All operations will resume shortly.</p>
-                            <div class="btn-group">
-                                <a href="/" class="btn btn-secondary">Return to Home</a>
-                                <a href="/login" class="btn btn-primary">Admin Access</a>
-                            </div>
-                        </div>
-                    </body>
-                    </html>
-                    """,
-                    status_code=503
-                )
-                
-        return await call_next(request)
-
-# Local Tool Imports
 from tools_lab import (
     generate_prompt_only, generate_qr_code, 
     analyze_resume, review_github, currency_tool,
@@ -127,6 +66,21 @@ MAIL_USERNAME = os.getenv("MAIL_USERNAME")
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
 MAINTENANCE_MODE = True  # 🛡️ Maintenance mode ON hai
+
+# --- 🛡️ EMAIL ANTI-SPAM CACHE ---
+ALERT_CACHE = {} 
+ALERT_COOLDOWN_MINUTES = 60 
+
+# --- 🔐 GOOGLE LOGIN (OAUTH) SETUP ---
+oauth = OAuth()
+if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
+    oauth.register(
+        name='google',
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET,
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid email profile'}
+    )
 
 # ==================================================================================
 # [CATEGORY] 3. SYSTEM INTELLIGENCE
@@ -222,6 +176,8 @@ def send_email(to, subject, body):
 def get_embedding(text):
     try:
         key = get_random_gemini_key()
+        # Note: genai setup locally per request as it is being deprecated, assuming fallback or proper module later
+        import google.generativeai as genai
         if key: genai.configure(api_key=key)
         return genai.embed_content(model="models/embedding-001", content=text, task_type="retrieval_document")['embedding']
     except: return []
@@ -381,13 +337,70 @@ class GalleryDeleteRequest(BaseModel): url: str
 class ToolRequest(BaseModel): topic: str
 
 # ==================================================================================
-# [CATEGORY] 8. APP SETUP & AUTH
+# [CATEGORY] 8. THE MAINTENANCE CLASS
+# ==================================================================================
+class MaintenanceMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if MAINTENANCE_MODE:
+            # Sabhi zaroori paths jahan maintenance mode mein bhi jana allow hai
+            allowed_paths = ["/static", "/login", "/auth/", "/api/guest_login", "/api/send_otp", "/api/verify_otp", "/api/complete_signup", "/api/login_manual", "/admin/toggle_maintenance"]
+            
+            is_allowed = False
+            if request.url.path == "/": 
+                is_allowed = True
+            for p in allowed_paths:
+                if request.url.path.startswith(p):
+                    is_allowed = True
+                    break
+            
+            user = request.session.get('user')
+            is_admin = user and user.get('email') == ADMIN_EMAIL
+            
+            if not is_allowed and not is_admin:
+                return HTMLResponse(
+                    content="""
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>System Maintenance • Ethrix</title>
+                        <style>
+                            body { background-color: #09090b; color: #e4e4e7; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                            .container { text-align: center; background: #18181b; padding: 40px; border-radius: 12px; border: 1px solid #27272a; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+                            h1 { color: #3b82f6; font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; letter-spacing: 0.5px; }
+                            p { color: #a1a1aa; font-size: 0.95rem; margin-bottom: 30px; line-height: 1.6; }
+                            .btn-group { display: flex; gap: 15px; justify-content: center; }
+                            .btn { padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.85rem; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+                            .btn-primary { background: #3b82f6; color: #fff; border: 1px solid #3b82f6; }
+                            .btn-primary:hover { background: #2563eb; }
+                            .btn-secondary { background: transparent; color: #e4e4e7; border: 1px solid #3f3f46; }
+                            .btn-secondary:hover { background: #27272a; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h1>⚙️ System Under Maintenance</h1>
+                            <p>We are currently upgrading our core infrastructure to serve you better. We apologize for the temporary disruption. All operations will resume shortly.</p>
+                            <div class="btn-group">
+                                <a href="/" class="btn btn-secondary">Return to Home</a>
+                                <a href="/login" class="btn btn-primary">Admin Access</a>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """,
+                    status_code=503
+                )
+                
+        return await call_next(request)
+
+# ==================================================================================
+# [CATEGORY] 9. APP SETUP & MIDDLEWARES
 # ==================================================================================
 app = FastAPI()
 
-# ==========================================================
 # 🎮 ARCADE ZONE (ISOLATED MOUNT)
-# ==========================================================
 try:
     from arcade_zone.arcade_backend import arcade_app
     app.mount("/arcade", arcade_app)
@@ -396,13 +409,8 @@ except Exception as e:
     print(f"Arcade module offline (Safe Mode Active): {e}")
 
 # 🚨 CORRECT MIDDLEWARE STACK 🚨
-# 1. Sabse pehle hum Maintenance lagayenge (Yeh sabse andar rahega)
 app.add_middleware(MaintenanceMiddleware)
-
-# 2. Fir Session (Taaki Maintenance ko session ka data mil sake)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True, same_site="lax")
-
-# 3. Aur sabse last mein CORS (FastAPI isko sabse pehle run karega!)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 if not os.path.exists("static"): 
@@ -411,41 +419,22 @@ app.mount("/static", StaticFiles(directory=os.path.join(os.getcwd(), "static")),
 
 templates = Jinja2Templates(directory="templates")
 
-# 🛡️ NEW FASTAPI MAINTENANCE MIDDLEWARE
-@app.middleware("http")
-async def maintenance_middleware(request: Request, call_next):
-    if MAINTENANCE_MODE:
-        allowed_paths = ["/static", "/login", "/auth/", "/api/guest_login", "/api/send_otp", "/api/verify_otp", "/api/complete_signup", "/api/login_manual"]
-        
-        is_allowed = False
-        if request.url.path == "/": 
-            is_allowed = True
-        for p in allowed_paths:
-            if request.url.path.startswith(p):
-                is_allowed = True
-                break
-        
-        user = request.session.get('user')
-        is_admin = user and user.get('email') == ADMIN_EMAIL
-        
-        if not is_allowed and not is_admin:
-            return templates.TemplateResponse("maintenance.html", {"request": request}, status_code=503)
-            
-    return await call_next(request)
-
 @app.on_event("startup")
 def startup_event():
     try:
         scheduler.add_job(lambda: asyncio.run(generate_daily_diary()), 'cron', hour=23, minute=59)
         scheduler.add_job(lambda: asyncio.run(check_proactive_messaging()), 'interval', hours=4)
         
-        # 🚀 ADD THIS LINE: Har 30 minute mein automatically health check hoga
+        # Har 30 minute mein automatically health check hoga
         scheduler.add_job(lambda: asyncio.run(run_system_diagnostics()), 'interval', minutes=30)
         
         scheduler.start()
     except Exception as e: 
         print(f"Scheduler Error: {e}")
 
+# ==================================================================================
+# [CATEGORY] 10. AUTH ROUTES
+# ==================================================================================
 @app.get("/auth/login")
 async def login(request: Request):
     redirect_uri = str(request.url_for('auth_callback')).replace("http://", "https://")
@@ -459,7 +448,7 @@ async def auth_callback(request: Request):
         
         # 🔒 MAINTENANCE LOCK FOR GOOGLE LOGIN
         if MAINTENANCE_MODE and user['email'] != ADMIN_EMAIL:
-            return templates.TemplateResponse("maintenance.html", {"request": request}, status_code=503)
+            return HTMLResponse(content="<h1>Site Under Maintenance</h1>", status_code=503)
 
         existing_user = await users_collection.find_one({"email": user['email']})
         
@@ -533,7 +522,7 @@ async def login_manual(req: LoginRequest, request: Request):
     return JSONResponse({"status": "error"}, 400)
 
 # ==================================================================================
-# [CATEGORY] 9. PAGE ROUTES (Main Pages + ALL Tools + Admin)
+# [CATEGORY] 11. PAGE ROUTES
 # ==================================================================================
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request): return templates.TemplateResponse("login.html", {"request": request})
@@ -604,7 +593,6 @@ async def admin_page(request: Request):
         "top_tools": top_tools, "max_tool_count": max_tool_count, "recent_errors": recent_errors     
     })
 
-# Yeh line routes ke paas daal dena
 @app.post("/admin/toggle_maintenance")
 async def api_toggle_maintenance(request: Request):
     user = await get_current_user(request)
@@ -762,7 +750,7 @@ async def anime_talker_page(request: Request):
     return templates.TemplateResponse("tools/anime_talker.html", {"request": request, "user": user})
 
 # ==================================================================================
-# [CATEGORY] 10. API ROUTES
+# [CATEGORY] 12. MAIN API ROUTES
 # ==================================================================================
 @app.get("/api/profile")
 async def get_profile(request: Request):
@@ -803,13 +791,10 @@ async def get_history(request: Request):
 @app.get("/api/new_chat")
 async def create_chat(request: Request): return {"session_id": str(uuid.uuid4())[:8], "messages": []}
 
-# ==================================================================================
-# [CATEGORY] NEW ADVANCED IMAGE GENERATION API
-# ==================================================================================
 class AdvancedImageGenRequest(BaseModel):
     prompt: str
-    style: str = "realistic"  # 'realistic' ya 'painting'
-    tier: str = "free"        # 'free' ya 'pro'
+    style: str = "realistic" 
+    tier: str = "free"       
 
 @app.post("/api/image_gen")
 async def advanced_image_gen_api(req: AdvancedImageGenRequest, request: Request):
@@ -823,17 +808,14 @@ async def advanced_image_gen_api(req: AdvancedImageGenRequest, request: Request)
         
         image_url = ""
         
-        # Free ya Pro engine select karna
         if req.tier == "pro":
             image_url = await generate_image_pro(req.prompt, req.style)
         else:
             image_url = await generate_image_free(req.prompt, req.style)
 
-        # Agar koi error message aaya ho (start with ⚠️)
         if image_url.startswith("⚠️"):
             return {"status": "error", "message": image_url}
         
-        # Usage track karne ke liye (Optional, admin panel ke liye achha rahega)
         await tool_usage_collection.update_one(
             {"tool_name": f"image_gen_{req.tier}"}, 
             {"$inc": {"count": 1}}, 
@@ -882,10 +864,8 @@ async def delete_memory(req: MemoryRequest, request: Request):
     user = await get_current_user(request)
     if not user: return JSONResponse({"status": "error"}, 400)
     
-    # 1. MongoDB se delete karo
     await users_collection.update_one({"email": user['email']}, {"$pull": {"memories": req.memory_text}})
     
-    # 2. Pinecone (Vector DB) se bhi hamesha ke liye delete karo
     if index:
         try:
             mem_id = f"{user['email']}_{hashlib.md5(req.memory_text.encode()).hexdigest()}"
@@ -942,10 +922,8 @@ async def manual_trigger_diary(request: Request):
     
     diary_entry = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile").choices[0].message.content
     
-    # Aaj ki date
     today_date = datetime.utcnow().strftime('%Y-%m-%d')
     
-    # Check if entry already exists for today, then update, else insert
     await diary_collection.update_one(
         {"user_email": user['email'], "date": today_date},
         {"$set": {"content": diary_entry, "mood": "Happy", "timestamp": datetime.utcnow()}},
@@ -980,7 +958,6 @@ async def chat_endpoint(req: ChatRequest, request: Request, background_tasks: Ba
 
         FINAL_SYSTEM_PROMPT = user_custom_prompt if user_custom_prompt and user_custom_prompt.strip() else DEFAULT_SYSTEM_INSTRUCTIONS
         
-        # 🚀 YAHAN HAI WO NAYA MAGIC CODE!
         user_display_name = db_user.get("name") or user.get("name", "User")
         
         if user_display_name == "User" or user_display_name == "" or "guest" in user_display_name.lower():
@@ -989,7 +966,6 @@ async def chat_endpoint(req: ChatRequest, request: Request, background_tasks: Ba
             name_instruction = f"The person you are talking to is {user_display_name}. Address them affectionately by their name."
             
         FINAL_SYSTEM_PROMPT += f"\n\n[IMPORTANT CONTEXT]: You are Ethrix. {name_instruction} DO NOT call the user 'Ethrix' ever. DO NOT save memories about your own name."
-        # 🚀 MAGIC CODE KHATAM
         
         if retrieved_memory:
             FINAL_SYSTEM_PROMPT += f"\n\n[USER LONG-TERM MEMORY]:\n{retrieved_memory}\n(Use this information to personalize the conversation)"
@@ -1011,8 +987,7 @@ async def chat_endpoint(req: ChatRequest, request: Request, background_tasks: Ba
 
         await tool_usage_collection.update_one({"tool_name": mode}, {"$inc": {"count": 1}}, upsert=True)
 
-        if mode == "image_gen": reply = await generate_image_hf(msg) 
-        elif mode == "prompt_writer": reply = await generate_prompt_only(msg)
+        if mode == "prompt_writer": reply = await generate_prompt_only(msg)
         elif mode == "qr_generator": reply = await generate_qr_code(msg)
         elif mode == "resume_analyzer": reply = await analyze_resume(req.file_data, msg)
         elif mode == "github_review": reply = await review_github(msg)
@@ -1038,7 +1013,6 @@ async def chat_endpoint(req: ChatRequest, request: Request, background_tasks: Ba
             client = get_groq()
             reply = client.chat.completions.create(messages=[{"role": "system", "content": FINAL_SYSTEM_PROMPT}, {"role": "user", "content": f"Context: {data}\nQ: {msg}"}], model="llama-3.3-70b-versatile").choices[0].message.content if client else data
             
-        # 🌌 ETHRIX AGENT LOGIC YAHAN HAI 🌌
         elif mode == "ethrix_agent":
             try:
                 import httpx
@@ -1068,7 +1042,6 @@ async def chat_endpoint(req: ChatRequest, request: Request, background_tasks: Ba
             except Exception as e:
                 reply = f"⚠️ Ethrix Agent is offline or unreachable: {str(e)}"
         
-        # 🚀 CUSTOM TOOL WALA ELIF LOGIC
         elif mode.startswith("custom_"):
             custom_tool = next((t for t in db_user.get("custom_tools", []) if t["id"] == mode), None)
             if custom_tool:
@@ -1129,7 +1102,7 @@ async def api_generate_flashcards(req: ToolRequest, request: Request):
     except: return {"status": "error", "message": "AI couldn't format the flashcards properly.", "raw": raw_json_str}
 
 # ==================================================================================
-# [CATEGORY] ARCADE DATABASE APIs (NEW)
+# [CATEGORY] ARCADE DATABASE APIs
 # ==================================================================================
 class HighScoreRequest(BaseModel): game: str; score: int
 
@@ -1153,7 +1126,6 @@ async def get_highscore(game: str, request: Request):
     db_user = await users_collection.find_one({"email": user['email']})
     if not db_user: return {"score": 0}
     return {"score": db_user.get("arcade_scores", {}).get(game, 0)}
-
 
 # ==================================================================================
 # [CATEGORY] CUSTOM TOOLS APIs
