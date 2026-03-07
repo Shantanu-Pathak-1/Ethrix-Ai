@@ -1049,7 +1049,10 @@ async def chat_endpoint(req: ChatRequest, request: Request, background_tasks: Ba
                     }
                     
                     AGENT_URL = os.getenv("HF_AGENT_URL", "https://shantanupathak94-ai-agent-for-ethrix-ai.hf.space/run-agent")
-                    
+
+                    if not AGENT_URL.startswith("http"):
+                        AGENT_URL = "https://" + AGENT_URL
+    
                     resp = await http_client.post(AGENT_URL, headers=headers, json=payload, timeout=40.0)
                     
                     if resp.status_code == 200:
