@@ -8,6 +8,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
+
+        /* cursor */
+        @media (pointer: fine) {
+    body, a, button, input, textarea { cursor: none !important; }
+    .cursor-dot { position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: #eab308; border-radius: 50%; transform: translate(-50%, -50%); z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #eab308, 0 0 20px #eab308; }
+    .cursor-outline { position: fixed; top: 0; left: 0; width: 32px; height: 32px; border: 2px solid rgba(234, 179, 8, 0.6); border-radius: 50%; transform: translate(-50%, -50%); z-index: 99998; pointer-events: none; transition: width 0.2s, height 0.2s, background-color 0.2s; }
+}
+
         /* Responsive Overrides specific to this page */
         .memory-container { 
             max-width: 900px; 

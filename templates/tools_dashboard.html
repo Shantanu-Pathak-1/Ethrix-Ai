@@ -9,13 +9,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* ── CUSTOM CURSORS ─────────────────────────────── */
-        *, *::before, *::after {
-            cursor: url('/static/cursors/tools-cursor.gif'), auto !important;
-        }
-        a, button, [role="button"], input, select, textarea,
-        label, .tool-card, .clickable {
-            cursor: url('/static/cursors/tools-pointer.png'), pointer !important;
-        }
+   *, body, html { cursor: url('/static/cursors/tools-cursor.gif'), auto !important; }
+a, button, input, .tool-card { cursor: url('/static/cursors/tools-pointer.png'), pointer !important; }
 
         /* ── TOOL CARD HOVER EFFECTS ────────────────────── */
         .tool-card {
