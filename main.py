@@ -420,17 +420,26 @@ app.mount("/static", StaticFiles(directory=os.path.join(os.getcwd(), "static")),
 templates = Jinja2Templates(directory="templates")
 
 @app.on_event("startup")
-def startup_event():
+async def startup_event():
     try:
+        # 🛡️ Database se maintenance mode ka status load karo
+        global MAINTENANCE_MODE
+        settings = db.settings
+        state = await settings.find_one({"key": "maintenance_mode"})
+        
+        if state:
+            MAINTENANCE_MODE = state.get("value", False)
+        else:
+            await settings.insert_one({"key": "maintenance_mode", "value": False})
+            MAINTENANCE_MODE = False
+            
+        # Tumhara purana scheduler code
         scheduler.add_job(lambda: asyncio.run(generate_daily_diary()), 'cron', hour=23, minute=59)
         scheduler.add_job(lambda: asyncio.run(check_proactive_messaging()), 'interval', hours=4)
-        
-        # Har 30 minute mein automatically health check hoga
         scheduler.add_job(lambda: asyncio.run(run_system_diagnostics()), 'interval', minutes=30)
-        
         scheduler.start()
     except Exception as e: 
-        print(f"Scheduler Error: {e}")
+        print(f"Startup Error: {e}")
 
 # ==================================================================================
 # [CATEGORY] 10. AUTH ROUTES
@@ -600,6 +609,14 @@ async def api_toggle_maintenance(request: Request):
     
     global MAINTENANCE_MODE
     MAINTENANCE_MODE = not MAINTENANCE_MODE
+    
+    # 🛡️ Naya status MongoDB mein permanently save karo
+    await db.settings.update_one(
+        {"key": "maintenance_mode"}, 
+        {"$set": {"value": MAINTENANCE_MODE}}, 
+        upsert=True
+    )
+    
     return {"status": "success", "mode": MAINTENANCE_MODE}
 
 @app.get("/api/admin/run-diagnostics")
