@@ -8,8 +8,6 @@ from fastapi import FastAPI, Request, UploadFile, File, Form, Depends, HTTPExcep
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from authlib.integrations.starlette_client import OAuth
 from pydantic import BaseModel
@@ -42,6 +40,66 @@ import traceback
 
 # Local Imports
 from image_generation import generate_image_free, generate_image_pro
+
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.responses import HTMLResponse
+
+class MaintenanceMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if MAINTENANCE_MODE:
+            # Sabhi zaroori paths jahan maintenance mode mein bhi jana allow hai
+            allowed_paths = ["/static", "/login", "/auth/", "/api/guest_login", "/api/send_otp", "/api/verify_otp", "/api/complete_signup", "/api/login_manual", "/admin/toggle_maintenance"]
+            
+            is_allowed = False
+            if request.url.path == "/": 
+                is_allowed = True
+            for p in allowed_paths:
+                if request.url.path.startswith(p):
+                    is_allowed = True
+                    break
+            
+            # Ab yahan error nahi aayega kyunki session pehle hi load ho chuka hoga!
+            user = request.session.get('user')
+            is_admin = user and user.get('email') == ADMIN_EMAIL
+            
+            if not is_allowed and not is_admin:
+                return HTMLResponse(
+                    content="""
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>System Maintenance • Ethrix</title>
+                        <style>
+                            body { background-color: #09090b; color: #e4e4e7; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                            .container { text-align: center; background: #18181b; padding: 40px; border-radius: 12px; border: 1px solid #27272a; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+                            h1 { color: #3b82f6; font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; letter-spacing: 0.5px; }
+                            p { color: #a1a1aa; font-size: 0.95rem; margin-bottom: 30px; line-height: 1.6; }
+                            .btn-group { display: flex; gap: 15px; justify-content: center; }
+                            .btn { padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.85rem; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+                            .btn-primary { background: #3b82f6; color: #fff; border: 1px solid #3b82f6; }
+                            .btn-primary:hover { background: #2563eb; }
+                            .btn-secondary { background: transparent; color: #e4e4e7; border: 1px solid #3f3f46; }
+                            .btn-secondary:hover { background: #27272a; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h1>⚙️ System Under Maintenance</h1>
+                            <p>We are currently upgrading our core infrastructure to serve you better. We apologize for the temporary disruption. All operations will resume shortly.</p>
+                            <div class="btn-group">
+                                <a href="/" class="btn btn-secondary">Return to Home</a>
+                                <a href="/login" class="btn btn-primary">Admin Access</a>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """,
+                    status_code=503
+                )
+                
+        return await call_next(request)
 
 # Local Tool Imports
 from tools_lab import (
@@ -338,6 +396,7 @@ except Exception as e:
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True, same_site="lax")
+app.add_middleware(MaintenanceMiddleware)
 
 if not os.path.exists("static"): 
     os.makedirs("static")
@@ -380,113 +439,6 @@ def startup_event():
     except Exception as e: 
         print(f"Scheduler Error: {e}")
 
-@app.middleware("http")
-async def fix_google_oauth_redirect(request: Request, call_next):
-    if request.headers.get("x-forwarded-proto") == "https": 
-        request.scope["scheme"] = "https"
-    return await call_next(request)
-
-oauth = OAuth()
-oauth.register(
-    name='google', 
-    client_id=GOOGLE_CLIENT_ID, 
-    client_secret=GOOGLE_CLIENT_SECRET, 
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration', 
-    client_kwargs={'scope': 'openid email profile'}
-)
-
-# --- EMAIL SPAM PREVENTION CACHE ---
-ALERT_CACHE = {} 
-ALERT_COOLDOWN_MINUTES = 60 # Ek specific error ka email 1 ghante mein sirf ek baar aayega
-
-# 🚨 THE SMART GLOBAL ERROR CATCHER 🚨
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    endpoint = str(request.url.path)
-    
-    # 1. FastAPI ke normal HTTP errors ko bypass karo (404 etc)
-    if isinstance(exc, StarletteHTTPException):
-        if endpoint.startswith("/api/"):
-            return JSONResponse({"status": "error", "message": str(exc.detail)}, status_code=exc.status_code)
-        return HTMLResponse(content=f"<h2 style='color:white; text-align:center; margin-top:50px;'>{exc.status_code} - {exc.detail}</h2>", status_code=exc.status_code)
-
-    error_msg = str(exc)
-    full_trace = traceback.format_exc()
-    
-    # 2. Faltu routes ignore karo
-    if "favicon" in endpoint or endpoint.startswith("/static/"):
-        return HTMLResponse(status_code=404)
-
-    try:
-        # DB mein hamesha save karo
-        await error_logs_collection.insert_one({
-            "error": error_msg,
-            "trace": full_trace,
-            "endpoint": endpoint,
-            "timestamp": datetime.utcnow(),
-            "type": "Unhandled Exception"
-        })
-        
-        # --- 🛡️ ANTI-SPAM LOGIC 🛡️ ---
-        error_key = f"{endpoint}_{error_msg}" # Har unique error ki ek pehchan
-        now = datetime.utcnow()
-        
-        # Agar yeh error pehli baar aaya hai, YA 1 ghanta beet chuka hai, tabhi mail bhejo
-        if error_key not in ALERT_CACHE or (now - ALERT_CACHE[error_key]) > timedelta(minutes=ALERT_COOLDOWN_MINUTES):
-            
-            subject = f"🚨 CRITICAL ERROR on Ethrix: {endpoint}"
-            body = f"<h3>Shanvika Alert! 🚨</h3><p>Shantanu, ek naya error aaya hai!</p><b>Endpoint:</b> {endpoint}<br><b>Error:</b> {error_msg}<br><b>Trace:</b><br><pre>{full_trace[:1000]}</pre>"
-            
-            # Agar email successfully chala gaya, toh time yaad rakh lo
-            if send_email(ADMIN_EMAIL, subject, body):
-                ALERT_CACHE[error_key] = now 
-                
-    except Exception as log_err:
-        print("Logging Module Error:", log_err)
-
-    # UI Safe Response
-   # UI Safe & Professional Response
-    if endpoint.startswith("/api/"):
-        return JSONResponse(
-            status_code=500,
-            content={"status": "error", "message": "System is currently undergoing routine maintenance. Our engineering team has been notified."}
-        )
-    else:
-        return HTMLResponse(
-            content="""
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>System Maintenance • Ethrix</title>
-                <style>
-                    body { background-color: #09090b; color: #e4e4e7; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-                    .container { text-align: center; background: #18181b; padding: 40px; border-radius: 12px; border: 1px solid #27272a; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-                    h1 { color: #3b82f6; font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; letter-spacing: 0.5px; }
-                    p { color: #a1a1aa; font-size: 0.95rem; margin-bottom: 30px; line-height: 1.6; }
-                    .btn-group { display: flex; gap: 15px; justify-content: center; }
-                    .btn { padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.85rem; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
-                    .btn-primary { background: #3b82f6; color: #fff; border: 1px solid #3b82f6; }
-                    .btn-primary:hover { background: #2563eb; }
-                    .btn-secondary { background: transparent; color: #e4e4e7; border: 1px solid #3f3f46; }
-                    .btn-secondary:hover { background: #27272a; }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>⚙️ System Under Maintenance</h1>
-                    <p>We are currently upgrading our core infrastructure to serve you better. We apologize for the temporary disruption. All operations will resume shortly.</p>
-                    <div class="btn-group">
-                        <a href="/" class="btn btn-secondary">Return to Home</a>
-                        <a href="/login" class="btn btn-primary">Admin Access</a>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """,
-            status_code=500
-        )
 @app.get("/auth/login")
 async def login(request: Request):
     redirect_uri = str(request.url_for('auth_callback')).replace("http://", "https://")
