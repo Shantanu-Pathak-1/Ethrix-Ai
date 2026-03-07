@@ -445,21 +445,45 @@ async def global_exception_handler(request: Request, exc: Exception):
         print("Logging Module Error:", log_err)
 
     # UI Safe Response
+   # UI Safe & Professional Response
     if endpoint.startswith("/api/"):
         return JSONResponse(
             status_code=500,
-            content={"status": "error", "message": "Oops! Server mein kuch दिक्कत aayi hai."}
+            content={"status": "error", "message": "System is currently undergoing routine maintenance. Our engineering team has been notified."}
         )
     else:
         return HTMLResponse(
             content="""
-            <div style="font-family:sans-serif; text-align:center; padding:10%; background:#050505; color:#fff; height:100vh;">
-                <h1 style="color:#ec4899; font-size: 3rem;">⚠️ Server Error ⚠️</h1>
-                <p style="color:#a1a1aa; font-size: 1.2rem;">Oops! Kuch technical dikkat aayi hai. Shantanu ko mail chala gaya hai!</p>
-                <br><br>
-                <a href="/" style="background:#18181b; color:#fff; text-decoration:none; border:1px solid #3f3f46; padding:12px 24px; border-radius:8px; font-weight:bold; margin-right:15px;">Go to Landing Page</a>
-                <a href="/login" style="background:#ec4899; color:#fff; text-decoration:none; padding:12px 24px; border-radius:8px; font-weight:bold;">Login Page</a>
-            </div>
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>System Maintenance • Ethrix</title>
+                <style>
+                    body { background-color: #09090b; color: #e4e4e7; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                    .container { text-align: center; background: #18181b; padding: 40px; border-radius: 12px; border: 1px solid #27272a; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+                    h1 { color: #3b82f6; font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; letter-spacing: 0.5px; }
+                    p { color: #a1a1aa; font-size: 0.95rem; margin-bottom: 30px; line-height: 1.6; }
+                    .btn-group { display: flex; gap: 15px; justify-content: center; }
+                    .btn { padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.85rem; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+                    .btn-primary { background: #3b82f6; color: #fff; border: 1px solid #3b82f6; }
+                    .btn-primary:hover { background: #2563eb; }
+                    .btn-secondary { background: transparent; color: #e4e4e7; border: 1px solid #3f3f46; }
+                    .btn-secondary:hover { background: #27272a; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>⚙️ System Under Maintenance</h1>
+                    <p>We are currently upgrading our core infrastructure to serve you better. We apologize for the temporary disruption. All operations will resume shortly.</p>
+                    <div class="btn-group">
+                        <a href="/" class="btn btn-secondary">Return to Home</a>
+                        <a href="/login" class="btn btn-primary">Admin Access</a>
+                    </div>
+                </div>
+            </body>
+            </html>
             """,
             status_code=500
         )
