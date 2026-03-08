@@ -15,7 +15,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from authlib.integrations.starlette_client import OAuth
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import asyncio
 import uuid
 import os
@@ -232,7 +232,7 @@ async def extract_and_save_memory(user_email: str, user_message: str):
 # ==================================================================================
 # [CATEGORY] 6. SCHEDULER TASKS
 # ==================================================================================
-scheduler = BackgroundScheduler()
+scheduler = AsyncIOScheduler()
 
 async def generate_daily_diary():
     try:
@@ -433,10 +433,10 @@ async def startup_event():
             await settings.insert_one({"key": "maintenance_mode", "value": False})
             MAINTENANCE_MODE = False
             
-        # Tumhara purana scheduler code
-        scheduler.add_job(lambda: asyncio.run(generate_daily_diary()), 'cron', hour=23, minute=59)
-        scheduler.add_job(lambda: asyncio.run(check_proactive_messaging()), 'interval', hours=4)
-        scheduler.add_job(lambda: asyncio.run(run_system_diagnostics()), 'interval', minutes=30)
+        # Tumhara naya startup event wala code kuch aisa dikhna chahiye:
+        scheduler.add_job(generate_daily_diary, 'cron', hour=23, minute=59)
+        scheduler.add_job(check_proactive_messaging, 'interval', hours=4)
+        scheduler.add_job(run_system_diagnostics, 'interval', minutes=30)
         scheduler.start()
     except Exception as e: 
         print(f"Startup Error: {e}")
