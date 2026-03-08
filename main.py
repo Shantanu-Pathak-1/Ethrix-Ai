@@ -1024,6 +1024,7 @@ async def chat_endpoint(req: ChatRequest, request: Request, background_tasks: Ba
         elif mode == "code_debugger": reply = await code_debugger_tool(msg)
         elif mode == "movie_talker": reply = await movie_talker_tool(msg, context_history)
         elif mode == "anime_talker": reply = await anime_talker_tool(msg, context_history)
+        elif mode == "flashcards": reply = await generate_flashcards_tool(msg)
         
         elif mode == "research":
             data = await perform_research_task(msg)

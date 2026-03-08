@@ -16,7 +16,6 @@
     </style>
 </head>
 <body class="bg-gray-900 text-white flex h-screen overflow-hidden">
-    <!-- Mobile top bar -->
     <div class="tools-mobile-topbar hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-gray-900/95 backdrop-blur-md border-b border-gray-700">
         <button onclick="document.getElementById('tools-sidebar').classList.toggle('mobile-open')" class="text-white text-xl"><i class="fas fa-bars"></i></button>
         <span class="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">Ethrix</span>
@@ -52,7 +51,7 @@
             <div class="max-w-4xl mx-auto flex flex-col gap-6" id="analyzer-container">
                 <div class="text-center text-gray-400 mt-16" id="welcome-msg">
                     <i class="fas fa-file-pdf text-6xl text-teal-500 mb-4 opacity-80"></i>
-                    <h3 class="text-2xl text-gray-200 font-bold mb-2">Upload Resume (PDF)</h3>
+                    <h3 class="text-2xl text-gray-200 font-bold mb-2">Upload Resume (PDF / DOCX)</h3>
                     <p>Koi specific details batani ho toh mic ya chat use karein.</p>
                 </div>
                 <div id="loading" style="display: none;" class="text-center py-8"><i class="fas fa-circle-notch fa-spin text-4xl text-teal-400 mb-3"></i><p class="text-teal-400 font-medium animate-pulse">Scanning ATS compatibility...</p></div>
@@ -61,10 +60,10 @@
 
         <div class="p-5 bg-gray-800 border-t border-gray-700">
             <div class="max-w-4xl mx-auto flex gap-3 items-center flex-wrap sm:flex-nowrap">
-                <button onclick="document.getElementById('pdf-upload').click()" class="w-12 h-12 rounded-full bg-gray-700 border border-gray-600 text-teal-400 hover:bg-teal-900/30 transition flex items-center justify-center text-xl shrink-0" title="Upload PDF">
+                <button onclick="document.getElementById('pdf-upload').click()" class="w-12 h-12 rounded-full bg-gray-700 border border-gray-600 text-teal-400 hover:bg-teal-900/30 transition flex items-center justify-center text-xl shrink-0" title="Upload Resume">
                     <i class="fas fa-paperclip"></i>
                 </button>
-                <input type="file" id="pdf-upload" accept=".pdf" class="hidden" onchange="showFileName(this)">
+                <input type="file" id="pdf-upload" accept=".pdf,.docx" class="hidden" onchange="showFileName(this)">
                 
                 <button id="mic-btn" onclick="startVoiceCommand('context-input')" class="w-12 h-12 rounded-full bg-gray-700 border border-gray-600 text-gray-400 hover:text-teal-400 transition flex items-center justify-center text-xl shrink-0"><i class="fas fa-microphone"></i></button>
                 
@@ -124,6 +123,7 @@
                         container.innerHTML += `<div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-4 shadow-xl"><div class="flex items-center gap-2 mb-4 border-b border-gray-700 pb-3 text-teal-400 text-sm"><i class="fas fa-history"></i> Past Scan</div><div class="markdown-body">${marked.parse(msg.content)}</div></div>`;
                     }
                 });
+                document.getElementById('main-content-area').scrollTop = document.getElementById('main-content-area').scrollHeight;
             } catch(e) {}
         }
 
@@ -132,7 +132,8 @@
             const file = fileInput.files[0];
             let contextMsg = document.getElementById('context-input').value.trim();
             
-            if(!file) { alert("Mera pyara engineer, pehle PDF resume toh select karo! 🥺"); return; }
+            // 🚀 FIXED: Update alert message
+            if(!file) { alert("Mera pyara engineer, pehle PDF ya DOCX resume toh select karo! 🥺"); return; }
             if(!contextMsg) contextMsg = "Analyze this resume and provide ATS score.";
 
             document.getElementById('welcome-msg').style.display = 'none';

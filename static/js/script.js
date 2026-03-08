@@ -257,30 +257,30 @@ function appendMessage(role, text, timestamp = null) {
     if (role === 'assistant') {
         content = marked.parse(text);
     }
-
     let actionHTML = '';
     if (role === 'assistant') {
         actionHTML = `
             <div class="msg-meta">
                 <span class="msg-time">${displayTime}</span>
                 <div class="msg-actions">
-                    <button class="action-btn" onclick="copyText('${msgId}')" title="Copy"><i class="fas fa-copy"></i></button>
-                    <button class="action-btn" onclick="handleFeedback('${msgId}', 'good')" title="Good"><i class="fas fa-thumbs-up"></i></button>
-                    <button class="action-btn" onclick="handleFeedback('${msgId}', 'bad')" title="Bad"><i class="fas fa-thumbs-down"></i></button>
-                    <button class="action-btn" onclick="shareResponse('${msgId}')" title="Share"><i class="fas fa-share-alt"></i></button>
+                    <button class="action-btn" onclick="regenerateMessage('${msgId}')" title="Regenerate"><i class="fas fa-sync-alt text-[12px]"></i></button>
+                    <button class="action-btn" onclick="copyText('${msgId}')" title="Copy"><i class="fas fa-copy text-[12px]"></i></button>
+                    <button class="action-btn" onclick="handleFeedback('${msgId}', 'good')" title="Good"><i class="fas fa-thumbs-up text-[12px]"></i></button>
+                    <button class="action-btn" onclick="handleFeedback('${msgId}', 'bad')" title="Bad"><i class="fas fa-thumbs-down text-[12px]"></i></button>
+                    <button class="action-btn" onclick="shareResponse('${msgId}')" title="Share"><i class="fas fa-share-alt text-[12px]"></i></button>
                 </div>
             </div>
         `;
     } else {
-        // User ke message mein Edit icon aur fix time
+        // User ke message mein Edit aur Copy dono add kar diye
         actionHTML = `
             <div class="msg-meta" style="border-top:none; justify-content:flex-end; gap: 8px;">
                 <button class="action-btn" onclick="editMyMessage('${msgId}')" title="Edit Message"><i class="fas fa-pen text-[11px]"></i></button>
+                <button class="action-btn" onclick="copyText('${msgId}')" title="Copy Message"><i class="fas fa-copy text-[11px]"></i></button>
                 <span class="msg-time">${displayTime}</span>
             </div>
         `;
     }
-
     // Message aur HTML ko add karna
     div.innerHTML = `<div id="${msgId}_content">${content}</div> ${actionHTML}`;
     chatBox.appendChild(div);
@@ -492,16 +492,18 @@ async function loadHistory() {
     const data = await res.json();
     const list = document.getElementById('history-list');
     list.innerHTML = '';
-    data.history.forEach(chat => {
+    
+    // 🚀 FIXED: Ab yahan sirf wo chats aayengi jinme 'Tool:' naam nahi juda hai
+    data.history.filter(chat => !chat.title.startsWith('Tool:')).forEach(chat => {
         const div = document.createElement('div');
         div.className = 'history-item';
-        // Yaha par nav-label class add ki hai taaki title hide ho sake
         div.innerHTML = `<div class="history-icon"><i class="far fa-comment-alt"></i></div><span class="nav-label truncate text-xs md:text-sm flex-1">${chat.title}</span>`;
         div.onclick = () => loadChat(chat.id);
         div.oncontextmenu = (e) => { e.preventDefault(); showContextMenu(e, chat.id); };
         list.appendChild(div);
     });
 }
+
 async function loadProfile() {
     const res = await fetch('/api/profile');
     const data = await res.json();
@@ -600,3 +602,67 @@ document.addEventListener("DOMContentLoaded", () => {
         addHoverEffect();
     }
 });
+// ---------------------------------------------------------
+// 🚀 NAYA FUNCTION (Ise file mein sabse niche paste kar dena)
+// ---------------------------------------------------------
+// 🚀 FIXED: Specific message ko regenerate karne wala smart function
+async function regenerateMessage(msgId) {
+    const chatBox = document.getElementById('chat-box');
+    const aiMsgDiv = document.getElementById(msgId + '_content').closest('.msg-ai');
+    
+    if (!aiMsgDiv) return;
+
+    // AI message ke theek upar wala user ka prompt dhundho
+    let prevElement = aiMsgDiv.previousElementSibling;
+    let userText = "";
+    
+    while (prevElement) {
+        if (prevElement.classList.contains('msg-user')) {
+            let contentDiv = prevElement.querySelector('[id$="_content"]');
+            if (contentDiv) {
+                userText = contentDiv.innerText.trim();
+            }
+            break;
+        }
+        prevElement = prevElement.previousElementSibling;
+    }
+
+    if (!userText) {
+        Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: 'Original message not found!', timer: 2000, showConfirmButton: false, background: '#1e1e1e', color: '#fff' });
+        return;
+    }
+
+    // Puraana AI message delete kar do taaki screen saaf lage
+    aiMsgDiv.remove();
+
+    // Loading Animation dikhao
+    const thinkingId = 'thinking_' + Date.now();
+    const thinkingDiv = document.createElement('div');
+    thinkingDiv.className = 'msg-ai';
+    thinkingDiv.id = thinkingId;
+    thinkingDiv.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+    chatBox.appendChild(thinkingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+        const payload = {
+            message: userText, 
+            session_id: currentSessionId, 
+            mode: currentMode,
+            image_quality: imageSettings.quality, 
+            image_style: imageSettings.style
+        };
+
+        const res = await fetch('/api/chat', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(payload) 
+        });
+        const data = await res.json();
+        
+        document.getElementById(thinkingId).remove();
+        appendMessage('assistant', data.reply, null);
+    } catch (e) {
+        document.getElementById(thinkingId).innerHTML = '<span class="text-red-400">Error: Could not regenerate.</span>';
+    }
+}
