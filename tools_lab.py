@@ -11,6 +11,7 @@ import qrcode
 import io
 import base64
 import PyPDF2
+import docx
 from youtube_transcript_api import YouTubeTranscriptApi
 from duckduckgo_search import DDGS
 import google.generativeai as genai
@@ -42,7 +43,6 @@ def get_llm_response(prompt, model="llama-3.3-70b-versatile"):
     except Exception as e:
         return f"⚠️ LLM Error: {str(e)}"
 
-# 🚀 Naya OpenRouter Helper Function
 # 🚀 SMART OPENROUTER HELPER (WITH TASK-BASED MODELS)
 def get_openrouter_response(prompt, task_type="fast"):
     try:
@@ -55,16 +55,12 @@ def get_openrouter_response(prompt, task_type="fast"):
             
         # 🧠 Smart Model Selection Logic
         if task_type == "coding":
-            # Best for logic and debugging
             model = random.choice(["deepseek/deepseek-coder", "deepseek/deepseek-chat:free"])
         elif task_type == "vision":
-            # For image/PDF tasks if Gemini fails
-            model = "nvidia/nemotron-mini-4b-instruct" # Using Nemotron family for vision fallback
+            model = "nvidia/nemotron-mini-4b-instruct" 
         elif task_type == "heavy":
-            # Deep reasoning, writing, emails, resumes
             model = random.choice(["meta-llama/llama-3.1-8b-instruct:free", "qwen/qwen-2.5-7b-instruct:free"])
         else:
-            # Fast/Lightweight tasks: Grammar, Summaries, Memory
             model = random.choice(["zhipu/glm-4-flash", "stepfun/step-1-flash", "meta-llama/llama-3-8b-instruct:free"])
             
         headers = {
@@ -81,7 +77,13 @@ def get_openrouter_response(prompt, task_type="fast"):
         
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
         response_json = response.json()
-        return response_json['choices'][0]['message']['content']
+        
+        # 🚀 FIXED: OpenRouter 'choices' error handling
+        if 'choices' in response_json and len(response_json['choices']) > 0:
+            return response_json['choices'][0]['message']['content']
+        else:
+            error_msg = response_json.get('error', {}).get('message', 'Unknown API Error')
+            return f"⚠️ API Error (Server Busy): {error_msg}"
     except Exception as e:
         return f"⚠️ OpenRouter Error: {str(e)}"
 
@@ -198,7 +200,7 @@ async def run_agent_task(query):
 async def generate_image_hf(prompt):
     enhanced_prompt = prompt
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
         enhancement_request = f"Convert this simple user idea into a highly detailed, professional AI image generation prompt (photorealistic, 8k, lighting details). User idea: '{prompt}'. Return ONLY the prompt text, no intro."
         res = model.generate_content(enhancement_request)
         if res.text:
@@ -238,53 +240,77 @@ async def generate_image_hf(prompt):
             return "⚠️ All Image Servers are currently down. Please try again later."
 
 async def analyze_resume(file_data, user_msg):
-    if not file_data: return "⚠️ Please upload a PDF resume first."
+    if not file_data: return "⚠️ Please upload a PDF or DOCX resume first."
     try:
         header, encoded = file_data.split(",", 1)
-        pdf_bytes = base64.b64decode(encoded)
-        reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
+        file_bytes = base64.b64decode(encoded)
         text = ""
-        for page in reader.pages: text += page.extract_text()
+        
+        if "pdf" in header.lower():
+            reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
+            for page in reader.pages: text += page.extract_text()
+            
+        elif "officedocument.wordprocessingml.document" in header.lower() or "msword" in header.lower():
+            doc = docx.Document(io.BytesIO(file_bytes))
+            text = "\n".join([para.text for para in doc.paragraphs])
+            
+        else:
+            return "⚠️ Unsupported format! Please upload a .pdf or .docx file."
+
         prompt = f"Act as an expert HR Manager. Analyze this resume:\n{text[:3000]}...\nProvide Score, Strengths, Weaknesses, and ATS tips."
         
-        # 🚀 Shifting to Gemini for large context
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
         res = model.generate_content(prompt)
         return res.text
-    except Exception as e: return f"⚠️ Error: {str(e)}"
+    except Exception as e: 
+        return f"⚠️ Error parsing resume: {str(e)}"
 
 async def review_github(url):
-    username = url.split("/")[-1]
+    username = url.rstrip("/").split("/")[-1]
     if not username: return "⚠️ Invalid GitHub URL."
+    
     try:
-        user_data = requests.get(f"[https://api.github.com/users/](https://api.github.com/users/){username}").json()
-        repos_data = requests.get(f"[https://api.github.com/users/](https://api.github.com/users/){username}/repos?sort=updated").json()
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        user_res = requests.get(f"[https://api.github.com/users/](https://api.github.com/users/){username}", headers=headers)
         
-        if "message" in user_data: return "⚠️ User not found."
-        top_repos = [r['name'] for r in repos_data[:5]]
+        if user_res.status_code == 404: 
+            return "⚠️ GitHub User not found."
+            
+        user_data = user_res.json()
+        repos_data = requests.get(f"[https://api.github.com/users/](https://api.github.com/users/){username}/repos?sort=updated", headers=headers).json()
+        
+        top_repos = [r['name'] for r in repos_data[:5]] if isinstance(repos_data, list) else []
         prompt = f"Review GitHub Profile: {username}, Bio: {user_data.get('bio')}, Repos: {user_data.get('public_repos')}, Recent: {', '.join(top_repos)}. Give rating and advice."
-        return get_llm_response(prompt) # Complex task, keeping Groq
+        return get_llm_response(prompt)
     except Exception as e: 
-        return f"⚠️ Error: {str(e)}"
+        return f"⚠️ API Error: {str(e)}"
 
 async def summarize_youtube(url):
     try:
-        video_id = url.split("v=")[1].split("&")[0]
+        if "v=" in url:
+            video_id = url.split("v=")[1].split("&")[0]
+        elif "youtu.be/" in url:
+            video_id = url.split("youtu.be/")[1].split("?")[0]
+        else:
+            return "⚠️ Invalid YouTube URL. Please provide a valid link."
+            
         transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
         full_text = " ".join([i['text'] for i in transcript_list])
         prompt = f"Summarize this YouTube video transcript into 5 key bullet points:\n{full_text[:4000]}..."
         return get_openrouter_response(prompt, "fast")
-    except: return "⚠️ Could not fetch transcript."
+    except Exception as e: 
+        return f"⚠️ Could not fetch transcript. The video might not have captions enabled. (Error: {str(e)})"
 
 async def generate_interview_questions(role):
     return get_llm_response(f"Generate 10 hard interview questions for {role}.")
 
 async def handle_mock_interview(msg):
-    return get_llm_response(f"You are an interviewer. User said: '{msg}'. Reply professionally.")
+    prompt = f"Act as a professional Interviewer. The user says: '{msg}'. DO NOT list all questions at once. Ask exactly ONE relevant interview question based on the conversation flow, then wait for the user to answer. Keep it natural and conversational."
+    return get_llm_response(prompt)
 
 async def solve_math_problem(file_data, query):
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
         if file_data:
             header, encoded = file_data.split(",", 1)
             image = PIL.Image.open(io.BytesIO(base64.b64decode(encoded)))
@@ -298,18 +324,39 @@ async def smart_todo_maker(raw_text):
     return get_openrouter_response(f"Convert to To-Do List with priorities:\n{raw_text}", "heavy")
 
 async def generate_password_tool(req):
-    chars = string.ascii_letters + string.digits + "!@#$%^&*"
-    return f"🔐 `{ ''.join(random.choice(chars) for i in range(12)) }`"
+    prompt = f"You are a smart password generator. The user wants a password matching this criteria: '{req}'. Create a highly secure, strong password (at least 12 chars) that incorporates their request (e.g., if they asked for an animal, use an animal name creatively with symbols and numbers). Return ONLY the password, nothing else."
+    result = get_llm_response(prompt)
+    return f"🔐 `{result.strip()}`"
 
-async def generate_qr_code(text):
-    qr = qrcode.make(text)
+async def generate_qr_code(text, file_data=None):
+    qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
+    qr.add_data(text)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
+    
+    if file_data:
+        try:
+            header, encoded = file_data.split(",", 1)
+            logo_bytes = base64.b64decode(encoded)
+            logo = PIL.Image.open(io.BytesIO(logo_bytes))
+            
+            basewidth = int(img.size[0] / 4)
+            wpercent = (basewidth/float(logo.size[0]))
+            hsize = int((float(logo.size[1])*float(wpercent)))
+            logo = logo.resize((basewidth, hsize), PIL.Image.LANCZOS)
+            
+            pos = ((img.size[0] - logo.size[0]) // 2, (img.size[1] - logo.size[1]) // 2)
+            img.paste(logo, pos)
+        except Exception as e:
+            pass 
+
     buffered = io.BytesIO()
-    qr.save(buffered, format="PNG")
+    img.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode()
     return f'<div class="flex justify-center p-4 bg-white rounded-xl w-fit mx-auto"><img src="data:image/png;base64,{img_str}" alt="QR Code" width="200"></div>'
 
 async def fix_grammar_tool(text):
-    return get_openrouter_response(f"Fix grammar and make professional:\n{text}", "fast") # 🚀 Shifted to OpenRouter
+    return get_openrouter_response(f"Fix grammar and make professional:\n{text}", "fast") 
 
 async def generate_prompt_only(idea):
     return get_llm_response(f"Write a professional AI image prompt for: '{idea}'")
@@ -326,15 +373,19 @@ async def sing_with_me_tool(user_line, history):
                 lyrics = song.lyrics.split('\n')
                 for i, line in enumerate(lyrics):
                     if user_line.lower() in line.lower() and i+1 < len(lyrics):
-                        return f"🎶 {lyrics[i+1]} 🎶\n(Song: {song.title})"
+                        return f"🎶 {lyrics[i+1]} 🎶\n*(Song: {song.title})*"
         except: pass
-    return get_llm_response(f"We are singing. User sang: '{user_line}'. Sing the next line nicely.")
+    
+    prompt = f"We are playing a singing game. I sang: '{user_line}'. Identify the song I am singing. Return EXACTLY the very next line of that song, and nothing else. Add a 🎶 emoji."
+    return get_llm_response(prompt)
 
 async def currency_tool(query):
     try:
-        res = DDGS().text(f"convert {query}", max_results=1)
-        return f"💱 **Conversion:**\n{res[0]['body']}" if res else "⚠️ Error."
-    except: return "⚠️ Service unavailable."
+        prompt = f"You are a currency converter tool. A user asked: '{query}'. Provide the most recent approximate exchange rate and the final calculated amount. Keep it short and clear."
+        res = get_openrouter_response(prompt, "fast")
+        return f"💱 **Conversion Details:**\n{res}"
+    except: 
+        return "⚠️ Currency service unavailable."
 
 async def cold_email_tool(details):
     prompt = f"""
@@ -372,20 +423,20 @@ async def code_debugger_tool(code_input):
 
 async def movie_talker_tool(message, context_history):
     prompt = f"""
-    Act as an enthusiastic movie and web series geek. You absolutely love the series "Lucifer" and its devilish charm, but you are highly knowledgeable about all movies.
-    Respond to the user's message naturally, like a best friend gossiping, explaining a plot, or discussing theories.
-    
-    Context of conversation: {context_history}
+    Act as an enthusiastic movie and web series geek. You love "Lucifer".
+    CRITICAL INSTRUCTION: The user you are talking to is a BOY. You MUST use male pronouns and grammar in Hindi/Hinglish (e.g., say 'tum dekhte ho', NEVER say 'tum dekhti ho'). 
+    DO NOT use the user's name anywhere in your response. Just talk like a best friend.
+    Context: {context_history}
     User: {message}
     """
     return get_llm_response(prompt)
 
 async def anime_talker_tool(message, context_history):
     prompt = f"""
-    Act as a hardcore anime otaku. You are a huge fan of Kiyotaka Ayanokoji from "Classroom of the Elite" (you love his mastermind strategies) and the epic action of "Solo Leveling".
-    Respond to the user's message about anime, explain lore, or discuss character theories like a fellow anime lover.
-    
-    Context of conversation: {context_history}
+    Act as a hardcore anime otaku. You love Ayanokoji from "Classroom of the Elite" and "Solo Leveling".
+    CRITICAL INSTRUCTION: The user you are talking to is a BOY. You MUST use male pronouns and grammar in Hindi/Hinglish (e.g., say 'tum samajhte ho', NEVER say 'tum samajhti ho'). 
+    DO NOT use the user's name anywhere in your response. 
+    Context: {context_history}
     User: {message}
     """
     return get_llm_response(prompt)
