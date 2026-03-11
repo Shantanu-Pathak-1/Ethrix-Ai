@@ -41,51 +41,80 @@ def get_llm_response(prompt, model="llama-3.3-70b-versatile"):
         )
         return chat_completion.choices[0].message.content
     except Exception as e:
-        return f"⚠️ LLM Error: {str(e)}"
+        # 🛡️ Agar Groq (Main Chat) fail hota hai, toh OpenRouter ke heavy models handle karenge!
+        print(f"Groq API Busy! Falling back to OpenRouter: {str(e)}")
+        return get_openrouter_response(prompt, task_type="heavy")
 
 # 🚀 SMART OPENROUTER HELPER (WITH TASK-BASED MODELS)
 def get_openrouter_response(prompt, task_type="fast"):
-    try:
-        keys = os.getenv("OPENROUTER_API_KEY_POOL", "").split(",")
-        possible_keys = [k.strip() for k in keys if k.strip()]
-        key = random.choice(possible_keys) if possible_keys else os.getenv("OPENROUTER_API_KEY")
+    keys = os.getenv("OPENROUTER_API_KEY_POOL", "").split(",")
+    possible_keys = [k.strip() for k in keys if k.strip()]
+    key = random.choice(possible_keys) if possible_keys else os.getenv("OPENROUTER_API_KEY")
+    
+    if not key:
+        return "⚠️ API Key missing."
         
-        if not key:
-            return "⚠️ API Key missing."
+    # 🧠 SMART MODEL LISTS (4-5 Models per category)
+    if task_type == "coding":
+        models = [
+            "qwen/qwen-2.5-coder-32b-instruct:free", 
+            "meta-llama/llama-3.1-8b-instruct:free",
+            "google/gemma-2-9b-it:free",
+            "mistralai/mistral-7b-instruct:free",
+            "deepseek/deepseek-chat:free"
+        ]
+    elif task_type == "vision":
+        models = ["nvidia/nemotron-mini-4b-instruct"] # Vision ke liye specific
+    elif task_type == "heavy":
+        # Research aur Main Chat Fallback ke liye sabse smart models
+        models = [
+            "meta-llama/llama-3.3-70b-instruct:free",
+            "nvidia/llama-3.1-nemotron-70b-instruct:free",
+            "qwen/qwen-2.5-7b-instruct:free",
+            "google/gemma-2-9b-it:free",
+            "mistralai/mistral-7b-instruct:free"
+        ]
+    else:
+        # Fast / General Tools ke liye superfast models
+        models = [
+            "zhipu/glm-4-flash", 
+            "stepfun/step-1-flash", 
+            "meta-llama/llama-3-8b-instruct:free",
+            "google/gemma-2-9b-it:free",
+            "qwen/qwen-2-7b-instruct:free"
+        ]
+        
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "HTTP-Referer": "https://ethrix.ai", 
+        "X-Title": "Ethrix AI", 
+        "Content-Type": "application/json"
+    }
+    
+    # 🚀 FALLBACK LOOP: Ek fail hua toh dusra chalega!
+    for model in models:
+        try:
+            data = {
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}]
+            }
             
-        # 🧠 Smart Model Selection Logic
-        if task_type == "coding":
-            model = random.choice(["deepseek/deepseek-coder", "deepseek/deepseek-chat:free"])
-        elif task_type == "vision":
-            model = "nvidia/nemotron-mini-4b-instruct" 
-        elif task_type == "heavy":
-            model = random.choice(["meta-llama/llama-3.1-8b-instruct:free", "qwen/qwen-2.5-7b-instruct:free"])
-        else:
-            model = random.choice(["zhipu/glm-4-flash", "stepfun/step-1-flash", "meta-llama/llama-3-8b-instruct:free"])
+            response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data, timeout=15)
+            response_json = response.json()
             
-        headers = {
-            "Authorization": f"Bearer {key}",
-            "HTTP-Referer": "https://ethrix.ai", 
-            "X-Title": "Ethrix AI", 
-            "Content-Type": "application/json"
-        }
-        
-        data = {
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}]
-        }
-        
-        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
-        response_json = response.json()
-        
-        # 🚀 FIXED: OpenRouter 'choices' error handling
-        if 'choices' in response_json and len(response_json['choices']) > 0:
-            return response_json['choices'][0]['message']['content']
-        else:
-            error_msg = response_json.get('error', {}).get('message', 'Unknown API Error')
-            return f"⚠️ API Error (Server Busy): {error_msg}"
-    except Exception as e:
-        return f"⚠️ OpenRouter Error: {str(e)}"
+            if 'choices' in response_json and len(response_json['choices']) > 0:
+                return response_json['choices'][0]['message']['content']
+            else:
+                # Agar choice nahi aayi (server busy), toh chup-chap continue karke next model try karo
+                print(f"Model {model} is busy. Trying next model...")
+                continue 
+                
+        except Exception as e:
+            print(f"Network error with {model}. Trying next...")
+            continue
+            
+    # Agar 5 ke 5 models fail ho jayein (jo ki almost impossible hai)
+    return "⚠️ All AI Servers are currently overloaded. Please give me a few seconds and try again!"
 
 # ==================================================================================
 # [CATEGORY] NEW: AI AGENT TOOLS (Web Surfer, Python, File)
