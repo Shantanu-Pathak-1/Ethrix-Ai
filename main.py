@@ -1,8 +1,11 @@
-from fastapi import APIRouter, Request, Form
+from fastapi import FastAPI, APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import core.database as db_module
 from fastapi import Response 
+
+# 1. Main app instance create kiya
+app = FastAPI()
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -151,3 +154,6 @@ async def tool_page(request: Request, tool_name: str):
     if tool_name in valid_tools:
         return templates.TemplateResponse(f"tools/{tool_name}.html", {"request": request, "user": user})
     return RedirectResponse("/tools")
+
+# 2. File ke sabse end mein apne router ko app ke sath connect kar do
+app.include_router(router)
