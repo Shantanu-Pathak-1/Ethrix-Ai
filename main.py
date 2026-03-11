@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import core.database as db_module
+from fastapi import Response 
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -35,6 +36,23 @@ async def diary_page(request: Request):
 @router.get("/about", response_class=HTMLResponse)
 async def about_page(request: Request):
     return templates.TemplateResponse("about.html", {"request": request})
+
+# ---------------------------------------------------------
+# SEO: SITEMAP ENDPOINT FOR GOOGLE SEARCH CONSOLE
+# ---------------------------------------------------------
+@router.get("/sitemap.xml")
+async def sitemap():
+    # Shantanu, yahan 'https://your-live-domain.com' ko apne actual live URL se replace zaroor karna!
+    xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <url><loc>https://your-live-domain.com/</loc><priority>1.0</priority></url>
+        <url><loc>https://your-live-domain.com/tools</loc><priority>0.8</priority></url>
+        <url><loc>https://your-live-domain.com/about</loc><priority>0.8</priority></url>
+        <url><loc>https://your-live-domain.com/gallery</loc><priority>0.7</priority></url>
+        <url><loc>https://your-live-domain.com/login</loc><priority>0.5</priority></url>
+    </urlset>
+    """
+    return Response(content=xml_content, media_type="application/xml")
 
 @router.get("/gallery", response_class=HTMLResponse)
 async def gallery_page(request: Request):
