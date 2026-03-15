@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ethrix AI</title>
     
     <link rel="icon" type="image/png" href="/static/images/favicon.png">
@@ -83,6 +83,32 @@
         <div id="history-list" class="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-1 scrollbar-hide"></div>
 
         <div class="p-3 md:p-4 border-t border-white/5 shrink-0">
+
+            <!-- Usage Bar — sab plans ke liye -->
+            <div id="usage-bar-wrapper" class="mb-3 nav-label hidden">
+                <!-- Plan badge -->
+                <div class="flex items-center justify-between mb-2">
+                    <span id="plan-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#00E5FF]/15 text-[#00E5FF]">Free Plan ✦</span>
+                    <span id="usage-text" class="text-[10px] text-gray-500">0 / 20 msgs</span>
+                </div>
+                <!-- AI calls bar -->
+                <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div id="usage-fill" class="h-full rounded-full transition-all duration-500 bg-[#00E5FF]" style="width: 0%"></div>
+                </div>
+                <!-- Tool calls bar (smaller) -->
+                <div class="w-full bg-white/10 rounded-full h-0.5 mt-1 overflow-hidden">
+                    <div id="tool-usage-fill" class="h-full rounded-full transition-all duration-500 bg-purple-400" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-0.5">
+                    <span class="text-[9px] text-gray-600">AI msgs</span>
+                    <span id="tool-usage-text" class="text-[9px] text-gray-600">Tools: 0/10</span>
+                </div>
+                <!-- Upgrade button — sirf free aur pro users ke liye -->
+                <button id="upgrade-btn" onclick="openUpgradeModal()" class="hidden mt-2 w-full text-[10px] text-[#00E5FF] hover:text-white border border-[#00E5FF]/30 hover:bg-[#00E5FF]/10 rounded-lg py-1.5 transition">
+                    Upgrade Plan ✦
+                </button>
+            </div>
+
             <div class="flex items-center gap-2 md:gap-3 p-2 rounded-xl transition group/profile">
                 <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gray-700 overflow-hidden shrink-0 border border-gray-500 mx-auto"><img id="profile-img-sidebar" src="" class="w-full h-full object-cover"></div>
                 <div class="flex-1 overflow-hidden nav-label">
@@ -145,8 +171,168 @@
     
     <div id="payment-modal" class="modal"><div class="modal-content w-11/12 md:w-full max-w-md bg-[#0B0F19] border border-[#00E5FF]/30 text-white rounded-2xl relative overflow-hidden"><div class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] p-3 md:p-4 text-center"><h2 class="text-lg md:text-xl font-bold text-white"><i class="fas fa-secure"></i> Secure Payment</h2><p class="text-[10px] md:text-xs text-cyan-100">Ethrix AI Pro Plan • ₹499.00</p></div><div class="p-4 md:p-6 space-y-3 md:space-y-4"><div id="pay-loader" class="hidden text-center py-4"><i class="fas fa-circle-notch fa-spin text-2xl md:text-3xl text-[#00E5FF]"></i><p class="text-[10px] md:text-xs text-gray-400 mt-2">Processing secure transaction...</p></div><button id="pay-btn" onclick="processFakePayment()" class="w-full bg-[#00E5FF] hover:bg-[#00bfff] text-black font-bold py-2.5 md:py-3 rounded-xl transition shadow-[0_0_15px_rgba(0,229,255,0.4)] transform active:scale-95 mt-2 text-sm md:text-base">Pay ₹499.00</button><button onclick="closeModal('payment-modal')" class="w-full text-gray-500 text-xs hover:text-[#00E5FF] mt-2">Cancel Transaction</button></div></div></div>
 
+    <!-- Upgrade Modal — geo-pricing ke saath -->
+    <div id="upgrade-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+        <div class="bg-[#0B0F19] border border-[#00E5FF]/30 rounded-2xl w-full max-w-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] p-4 text-center relative">
+                <button onclick="document.getElementById('upgrade-modal').classList.add('hidden')" class="absolute right-3 top-3 text-white/70 hover:text-white text-lg">✕</button>
+                <div class="text-2xl mb-1">✦</div>
+                <h2 class="text-lg font-bold text-white">Upgrade Ethrix</h2>
+                <p id="modal-country-label" class="text-xs text-cyan-100 mt-1">Loading pricing...</p>
+            </div>
+            <!-- Plans grid -->
+            <div class="p-4 grid grid-cols-2 gap-3">
+                <!-- Pro Plan Card -->
+                <div class="border border-[#1E90FF]/40 rounded-xl p-3 flex flex-col gap-2">
+                    <div class="text-center">
+                        <div class="text-xs font-bold text-[#00E5FF] mb-1">⚡ Pro</div>
+                        <div id="pro-price-display" class="text-xl font-bold text-white">--</div>
+                        <div class="text-[10px] text-gray-500">/ month</div>
+                    </div>
+                    <div class="text-[10px] text-gray-400 space-y-1">
+                        <div>✓ 80 AI messages/day</div>
+                        <div>✓ 40 tool uses/day</div>
+                        <div>✓ All chat modes</div>
+                        <div>✓ Long-term memory</div>
+                    </div>
+                    <button onclick="handleUpgrade('pro')" class="mt-auto w-full bg-[#1E90FF]/20 hover:bg-[#1E90FF]/40 text-[#00E5FF] font-bold py-2 rounded-lg transition text-xs border border-[#1E90FF]/30">
+                        Get Pro
+                    </button>
+                </div>
+                <!-- Elite Plan Card -->
+                <div class="border border-purple-500/40 rounded-xl p-3 flex flex-col gap-2 relative">
+                    <div class="absolute -top-2 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">BEST VALUE</div>
+                    <div class="text-center">
+                        <div class="text-xs font-bold text-purple-400 mb-1">👑 Elite</div>
+                        <div id="elite-price-display" class="text-xl font-bold text-white">--</div>
+                        <div class="text-[10px] text-gray-500">/ month</div>
+                    </div>
+                    <div class="text-[10px] text-gray-400 space-y-1">
+                        <div>✓ 200 AI messages/day</div>
+                        <div>✓ 100 tool uses/day</div>
+                        <div>✓ Image generation</div>
+                        <div>✓ Priority speed</div>
+                    </div>
+                    <button onclick="handleUpgrade('elite')" class="mt-auto w-full bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 font-bold py-2 rounded-lg transition text-xs border border-purple-500/30">
+                        Get Elite
+                    </button>
+                </div>
+            </div>
+            <div class="px-4 pb-4 text-center">
+                <p class="text-[10px] text-gray-600">Pricing shown in your local currency</p>
+            </div>
+        </div>
+    </div>
+
     <script src="/static/js/tools.js"></script>
     <script src="/static/js/script.js"></script>
 
+    <script>
+    // ── PLAN CONFIG ────────────────────────────────────────────────────────────
+    const PLAN_STYLES = {
+        free:  { badgeClass: "bg-[#00E5FF]/15 text-[#00E5FF]",    barClass: "bg-[#00E5FF]",  label: "Free Plan ✦",  showUpgrade: true  },
+        pro:   { badgeClass: "bg-blue-500/20 text-blue-400",       barClass: "bg-blue-400",   label: "Pro Plan ⚡",  showUpgrade: true  },
+        elite: { badgeClass: "bg-purple-500/20 text-purple-400",   barClass: "bg-purple-400", label: "Elite Plan 👑",showUpgrade: false },
+        admin: { badgeClass: "bg-red-500/20 text-red-400",         barClass: "bg-red-400",    label: "Admin 🛡️",    showUpgrade: false },
+    };
+
+    let _geoPricing = null;
+
+    // ── USAGE BAR LOADER ───────────────────────────────────────────────────────
+    async function loadUsageBar() {
+        try {
+            const res  = await fetch('/api/usage');
+            const data = await res.json();
+            renderUsageBar(data);
+        } catch(e) {}
+    }
+
+    function renderUsageBar(data) {
+        const plan      = data.plan || "free";
+        const style     = PLAN_STYLES[plan] || PLAN_STYLES.free;
+        const aiUsed    = data.ai_calls    || 0;
+        const aiLimit   = data.ai_limit    || 20;
+        const toolUsed  = data.tool_calls  || 0;
+        const toolLimit = data.tool_limit  || 10;
+        const aiPct     = Math.min(100, Math.round((aiUsed   / aiLimit)   * 100));
+        const toolPct   = Math.min(100, Math.round((toolUsed / toolLimit) * 100));
+
+        const wrapper  = document.getElementById('usage-bar-wrapper');
+        const badge    = document.getElementById('plan-badge');
+        const fill     = document.getElementById('usage-fill');
+        const toolFill = document.getElementById('tool-usage-fill');
+        const text     = document.getElementById('usage-text');
+        const toolText = document.getElementById('tool-usage-text');
+        const upBtn    = document.getElementById('upgrade-btn');
+
+        if (!wrapper) return;
+        wrapper.classList.remove('hidden');
+
+        badge.textContent  = style.label;
+        badge.className    = `text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badgeClass}`;
+        text.textContent   = `${aiUsed} / ${aiLimit} msgs`;
+        toolText.textContent = `Tools: ${toolUsed}/${toolLimit}`;
+
+        fill.className     = `h-full rounded-full transition-all duration-500 ${_barColor(aiPct, style.barClass)}`;
+        fill.style.width   = aiPct + '%';
+        toolFill.style.width = toolPct + '%';
+
+        if (upBtn) {
+            if (style.showUpgrade) upBtn.classList.remove('hidden');
+            else                   upBtn.classList.add('hidden');
+        }
+    }
+
+    function _barColor(pct, defaultClass) {
+        if (pct >= 90) return 'bg-red-500';
+        if (pct >= 70) return 'bg-yellow-400';
+        return defaultClass;
+    }
+
+    function updateUsageBar(remaining, limit, toolRemaining, toolLimit) {
+        const aiUsed   = limit   - remaining;
+        const toolUsed = (toolLimit || 10) - (toolRemaining || 0);
+        const plan     = document.getElementById('plan-badge')?.textContent?.includes('Elite') ? 'elite'
+                       : document.getElementById('plan-badge')?.textContent?.includes('Pro')   ? 'pro'
+                       : 'free';
+        renderUsageBar({
+            plan, ai_calls: aiUsed, ai_limit: limit,
+            tool_calls: toolUsed, tool_limit: toolLimit || 10
+        });
+    }
+
+    // ── GEO PRICING MODAL ──────────────────────────────────────────────────────
+    async function openUpgradeModal() {
+        document.getElementById('upgrade-modal').classList.remove('hidden');
+        if (_geoPricing) { _applyPricing(_geoPricing); return; }
+        try {
+            const res = await fetch('/api/geo-pricing');
+            _geoPricing = await res.json();
+            _applyPricing(_geoPricing);
+        } catch(e) {
+            // Fallback INR prices
+            _applyPricing({ country: "India", pro_display: "₹149", elite_display: "₹399" });
+        }
+    }
+
+    function _applyPricing(p) {
+        const proEl   = document.getElementById('pro-price-display');
+        const eliteEl = document.getElementById('elite-price-display');
+        const label   = document.getElementById('modal-country-label');
+        if (proEl)   proEl.textContent   = p.pro_display   || "₹149";
+        if (eliteEl) eliteEl.textContent = p.elite_display || "₹399";
+        if (label)   label.textContent   = `Pricing for ${p.country || 'your region'}`;
+    }
+
+    function handleUpgrade(planType) {
+        // Abhi payment modal kholo (Razorpay integration baad mein)
+        document.getElementById('upgrade-modal').classList.add('hidden');
+        openModal('payment-modal');
+        // Plan type localStorage mein save karo taaki payment ke baad sahi plan set ho
+        localStorage.setItem('pending_plan', planType);
+    }
+
+    window.addEventListener('DOMContentLoaded', loadUsageBar);
+    </script>
 </body>
 </html>

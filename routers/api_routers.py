@@ -32,6 +32,8 @@ import edge_tts
 
 import tools_lab
 import core.database as db_module
+from core.rate_limiter import check_and_increment, get_usage_info
+from core.geo_pricing import get_pricing_for_user
 from image_generation import generate_image_free, generate_image_pro
 
 router = APIRouter()
@@ -218,6 +220,34 @@ async def save_instruction(req: InstructionRequest, request: Request):
     if not user: return JSONResponse({"status": "error", "message": "Login required"}, 400)
     await db_module.users_collection.update_one({"email": user['email']}, {"$set": {"custom_instruction": req.instruction}})
     return {"status": "success"}
+
+
+# ==========================================
+# [SECTION 6B] USAGE + GEO-PRICING ENDPOINTS
+# ==========================================
+@router.get("/api/usage")
+async def get_usage(request: Request):
+    user = await db_module.get_current_user(request)
+    if not user:
+        return {
+            "ai_calls": 0, "tool_calls": 0,
+            "ai_limit": 20, "tool_limit": 10,
+            "ai_remaining": 20, "tool_remaining": 10,
+            "plan": "free", "plan_label": "Free Plan",
+            "plan_color": "cyan", "plan_icon": "✦"
+        }
+    return await get_usage_info(user['email'])
+
+
+@router.get("/api/geo-pricing")
+async def geo_pricing(request: Request):
+    """
+    User ke IP se country detect karo aur sahi pricing return karo.
+    Frontend upgrade modal isme se prices fetch karega.
+    """
+    user = await db_module.get_current_user(request)
+    email = user['email'] if user else None
+    return await get_pricing_for_user(request, email)
 
 
 # ==========================================
@@ -480,6 +510,22 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
         mode = req.mode
         msg  = req.message
 
+        # ── RATE LIMIT CHECK ──────────────────────────────────────────────────
+        # Tool modes alag count karo, AI chat modes alag
+        is_tool_mode = mode not in ("chat", "research", "code_debugger", "ethrix_agent")
+        call_type    = "tool_calls" if is_tool_mode else "ai_calls"
+
+        rate_result = await check_and_increment(user['email'], call_type)
+        if not rate_result["allowed"]:
+            return JSONResponse({
+                "reply":          f"⏳ {rate_result['reason']}",
+                "limit_reached":  True,
+                "upgrade_needed": rate_result.get("upgrade_needed", False),
+                "remaining":      0,
+                "limit":          rate_result.get("limit", 20)
+            }, status_code=429)
+        # ─────────────────────────────────────────────────────────────────────
+
         if mode == "chat":
             background_tasks.add_task(extract_and_save_memory, user['email'], msg)
 
@@ -678,7 +724,15 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
         if len(chat_doc.get("messages", [])) < 2 and mode != "chat":
             await db_module.chats_collection.update_one({"session_id": sid}, {"$set": {"title": f"Tool: {mode.replace('_', ' ').title()}"}})
 
-        return {"reply": reply}
+        # Usage info bhi saath bhejo taaki frontend bar update kar sake
+        return {
+            "reply":          reply,
+            "remaining":      rate_result.get("remaining"),
+            "limit":          rate_result.get("limit"),
+            "used":           rate_result.get("used"),
+            "tool_remaining": None,
+            "tool_limit":     None,
+        }
 
     except Exception as e:
         full_trace = traceback.format_exc()

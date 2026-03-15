@@ -173,9 +173,26 @@ async function sendMessage() {
         const data = await res.json();
         document.getElementById(thinkingId).remove();
         currentFile = null; 
-        
+
+        // Rate limit hit — upgrade modal dikhao
+        if (res.status === 429 || data.limit_reached) {
+            appendMessage('assistant', data.reply, null);
+            if (data.upgrade_needed) {
+                setTimeout(() => { openUpgradeModal(); }, 600);
+            }
+            if (typeof updateUsageBar === 'function' && data.limit !== undefined) {
+                updateUsageBar(0, data.limit, 0, data.tool_limit || 10);
+            }
+            return;
+        }
+
         appendMessage('assistant', data.reply, null);
         loadHistory();
+
+        // Usage bar update karo
+        if (typeof updateUsageBar === 'function' && data.remaining !== undefined) {
+            updateUsageBar(data.remaining, data.limit, data.tool_remaining, data.tool_limit);
+        }
 
         // Agar voice true hai preferences mein, toh bolegi
         let voicePref = document.getElementById('voice-toggle');

@@ -66,21 +66,40 @@ a, button, input { cursor: url('/static/cursors/admin-pointer.png'), pointer !im
             </a>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            <div class="glass p-5 sm:p-6 rounded-2xl relative overflow-hidden group">
+        <!-- Stats Row 1: Users + Messages + Banned -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6 mb-4">
+            <div class="glass p-4 sm:p-6 rounded-2xl relative overflow-hidden group">
                 <div class="absolute -right-6 -top-6 text-8xl text-blue-500/10 group-hover:scale-110 transition"><i class="fas fa-users"></i></div>
-                <div class="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">Total Users</div>
-                <div class="text-4xl sm:text-5xl font-bold mt-2 text-white">{{ total_users }}</div>
+                <div class="text-gray-400 text-xs uppercase tracking-wider">Total Users</div>
+                <div class="text-3xl sm:text-5xl font-bold mt-2 text-white">{{ total_users }}</div>
             </div>
-            <div class="glass p-5 sm:p-6 rounded-2xl relative overflow-hidden group">
+            <div class="glass p-4 sm:p-6 rounded-2xl relative overflow-hidden group">
                 <div class="absolute -right-6 -top-6 text-8xl text-indigo-500/10 group-hover:scale-110 transition"><i class="fas fa-comments"></i></div>
-                <div class="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">Total Messages</div>
-                <div class="text-4xl sm:text-5xl font-bold mt-2 text-indigo-400">{{ total_chats }}</div>
+                <div class="text-gray-400 text-xs uppercase tracking-wider">Messages</div>
+                <div class="text-3xl sm:text-5xl font-bold mt-2 text-indigo-400">{{ total_chats }}</div>
             </div>
-            <div class="glass p-5 sm:p-6 rounded-2xl relative overflow-hidden group">
+            <div class="glass p-4 sm:p-6 rounded-2xl relative overflow-hidden group col-span-2 sm:col-span-1">
                 <div class="absolute -right-6 -top-6 text-8xl text-red-500/10 group-hover:scale-110 transition"><i class="fas fa-ban"></i></div>
-                <div class="text-gray-400 text-xs sm:text-sm uppercase tracking-wider">Restricted</div>
-                <div class="text-4xl sm:text-5xl font-bold mt-2 text-red-400">{{ banned_count }}</div>
+                <div class="text-gray-400 text-xs uppercase tracking-wider">Banned</div>
+                <div class="text-3xl sm:text-5xl font-bold mt-2 text-red-400">{{ banned_count }}</div>
+            </div>
+        </div>
+        <!-- Stats Row 2: Plan breakdown -->
+        <div class="grid grid-cols-3 gap-3 mb-6 sm:mb-8">
+            <div class="glass p-4 rounded-2xl relative overflow-hidden group border border-gray-700/30">
+                <div class="text-gray-400 text-xs uppercase tracking-wider">Free Users</div>
+                <div class="text-2xl sm:text-3xl font-bold mt-1 text-gray-300">{{ free_count }}</div>
+                <div class="text-xs text-gray-600 mt-1">{{ limits.free.ai_calls }} msgs/day</div>
+            </div>
+            <div class="glass p-4 rounded-2xl relative overflow-hidden group border border-blue-700/30">
+                <div class="text-blue-400 text-xs uppercase tracking-wider">⚡ Pro</div>
+                <div class="text-2xl sm:text-3xl font-bold mt-1 text-blue-300">{{ pro_count }}</div>
+                <div class="text-xs text-blue-600 mt-1">{{ limits.pro.ai_calls }} msgs/day</div>
+            </div>
+            <div class="glass p-4 rounded-2xl relative overflow-hidden group border border-purple-700/30">
+                <div class="text-purple-400 text-xs uppercase tracking-wider">👑 Elite</div>
+                <div class="text-2xl sm:text-3xl font-bold mt-1 text-purple-300">{{ elite_count }}</div>
+                <div class="text-xs text-purple-600 mt-1">{{ limits.elite.ai_calls }} msgs/day</div>
             </div>
         </div>
 
@@ -98,6 +117,44 @@ a, button, input { cursor: url('/static/cursors/admin-pointer.png'), pointer !im
                         <span class="text-sm font-bold text-gray-300 group-hover:text-white"><i class="fas fa-tools text-yellow-500 mr-2"></i> Maintenance Toggle</span>
                         <i class="fas fa-power-off text-gray-600 group-hover:text-yellow-500"></i>
                     </button>
+                    <button onclick="document.getElementById('pricing-panel').classList.toggle('hidden')" class="w-full flex items-center justify-between p-4 bg-black/40 border border-gray-700/50 rounded-xl hover:border-green-500 transition-colors group">
+                        <span class="text-sm font-bold text-gray-300 group-hover:text-white"><i class="fas fa-tags text-green-400 mr-2"></i> Pricing Config</span>
+                        <i class="fas fa-chevron-down text-gray-600 group-hover:text-green-400"></i>
+                    </button>
+                </div>
+                <!-- Pricing Panel -->
+                <div id="pricing-panel" class="hidden mt-4 p-4 bg-black/40 border border-green-900/30 rounded-xl space-y-3 text-sm">
+                    <div class="font-bold text-green-400 text-xs uppercase tracking-wider mb-2">Current Pricing (edit in core/geo_pricing.py)</div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-black/40 rounded-lg p-3 border border-gray-800">
+                            <div class="text-gray-500 text-xs mb-1">India (INR)</div>
+                            <div class="text-white">Pro: <span class="text-blue-400 font-bold">₹{{ pricing_in.pro }}</span></div>
+                            <div class="text-white">Elite: <span class="text-purple-400 font-bold">₹{{ pricing_in.elite }}</span></div>
+                        </div>
+                        <div class="bg-black/40 rounded-lg p-3 border border-gray-800">
+                            <div class="text-gray-500 text-xs mb-1">International (USD)</div>
+                            <div class="text-white">Pro: <span class="text-blue-400 font-bold">${{ pricing_usd.pro }}</span></div>
+                            <div class="text-white">Elite: <span class="text-purple-400 font-bold">${{ pricing_usd.elite }}</span></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-2">
+                        <div class="bg-black/40 rounded-lg p-2 border border-gray-800 text-center">
+                            <div class="text-gray-500 text-[10px]">Free/day</div>
+                            <div class="text-gray-300 font-bold">{{ limits.free.ai_calls }} AI</div>
+                            <div class="text-gray-500 text-[10px]">{{ limits.free.tool_calls }} tools</div>
+                        </div>
+                        <div class="bg-black/40 rounded-lg p-2 border border-blue-900/30 text-center">
+                            <div class="text-blue-500 text-[10px]">Pro/day</div>
+                            <div class="text-blue-300 font-bold">{{ limits.pro.ai_calls }} AI</div>
+                            <div class="text-blue-500 text-[10px]">{{ limits.pro.tool_calls }} tools</div>
+                        </div>
+                        <div class="bg-black/40 rounded-lg p-2 border border-purple-900/30 text-center">
+                            <div class="text-purple-500 text-[10px]">Elite/day</div>
+                            <div class="text-purple-300 font-bold">{{ limits.elite.ai_calls }} AI</div>
+                            <div class="text-purple-500 text-[10px]">{{ limits.elite.tool_calls }} tools</div>
+                        </div>
+                    </div>
+                    <div class="text-gray-600 text-[10px] mt-1">To change limits/prices: edit core/rate_limiter.py (LIMITS) and core/geo_pricing.py (PRICING), then redeploy.</div>
                 </div>
             </div>
 
@@ -156,9 +213,15 @@ a, button, input { cursor: url('/static/cursors/admin-pointer.png'), pointer !im
         </div>
 
         <div class="glass rounded-2xl overflow-hidden mb-10">
-            <div class="p-4 sm:p-5 border-b border-white/10 bg-white/5 flex justify-between items-center">
+            <div class="p-4 sm:p-5 border-b border-white/10 bg-white/5 flex flex-col sm:flex-row justify-between gap-3 items-start sm:items-center">
                 <h3 class="font-bold text-lg text-white"><i class="fas fa-database mr-2 text-blue-400"></i> User Database</h3>
-                <span class="bg-black/50 px-3 py-1 rounded-full text-xs text-gray-400 border border-gray-700">Top 50 Records</span>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="filterUsers('all')" id="tab-all" class="tab-btn active px-3 py-1 text-xs rounded-full border border-gray-600 text-gray-300 hover:border-blue-500 hover:text-blue-400 transition">All</button>
+                    <button onclick="filterUsers('free')" id="tab-free" class="tab-btn px-3 py-1 text-xs rounded-full border border-gray-600 text-gray-300 hover:border-gray-400 transition">Free</button>
+                    <button onclick="filterUsers('pro')" id="tab-pro" class="tab-btn px-3 py-1 text-xs rounded-full border border-blue-600/50 text-blue-400 hover:border-blue-500 transition">⚡ Pro</button>
+                    <button onclick="filterUsers('elite')" id="tab-elite" class="tab-btn px-3 py-1 text-xs rounded-full border border-purple-600/50 text-purple-400 hover:border-purple-500 transition">👑 Elite</button>
+                    <button onclick="filterUsers('banned')" id="tab-banned" class="tab-btn px-3 py-1 text-xs rounded-full border border-red-600/50 text-red-400 hover:border-red-500 transition">Banned</button>
+                </div>
             </div>
             
             <div class="overflow-x-auto w-full">
@@ -185,11 +248,13 @@ a, button, input { cursor: url('/static/cursors/admin-pointer.png'), pointer !im
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-plan="{{ user.resolved_plan }}">
                                 {% if user.email == admin_email %}
                                     <span class="text-indigo-400 text-xs font-bold border border-indigo-500/30 px-2.5 py-1 rounded bg-indigo-500/10">OWNER</span>
-                                {% elif user.is_pro %}
-                                    <span class="text-yellow-400 text-xs font-bold border border-yellow-500/30 px-2.5 py-1 rounded bg-yellow-500/10"><i class="fas fa-crown"></i> PRO</span>
+                                {% elif user.resolved_plan == "elite" %}
+                                    <span class="text-purple-400 text-xs font-bold border border-purple-500/30 px-2.5 py-1 rounded bg-purple-500/10">&#x1F451; ELITE</span>
+                                {% elif user.resolved_plan == "pro" %}
+                                    <span class="text-blue-400 text-xs font-bold border border-blue-500/30 px-2.5 py-1 rounded bg-blue-500/10">&#x26A1; PRO</span>
                                 {% else %}
                                     <span class="text-gray-400 text-xs font-bold border border-gray-600/30 px-2.5 py-1 rounded bg-gray-800/30">FREE</span>
                                 {% endif %}
@@ -204,17 +269,21 @@ a, button, input { cursor: url('/static/cursors/admin-pointer.png'), pointer !im
                             </td>
                             <td class="px-6 py-4 text-right">
                                 {% if user.email != admin_email %}
-                                    <div class="flex justify-end gap-2 opacity-100 sm:opacity-50 group-hover:opacity-100 transition-opacity">
-                                        {% if user.is_pro %}
-                                            <button onclick="confirmAction('demote', '{{ user.email }}')" title="Revoke Pro" class="w-8 h-8 flex items-center justify-center rounded-lg bg-yellow-600/20 hover:bg-yellow-600 border border-yellow-600/50 text-yellow-400 hover:text-white transition"><i class="fas fa-level-down-alt"></i></button>
-                                        {% else %}
-                                            <button onclick="confirmAction('promote', '{{ user.email }}')" title="Grant Pro" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600/20 hover:bg-blue-600 border border-blue-600/50 text-blue-400 hover:text-white transition"><i class="fas fa-crown"></i></button>
-                                        {% endif %}
-
+                                    <div class="flex justify-end gap-2 opacity-100 sm:opacity-50 group-hover:opacity-100 transition-opacity flex-wrap">
+                                        <!-- Plan Dropdown -->
+                                        <form method="POST" action="/admin/set_plan" onsubmit="return checkPass()">
+                                            <input type="hidden" name="email" value="{{ user.email }}">
+                                            <select name="plan" onchange="this.form.submit()"
+                                                class="text-xs bg-black/60 border border-gray-600 rounded-lg px-2 py-1.5 text-gray-300 hover:border-blue-500 transition cursor-pointer focus:outline-none">
+                                                <option value="free"  {% if user.resolved_plan == 'free'  %}selected{% endif %}>Free</option>
+                                                <option value="pro"   {% if user.resolved_plan == 'pro'   %}selected{% endif %}>⚡ Pro</option>
+                                                <option value="elite" {% if user.resolved_plan == 'elite' %}selected{% endif %}>👑 Elite</option>
+                                            </select>
+                                        </form>
                                         {% if user.is_banned %}
-                                            <button onclick="confirmAction('unban', '{{ user.email }}')" title="Unban User" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-600/20 hover:bg-green-600 border border-green-600/50 text-green-400 hover:text-white transition"><i class="fas fa-unlock"></i></button>
+                                            <button onclick="confirmAction('unban', '{{ user.email }}')" title="Unban" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-600/20 hover:bg-green-600 border border-green-600/50 text-green-400 hover:text-white transition"><i class="fas fa-unlock"></i></button>
                                         {% else %}
-                                            <button onclick="confirmAction('ban', '{{ user.email }}')" title="Ban User" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-600/20 hover:bg-red-600 border border-red-600/50 text-red-400 hover:text-white transition"><i class="fas fa-ban"></i></button>
+                                            <button onclick="confirmAction('ban', '{{ user.email }}')" title="Ban" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-600/20 hover:bg-red-600 border border-red-600/50 text-red-400 hover:text-white transition"><i class="fas fa-ban"></i></button>
                                         {% endif %}
                                     </div>
                                 {% else %}
@@ -317,21 +386,37 @@ a, button, input { cursor: url('/static/cursors/admin-pointer.png'), pointer !im
             });
         }
 
-        // CONTROL ACTIONS
+        // ── FILTER USERS BY PLAN ──────────────────────────────
+        function filterUsers(plan) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active','border-blue-500','text-blue-400','border-purple-500','text-purple-400','border-red-500','text-red-400'));
+            document.getElementById('tab-'+plan).classList.add('active');
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const planCell = row.querySelector('td[data-plan]');
+                const isBanned = row.querySelector('.text-red-400') !== null && row.querySelector('.fa-unlock') !== null;
+                if (plan === 'all') { row.style.display = ''; return; }
+                if (plan === 'banned') { row.style.display = isBanned ? '' : 'none'; return; }
+                const rowPlan = planCell ? planCell.getAttribute('data-plan') : 'free';
+                row.style.display = (rowPlan === plan) ? '' : 'none';
+            });
+        }
+
+        // ── PLAN DROPDOWN SECURITY ────────────────────────
+        function checkPass() {
+            // Plan dropdown se submit hota hai — no extra password needed (already unlocked admin panel)
+            return true;
+        }
+
+        // ── CONTROL ACTIONS ───────────────────────────────
         async function confirmAction(action, email) {
             let actionText = action.toUpperCase();
-            let confirmColor = '#3085d6';
-            if(action === 'ban') confirmColor = '#d33';
-            if(action === 'demote') confirmColor = '#d97706';
-            if(action === 'promote') confirmColor = '#3b82f6';
+            let confirmColor = action === 'ban' ? '#d33' : '#10b981';
 
             const { value: password } = await Swal.fire({
                 title: 'Security Check',
                 text: `Enter password to ${actionText} this user`,
                 input: 'password',
                 inputPlaceholder: 'Enter Authorization Code',
-                background: '#111',
-                color: '#fff',
+                background: '#111', color: '#fff',
                 confirmButtonColor: confirmColor,
                 showCancelButton: true
             });
@@ -340,11 +425,9 @@ a, button, input { cursor: url('/static/cursors/admin-pointer.png'), pointer !im
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = `/admin/${action}_user`;
-                const emailField = document.createElement('input');
-                emailField.type = 'hidden';
-                emailField.name = 'email';
-                emailField.value = email;
-                form.appendChild(emailField);
+                const ef = document.createElement('input');
+                ef.type = 'hidden'; ef.name = 'email'; ef.value = email;
+                form.appendChild(ef);
                 document.body.appendChild(form);
                 form.submit();
             } else if (password) {
