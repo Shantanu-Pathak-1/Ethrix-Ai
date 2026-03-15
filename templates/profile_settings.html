@@ -3,265 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Profile Settings | Ethrix AI</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <title>Control Center | Ethrix AI</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;600&family=Roboto:wght@400;600&family=Courier+Prime&family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
     
     <style>
         body { 
-            background-color: #0B0F19; /* Ethrix Dark Theme */
-            color: #e0e0e0; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; padding: 20px; 
-            display: flex; justify-content: center; align-items: flex-start; 
-            min-height: 100vh;
-        }
-        
-        /* Glassmorphism Container */
-        .container { 
-            width: 100%; max-width: 650px; 
-            background: rgba(18, 24, 38, 0.85); 
-            border: 1px solid rgba(0, 229, 255, 0.2); 
-            backdrop-filter: blur(20px);
-            padding: 35px; border-radius: 20px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
-            box-sizing: border-box;
+            background-color: #050810; 
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.05), transparent 50%);
+            color: #e0e0e0; font-family: 'Inter', sans-serif; 
+            margin: 0; padding: 0; min-height: 100vh;
         }
 
-        h2 { margin-top: 0; color: #fff; font-size: 1.6rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(0,229,255,0.1); padding-bottom: 15px; }
-        h2 i { color: #00E5FF; }
-        
-        .profile-preview-wrapper { text-align: center; margin-bottom: 30px; margin-top: 10px; }
-        .profile-preview { 
-            width: 130px; height: 130px; border-radius: 50%; object-fit: cover; 
-            margin-bottom: 20px; border: 3px solid #00E5FF; 
-            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
-            background-color: #121826;
+        /* Top Navbar */
+        .settings-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 5%; background: rgba(11, 15, 25, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 100;
         }
-        
-        .form-group { margin-bottom: 25px; }
-        .form-label { font-size: 0.95rem; font-weight: 600; color: #9ca3af; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .form-label i { color: #00E5FF; }
-        
-        input[type="text"] { 
-            width: 100%; padding: 14px; border-radius: 12px; 
-            border: 1px solid rgba(0, 229, 255, 0.3); 
-            background: rgba(0, 0, 0, 0.4); color: white; 
-            box-sizing: border-box; font-size: 16px; transition: 0.3s;
-        }
-        input[type="text"]:focus { outline: none; border-color: #00E5FF; box-shadow: 0 0 15px rgba(0,229,255,0.15); }
-        
-        /* Avatars Grid */
-        .avatars-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(65px, 1fr)); 
-            gap: 15px; justify-items: center; margin-top: 12px;
-        }
-        
-        .avatar-option { 
-            width: 65px; height: 65px; border-radius: 50%; cursor: pointer; 
-            border: 2px solid transparent; transition: all 0.3s ease; 
-            background-color: #121826; object-fit: cover;
-        }
-        
-        .avatar-option:hover { transform: scale(1.1); border-color: rgba(0,229,255,0.5); }
-        .avatar-option.selected { 
-            border-color: #00E5FF; transform: scale(1.15); 
-            box-shadow: 0 0 15px rgba(0,229,255,0.6); 
-        }
-        
-        /* Buttons */
-        .btn { 
-            background: linear-gradient(135deg, #1E90FF, #00E5FF); 
-            color: white; padding: 14px 20px; border: none; 
-            border-radius: 12px; cursor: pointer; transition: 0.3s; 
-            font-weight: bold; width: 100%; box-sizing: border-box; font-size: 16px;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-        }
-        .btn:hover { box-shadow: 0 0 20px rgba(0,229,255,0.5); transform: translateY(-2px); }
-        .btn-upload { width: auto; display: inline-flex; padding: 10px 20px; font-size: 14px; border-radius: 10px; }
-        
-        /* Premium Lock Overlay */
-        .premium-locked-container { position: relative; display: flex; justify-content: center; cursor: pointer; width: 65px; height: 65px; transition: 0.3s; }
-        .premium-locked-container:hover { transform: scale(1.05); }
-        .premium-locked-img { filter: grayscale(80%) brightness(0.5); pointer-events: none; border: 2px solid transparent; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .premium-lock-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fbbf24; font-size: 1.3rem; text-shadow: 0 0 15px rgba(0,0,0,0.9); pointer-events: none; }
 
-        /* Premium Label overrides */
-        .premium-label { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.2); }
-        .premium-label i { color: #fbbf24; }
+        .settings-nav .brand { font-size: 1.3rem; font-weight: bold; color: white; display: flex; align-items: center; gap: 10px; }
+        .settings-nav .brand img { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(0,229,255,0.4); }
+        .back-btn { color: #9ca3af; text-decoration: none; font-size: 1rem; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .back-btn:hover { color: #fff; transform: translateX(-5px); }
 
-        .back-link { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 25px; color: #9ca3af; text-decoration: none; font-size: 14px; transition: 0.3s; }
-        .back-link:hover { color: #00E5FF; }
+        /* Main Container */
+        .main-container { max-width: 1000px; margin: 0 auto; padding: 40px 5%; }
 
-        /* Cropper Modal */
-        #cropper-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
-        .cropper-container-inner { background: #121826; padding: 25px; border-radius: 16px; border: 1px solid rgba(0,229,255,0.3); width: 100%; max-width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        .img-container { width: 100%; max-height: 50vh; margin-bottom: 20px; display: flex; justify-content: center; }
-        .btn-cancel { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239,68,68,0.5); color: #f87171; }
-        .btn-cancel:hover { background: #ef4444; color: white; box-shadow: 0 0 15px rgba(239,68,68,0.4); }
+        .page-header { margin-bottom: 40px; text-align: center; }
+        .page-header h1 { margin: 0; font-size: 2.5rem; font-weight: 700; color: white; }
+        .page-header p { color: #6b7280; font-size: 1.1rem; margin-top: 8px; }
 
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            .container { padding: 20px; border-radius: 16px; }
-            .profile-preview { width: 110px; height: 110px; }
-            .avatar-option, .premium-locked-container { width: 55px; height: 55px; }
-            .avatars-grid { grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 12px; }
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 40px; }
+
+        /* Glass Cards */
+        .settings-card { 
+            background: rgba(18, 24, 38, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); 
+            padding: 30px; border-radius: 20px; backdrop-filter: blur(10px); transition: 0.3s;
+            display: flex; flex-direction: column;
         }
+        .settings-card:hover { border-color: rgba(255, 255, 255, 0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+        .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
+        .card-header i { font-size: 1.4rem; color: #fff; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; }
+        .card-header h3 { margin: 0; font-size: 1.2rem; color: white; font-weight: 600; }
+
+        .form-label { font-size: 0.95rem; font-weight: 600; color: #9ca3af; margin-bottom: 12px; display: block; }
+        
+        /* Interactive Radio Cards for Theme & Font */
+        .radio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+        .radio-input { display: none; }
+        .radio-card { 
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 12px; border-radius: 12px; cursor: pointer; text-align: center;
+            color: #9ca3af; transition: 0.3s; font-size: 0.95rem; font-weight: 500;
+        }
+        .radio-card:hover { background: rgba(255,255,255,0.05); color: white; }
+        .radio-input:checked + .radio-card { 
+            border-color: var(--dynamic-color, #00E5FF); 
+            background: rgba(255,255,255,0.1); color: white;
+            box-shadow: 0 0 15px var(--dynamic-glow, rgba(0,229,255,0.2)); 
+        }
+
+        /* Color Palette Picker */
+        .color-palette { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px; }
+        .color-circle { 
+            width: 40px; height: 40px; border-radius: 50%; cursor: pointer; 
+            border: 2px solid transparent; transition: 0.3s;
+        }
+        .color-circle:hover { transform: scale(1.15); }
+        .color-circle.selected { border: 2px solid white; transform: scale(1.2); box-shadow: 0 0 15px currentColor; }
+
+        /* Custom Toggle Switch (COMPACT DESIGN FOR 5 TOGGLES) */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px;}
+        .flex-between .form-label { margin: 0; color: #e0e0e0; font-size: 0.9rem; }
+        .flex-between .form-desc { font-size: 0.75rem; color: #6b7280; font-weight: normal; margin-top: 2px; display: block; }
+        
+        .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #374151; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--dynamic-color, #00E5FF); box-shadow: 0 0 10px var(--dynamic-glow, rgba(0,229,255,0.5)); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Buttons Fixes */
+        .btn-primary { 
+            background: white; color: black; padding: 16px 30px; border: none; 
+            border-radius: 14px; cursor: pointer; transition: 0.3s; font-weight: 600; font-size: 1.1rem;
+            display: inline-flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .btn-primary:hover { box-shadow: 0 0 20px rgba(255,255,255,0.4); transform: translateY(-2px); }
+
+        .btn-danger, .btn-logout { 
+            padding: 16px; border-radius: 12px; width: 100%; box-sizing: border-box; 
+            font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; transition: 0.3s;
+        }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239,68,68,0.4); color: #f87171; cursor: pointer; }
+        .btn-danger:hover { background: #ef4444; color: white; box-shadow: 0 0 20px rgba(239,68,68,0.4); transform: translateY(-2px); }
+        
+        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #9ca3af; margin-top: 10px; }
+        .btn-logout:hover { background: rgba(255,255,255,0.05); color: white; transform: translateY(-2px); }
+
+        /* Profile Button Link */
+        .btn-profile { background: rgba(255,255,255,0.1); color: white; padding: 14px; border-radius: 12px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; font-weight: 600; margin-top: 15px; }
+        .btn-profile:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+
+        .action-bar { display: flex; justify-content: center; padding-top: 20px; }
+
+        @media (max-width: 768px) { .btn-primary { width: 100%; } .radio-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2><i class="fas fa-user-cog"></i> Profile Studio</h2>
-    
-    <div class="profile-preview-wrapper">
-        <img src="{{ current_pic }}" id="main-profile-pic" class="profile-preview" alt="Profile" onerror="this.src='/static/images/logo.png'">
-        <br>
-        <label class="btn btn-upload" for="upload-image">
-            <i class="fas fa-camera"></i> Upload Custom Photo
-        </label>
-        <input type="file" id="upload-image" accept="image/*" style="display: none;">
+<nav class="settings-nav">
+    <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
+    <div class="brand"><img src="/static/images/logo.png"> Ethrix AI</div>
+</nav>
+
+<div class="main-container">
+    <div class="page-header">
+        <h1>Control Center</h1>
+        <p>Customize your workspace, colors, and account settings.</p>
     </div>
 
-    <div class="form-group">
-        <label class="form-label"><i class="fas fa-id-badge"></i> Display Name</label>
-        <input type="text" id="user-name" value="{{ current_name }}" placeholder="Enter your name...">
-    </div>
+    <div class="settings-grid">
+        
+        <div class="settings-card">
+            <div class="card-header">
+                <i class="fas fa-palette" style="color: #ec4899; background: rgba(236, 72, 153, 0.1);"></i>
+                <h3>Look & Feel</h3>
+            </div>
+            
+            <label class="form-label">Ethrix AI Color Theme</label>
+            <div class="color-palette">
+                <div class="color-circle {% if prefs.primary_color == '#00E5FF' %}selected{% endif %}" style="background: #00E5FF; color: #00E5FF;" onclick="selectColor('#00E5FF', this)"></div>
+                <div class="color-circle {% if prefs.primary_color == '#EC4899' %}selected{% endif %}" style="background: #EC4899; color: #EC4899;" onclick="selectColor('#EC4899', this)"></div>
+                <div class="color-circle {% if prefs.primary_color == '#A855F7' %}selected{% endif %}" style="background: #A855F7; color: #A855F7;" onclick="selectColor('#A855F7', this)"></div>
+                <div class="color-circle {% if prefs.primary_color == '#10B981' %}selected{% endif %}" style="background: #10B981; color: #10B981;" onclick="selectColor('#10B981', this)"></div>
+                <div class="color-circle {% if prefs.primary_color == '#F59E0B' %}selected{% endif %}" style="background: #F59E0B; color: #F59E0B;" onclick="selectColor('#F59E0B', this)"></div>
+            </div>
+            <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 25px;">Changes Vanta background, your chat bubbles, and hover effects.</p>
 
-    <div class="form-group">
-        <label class="form-label"><i class="fas fa-grin-stars"></i> Standard Avatars</label>
-        <div class="avatars-grid">
-            {% for avatar in default_avatars %}
-            <img src="{{ avatar }}" class="avatar-option" onclick="selectAvatar('{{ avatar }}', this)" onerror="this.style.display='none'">
-            {% endfor %}
+            <label class="form-label">Theme Mode</label>
+            <div class="radio-grid">
+                <label>
+                    <input type="radio" name="theme" value="dark" class="radio-input" {% if prefs.theme == 'dark' %}checked{% endif %}>
+                    <div class="radio-card"><i class="fas fa-moon"></i> Dark</div>
+                </label>
+                <label>
+                    <input type="radio" name="theme" value="light" class="radio-input" {% if prefs.theme == 'light' %}checked{% endif %}>
+                    <div class="radio-card"><i class="fas fa-sun"></i> Light</div>
+                </label>
+            </div>
+
+            <label class="form-label">Typography</label>
+            <div class="radio-grid">
+                <label><input type="radio" name="font" value="Inter" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Inter' %}checked{% endif %}><div class="radio-card" style="font-family: 'Inter';">Inter</div></label>
+                <label><input type="radio" name="font" value="Poppins" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Poppins' %}checked{% endif %}><div class="radio-card" style="font-family: 'Poppins';">Poppins</div></label>
+                <label><input type="radio" name="font" value="Roboto" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Roboto' %}checked{% endif %}><div class="radio-card" style="font-family: 'Roboto';">Roboto</div></label>
+                <label><input type="radio" name="font" value="Courier Prime" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Courier Prime' %}checked{% endif %}><div class="radio-card" style="font-family: 'Courier Prime';">Courier</div></label>
+            </div>
         </div>
+
+        <div class="settings-card">
+            <div style="flex-grow: 1;">
+                <div class="card-header">
+                    <i class="fas fa-bolt" style="color: #eab308; background: rgba(234, 179, 8, 0.1);"></i>
+                    <h3>Features & Profile</h3>
+                </div>
+                
+                <div class="flex-between">
+                    <label class="form-label">🔊 Voice Reply<span class="form-desc">AI reads responses aloud</span></label>
+                    <label class="switch"><input type="checkbox" id="voice-toggle" {% if prefs.voice %}checked{% endif %}><span class="slider"></span></label>
+                </div>
+
+                <div class="flex-between">
+                    <label class="form-label">⌨️ Send on 'Enter'<span class="form-desc">Press Enter to send (Shift+Enter for newline)</span></label>
+                    <label class="switch"><input type="checkbox" id="enter-toggle" {% if prefs.send_on_enter %}checked{% endif %}><span class="slider"></span></label>
+                </div>
+
+                <div class="flex-between">
+                    <label class="form-label">🎵 UI Sound Effects<span class="form-desc">Play soft SFX on actions</span></label>
+                    <label class="switch"><input type="checkbox" id="sfx-toggle" {% if prefs.ui_sfx %}checked{% endif %}><span class="slider"></span></label>
+                </div>
+
+                <div class="flex-between">
+                    <label class="form-label">⚡ Fast Mode<span class="form-desc">Skip AI typing animations</span></label>
+                    <label class="switch"><input type="checkbox" id="fast-toggle" {% if prefs.fast_mode %}checked{% endif %}><span class="slider"></span></label>
+                </div>
+
+                <div class="flex-between" style="margin-bottom: 0;">
+                    <label class="form-label">📜 Auto-Scroll<span class="form-desc">Always scroll to latest message</span></label>
+                    <label class="switch"><input type="checkbox" id="scroll-toggle" {% if prefs.auto_scroll %}checked{% endif %}><span class="slider"></span></label>
+                </div>
+            </div>
+            
+            <a href="/profile-settings" class="btn-profile">
+                <i class="fas fa-user-edit"></i> Edit Avatar & Name
+            </a>
+        </div>
+
+        <div class="settings-card" style="border-color: rgba(239,68,68,0.2);">
+            <div class="card-header" style="border-bottom-color: rgba(239,68,68,0.1);">
+                <i class="fas fa-shield-alt" style="color: #f87171; background: rgba(239,68,68,0.1);"></i>
+                <h3 style="color: #f87171;">Account & Security</h3>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; justify-content: flex-end; flex-grow: 1;">
+                <button class="btn-danger" onclick="deleteAllChats()">
+                    <i class="fas fa-trash-alt"></i> Clear Chat History
+                </button>
+                <a href="/logout" class="btn-logout">
+                    <i class="fas fa-power-off"></i> Logout Safely
+                </a>
+            </div>
+        </div>
+
     </div>
 
-    <div class="form-group" style="margin-top: 30px;">
-        <label class="form-label premium-label"><i class="fas fa-crown"></i> Elite Exclusives</label>
-        <div class="avatars-grid">
-            {% for avatar in premium_avatars %}
-                {% if is_pro %}
-                    <img src="{{ avatar }}" class="avatar-option" style="border-color: rgba(251,191,36,0.4);" onclick="selectAvatar('{{ avatar }}', this)" onerror="this.style.display='none'">
-                {% else %}
-                    <div class="premium-locked-container" onclick="showPremiumAlert()">
-                        <img src="{{ avatar }}" class="premium-locked-img" onerror="this.parentElement.style.display='none'">
-                        <i class="fas fa-lock premium-lock-icon"></i>
-                    </div>
-                {% endif %}
-            {% endfor %}
-        </div>
+    <div class="action-bar">
+        <button class="btn-primary" onclick="saveSettings()">
+            <i class="fas fa-check-circle"></i> Save All Changes
+        </button>
     </div>
 
-    <button class="btn" style="margin-top: 30px;" onclick="saveProfile()">
-        <i class="fas fa-save"></i> Save Profile
-    </button>
-    
-    <a href="/" class="back-link">
-        <i class="fas fa-arrow-left"></i> Return to Dashboard
-    </a>
-</div>
-
-<div id="cropper-modal">
-    <div class="cropper-container-inner">
-        <h3 style="margin-top: 0; color: white; text-align: center; font-size: 1.2rem; border-bottom: 1px solid rgba(0,229,255,0.1); padding-bottom: 15px; margin-bottom: 20px;">
-            <i class="fas fa-crop-alt" style="color: #00E5FF; margin-right: 8px;"></i> Adjust Image
-        </h3>
-        <div class="img-container">
-            <img id="image-to-crop" src="">
-        </div>
-        <div style="display: flex; gap: 12px;">
-            <button class="btn" onclick="applyCrop()"><i class="fas fa-check"></i> Apply</button>
-            <button class="btn btn-cancel" onclick="document.getElementById('cropper-modal').style.display='none'"><i class="fas fa-times"></i> Cancel</button>
-        </div>
-    </div>
 </div>
 
 <script>
-    let currentSelectedPic = "{{ current_pic }}";
-    let cropper;
-
-    function selectAvatar(url, element) {
-        document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+    let chosenColor = "{{ prefs.primary_color }}";
+    
+    document.documentElement.style.setProperty('--dynamic-color', chosenColor);
+    
+    function selectColor(hex, element) {
+        document.querySelectorAll('.color-circle').forEach(el => el.classList.remove('selected'));
         element.classList.add('selected');
-        currentSelectedPic = url;
-        document.getElementById('main-profile-pic').src = url;
+        chosenColor = hex;
+        document.documentElement.style.setProperty('--dynamic-color', chosenColor);
     }
 
-    function showPremiumAlert() {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Elite Avatar Locked',
-            text: 'Unlock this exclusive 3D avatar by upgrading to the Ethrix Pro Plan!',
-            background: '#121826',
-            color: '#fff',
-            iconColor: '#fbbf24',
-            confirmButtonColor: '#00E5FF',
-            confirmButtonText: '<i class="fas fa-rocket"></i> Upgrade to Pro',
-            showCancelButton: true,
-            cancelButtonColor: 'rgba(255,255,255,0.1)',
-            cancelButtonText: 'Not Now',
-            customClass: {
-                popup: 'border border-cyan-500/30 shadow-2xl rounded-2xl'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = "/"; 
-            }
-        });
+    function previewFont() {
+        const selectedFont = document.querySelector('input[name="font"]:checked').value;
+        document.body.style.fontFamily = selectedFont + ", sans-serif";
     }
 
-    document.getElementById('upload-image').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                document.getElementById('image-to-crop').src = event.target.result;
-                document.getElementById('cropper-modal').style.display = 'flex';
-                
-                if (cropper) cropper.destroy();
-                cropper = new Cropper(document.getElementById('image-to-crop'), {
-                    aspectRatio: 1, 
-                    viewMode: 1,
-                    dragMode: 'move',
-                    autoCropArea: 0.9,
-                    restore: false,
-                    guides: true,
-                    center: true,
-                    highlight: false,
-                    cropBoxMovable: false,
-                    cropBoxResizable: false,
-                    toggleDragModeOnDblclick: false,
-                });
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    function applyCrop() {
-        const canvas = cropper.getCroppedCanvas({ width: 200, height: 200 });
-        currentSelectedPic = canvas.toDataURL('image/jpeg', 0.9); // using jpeg here to save space
-        document.getElementById('main-profile-pic').src = currentSelectedPic;
-        document.getElementById('cropper-modal').style.display = 'none';
+    async function saveSettings() {
+        // ✨ FETCH PAYLOAD MAGIC YAHAN HAI ✨
+        const theme = document.querySelector('input[name="theme"]:checked').value;
+        const font = document.querySelector('input[name="font"]:checked').value;
         
-        document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
-    }
+        const voice = document.getElementById('voice-toggle').checked;
+        const send_on_enter = document.getElementById('enter-toggle').checked;
+        const ui_sfx = document.getElementById('sfx-toggle').checked;
+        const fast_mode = document.getElementById('fast-toggle').checked;
+        const auto_scroll = document.getElementById('scroll-toggle').checked;
 
-    async function saveProfile() {
-        const newName = document.getElementById('user-name').value;
-        const btn = document.querySelector('.btn[onclick="saveProfile()"]');
+        const btn = document.querySelector('.btn-primary');
         const originalHTML = btn.innerHTML;
-        
         btn.innerHTML = "<i class='fas fa-circle-notch fa-spin'></i> Saving...";
         btn.disabled = true;
 
-        const response = await fetch('/api/update_advanced_profile', {
+        const response = await fetch('/api/save_preferences', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ new_name: newName, new_picture: currentSelectedPic })
+            body: JSON.stringify({ 
+                theme: theme, 
+                font: font, 
+                voice: voice, 
+                primary_color: chosenColor,
+                send_on_enter: send_on_enter,
+                ui_sfx: ui_sfx,
+                fast_mode: fast_mode,
+                auto_scroll: auto_scroll
+            })
         });
         const result = await response.json();
         
@@ -269,27 +284,30 @@
         btn.disabled = false;
 
         if(result.status === "success") {
+            // LocalStorage for global access
+            localStorage.setItem('theme', theme);
+            localStorage.setItem('primary_color', chosenColor);
+            
             Swal.fire({
-                icon: 'success',
-                title: 'Profile Updated',
-                text: 'Your new avatar and name are synced.',
-                background: '#121826',
-                color: '#fff',
-                iconColor: '#00E5FF',
-                showConfirmButton: false,
-                timer: 1500,
+                icon: 'success', title: 'Settings Applied! ✨', text: 'Tumhara personalized workspace save ho gaya hai.',
+                background: '#121826', color: '#fff', showConfirmButton: false, timer: 1500,
                 customClass: { popup: 'border border-cyan-500/30 shadow-2xl rounded-2xl' }
-            }).then(() => {
-                window.location.reload();
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Sync Error',
-                text: 'Unable to save profile changes.',
-                background: '#121826', color: '#fff'
             });
         }
+    }
+
+    async function deleteAllChats() {
+        Swal.fire({
+            title: 'Wipe History?', text: "Puraani saari chats delete ho jayengi!", icon: 'warning',
+            showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#374151',
+            confirmButtonText: 'Yes, wipe it!', background: '#0B0F19', color: '#fff',
+            customClass: { popup: 'border border-red-500/30 shadow-2xl rounded-2xl' }
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                await fetch('/api/delete_all_chats', { method: 'DELETE' });
+                Swal.fire({ icon: 'success', title: 'Deleted!', text: 'Clean slate ready.', background: '#0B0F19', color: '#fff', timer: 1500, showConfirmButton: false });
+            }
+        });
     }
 </script>
 </body>

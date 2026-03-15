@@ -8,12 +8,13 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 import routers.profile_routers as profile_routers
-
+import routers.settings_routers as settings_routers
 # Ab import karo routers aur database ko
 from routers.api_routers import router as api_router
 import core.database as db_module
 from routers.pages import router as pages_router
 from routers.auth_routers import router as auth_router 
+
 
 # Main app instance
 app = FastAPI(title="Ethrix AI")
@@ -33,3 +34,4 @@ app.include_router(pages_router)
 app.include_router(auth_router)
 app.include_router(api_router)
 app.include_router(profile_routers.router)
+app.include_router(settings_routers.router)
