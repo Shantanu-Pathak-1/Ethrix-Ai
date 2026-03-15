@@ -6,8 +6,11 @@ from passlib.context import CryptContext
 from authlib.integrations.starlette_client import OAuth
 import httpx
 from fastapi import Request
+from dotenv import load_dotenv # ❤️ Yeh naya import add karo
 
-# ==========================================
+load_dotenv() # ❤️ Aur yeh function call kar do taaki saari keys load ho jayein!
+
+# =========================================
 # 1. KEYS & CONFIG
 # ==========================================
 ADMIN_EMAIL = "shantanupathak94@gmail.com"
