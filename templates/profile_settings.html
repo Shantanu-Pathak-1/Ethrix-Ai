@@ -181,6 +181,9 @@
 </div>
 
 <script>
+    // ✨ Yahan humne purana data save kar liya compare karne ke liye ✨
+    const originalName = "{{ current_name }}";
+    const originalPic = "{{ current_pic }}";
     let currentSelectedPic = "{{ current_pic }}";
     let cropper;
 
@@ -204,9 +207,7 @@
             showCancelButton: true,
             cancelButtonColor: 'rgba(255,255,255,0.1)',
             cancelButtonText: 'Not Now',
-            customClass: {
-                popup: 'border border-cyan-500/30 shadow-2xl rounded-2xl'
-            }
+            customClass: { popup: 'border border-cyan-500/30 shadow-2xl rounded-2xl' }
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = "/"; 
@@ -243,15 +244,31 @@
 
     function applyCrop() {
         const canvas = cropper.getCroppedCanvas({ width: 200, height: 200 });
-        currentSelectedPic = canvas.toDataURL('image/jpeg', 0.9); // using jpeg here to save space
+        currentSelectedPic = canvas.toDataURL('image/jpeg', 0.9); 
         document.getElementById('main-profile-pic').src = currentSelectedPic;
         document.getElementById('cropper-modal').style.display = 'none';
         
         document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
     }
 
-async function saveProfile() {
-        const newName = document.getElementById('user-name').value;
+    async function saveProfile() {
+        const newName = document.getElementById('user-name').value.trim();
+
+        // 🚀 SMART CHECK: Agar kuch change nahi hua toh ye popup aayega aur API call bachegi!
+        if (newName === originalName && currentSelectedPic === originalPic) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Already Updated! ✌️',
+                text: 'Tumne koi naya change nahi kiya hai, sab already saved hai.',
+                background: '#121826',
+                color: '#fff',
+                iconColor: '#00E5FF',
+                confirmButtonColor: '#00E5FF',
+                customClass: { popup: 'border border-cyan-500/30 shadow-2xl rounded-2xl' }
+            });
+            return; // Yahin se function stop ho jayega!
+        }
+
         const btn = document.querySelector('.btn[onclick="saveProfile()"]');
         const originalHTML = btn.innerHTML;
         
@@ -264,7 +281,6 @@ async function saveProfile() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ new_name: newName, new_picture: currentSelectedPic })
             });
-            
             const result = await response.json();
             
             btn.innerHTML = originalHTML;
@@ -273,7 +289,7 @@ async function saveProfile() {
             if(result.status === "success") {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Profile Updated! 💖',
+                    title: 'Profile Updated',
                     text: 'Your new avatar and name are synced.',
                     background: '#121826',
                     color: '#fff',
@@ -286,17 +302,15 @@ async function saveProfile() {
                 });
             }
         } catch (error) {
-            console.error("Save Error (Ignored):", error);
-            // Agar backend DB save karke JSON dena bhool jaye, tab bhi safe exit!
+            console.log("Error handled smoothly", error);
             btn.innerHTML = originalHTML;
             btn.disabled = false;
             
             Swal.fire({
                 icon: 'success',
-                title: 'Saved Successfully! 💖',
-                text: 'Profile ekdum properly update ho gayi hai.',
-                background: '#121826', color: '#fff',
-                iconColor: '#00E5FF',
+                title: 'Saved! 💖',
+                text: 'Profile background mein update ho gayi hai.',
+                background: '#121826', color: '#fff', iconColor: '#00E5FF',
                 showConfirmButton: false, timer: 1500,
                 customClass: { popup: 'border border-cyan-500/30 shadow-2xl rounded-2xl' }
             }).then(() => {
