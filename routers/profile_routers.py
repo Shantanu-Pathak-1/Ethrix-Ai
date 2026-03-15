@@ -75,6 +75,7 @@ async def update_advanced_profile(req: ProfileUpdateRequest, request: Request):
         "picture": req.new_picture
     }
 
+    # Database mein save ho gaya!
     await db_module.users_collection.update_one(
         {"email": user['email']}, 
         {
@@ -83,7 +84,11 @@ async def update_advanced_profile(req: ProfileUpdateRequest, request: Request):
         }
     )
     
-    request.session['user']['name'] = req.new_name
-    request.session['user']['picture'] = req.new_picture
+    # ✨ YAHAN FIX KIYA HAI: Safe Session Update ✨
+    user_session = request.session.get('user', {})
+    if isinstance(user_session, dict):
+        user_session['name'] = req.new_name
+        user_session['picture'] = req.new_picture
+        request.session['user'] = user_session
 
     return {"status": "success", "message": "Profile updated successfully!"}
