@@ -30,8 +30,11 @@ async def auth_callback(request: Request):
         token = await oauth.google.authorize_access_token(request)
         user = token.get('userinfo')
         
-        # Maintenance Check
-        if db_module.MAINTENANCE_MODE and user['email'] != ADMIN_EMAIL:
+        # 💖 Database se Maintenance Check
+        setting = await db_module.settings_collection.find_one({"_id": "system_settings"})
+        is_maintenance = setting.get("maintenance_mode", False) if setting else False
+        
+        if is_maintenance and user['email'] != ADMIN_EMAIL:
             return HTMLResponse(content="<h1>Site Under Maintenance</h1>", status_code=503)
 
         existing_user = await users_collection.find_one({"email": user['email']})
@@ -55,7 +58,11 @@ async def logout(request: Request):
 
 @router.post("/api/guest_login")
 async def guest_login(request: Request):
-    if db_module.MAINTENANCE_MODE:
+    # 💖 Database se Maintenance Check
+    setting = await db_module.settings_collection.find_one({"_id": "system_settings"})
+    is_maintenance = setting.get("maintenance_mode", False) if setting else False
+    
+    if is_maintenance:
         return JSONResponse({"status": "error", "message": "Site is under maintenance! Guest login disabled."}, 503)
         
     request.session['user'] = {"email": f"guest_{uuid.uuid4()}@ethrix.ai", "name": "Guest", "picture": "", "is_guest": True}
@@ -77,7 +84,11 @@ async def verify_otp_endpoint(req: OTPVerifyRequest):
 
 @router.post("/api/complete_signup")
 async def complete_signup(req: SignupRequest, request: Request):
-    if db_module.MAINTENANCE_MODE and req.email != ADMIN_EMAIL: 
+    # 💖 Database se Maintenance Check
+    setting = await db_module.settings_collection.find_one({"_id": "system_settings"})
+    is_maintenance = setting.get("maintenance_mode", False) if setting else False
+
+    if is_maintenance and req.email != ADMIN_EMAIL: 
         return JSONResponse({"status": "error", "message": "Site is under maintenance!"}, 503)
 
     if await users_collection.find_one({"username": req.username}): return JSONResponse({"status": "error"}, 400)
@@ -94,7 +105,11 @@ async def complete_signup(req: SignupRequest, request: Request):
 async def login_manual(req: LoginRequest, request: Request):
     user = await users_collection.find_one({"$or": [{"email": req.identifier}, {"username": req.identifier}]})
     if user and verify_password(req.password, user.get('password_hash')):
-        if db_module.MAINTENANCE_MODE and user['email'] != ADMIN_EMAIL:
+        # 💖 Database se Maintenance Check
+        setting = await db_module.settings_collection.find_one({"_id": "system_settings"})
+        is_maintenance = setting.get("maintenance_mode", False) if setting else False
+        
+        if is_maintenance and user['email'] != ADMIN_EMAIL:
             return JSONResponse({"status": "error", "message": "Site is under maintenance! Only admins can login."}, 503)
             
         request.session['user'] = {"email": user['email'], "name": user['name']}

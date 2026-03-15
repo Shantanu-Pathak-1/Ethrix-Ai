@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import core.database as db_module
-
+from fastapi.responses import JSONResponse
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
@@ -106,6 +106,29 @@ async def unban_user(request: Request, email: str = Form(...)):
     if not user or user.get('email') != db_module.ADMIN_EMAIL: return RedirectResponse("/")
     await db_module.users_collection.update_one({"email": email}, {"$set": {"is_banned": False}})
     return RedirectResponse("/admin", status_code=303)
+
+@router.post("/admin/toggle_maintenance")
+async def toggle_maintenance(request: Request):
+    user = await db_module.get_current_user(request)
+    # Sirf admin hi isko change kar sakta hai
+    if not user or user.get('email') != db_module.ADMIN_EMAIL: 
+        return JSONResponse({"status": "error", "message": "Unauthorized"}, status_code=403)
+
+    # Database se current status check karo
+    setting = await db_module.settings_collection.find_one({"_id": "system_settings"})
+    current_mode = setting.get("maintenance_mode", False) if setting else False
+    
+    # Toggle (Ulat do)
+    new_mode = not current_mode
+
+    # Database update karo
+    await db_module.settings_collection.update_one(
+        {"_id": "system_settings"},
+        {"$set": {"maintenance_mode": new_mode}},
+        upsert=True
+    )
+
+    return {"status": "success", "mode": new_mode}
 
 # ==========================================
 # 🛠️ TOOLS DASHBOARD & DYNAMIC ROUTES

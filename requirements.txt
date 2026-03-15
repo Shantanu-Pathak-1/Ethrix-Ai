@@ -28,3 +28,4 @@ edge-tts
 lyricsgenius
 beautifulsoup4
 aiohttp
+certifi

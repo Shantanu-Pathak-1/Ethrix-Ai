@@ -6,6 +6,7 @@ from passlib.context import CryptContext
 from authlib.integrations.starlette_client import OAuth
 import httpx
 from fastapi import Request
+import certifi
 from dotenv import load_dotenv # ❤️ Yeh naya import add karo
 
 load_dotenv() # ❤️ Aur yeh function call kar do taaki saari keys load ho jayein!
@@ -56,7 +57,7 @@ def send_email(to, subject, body):
 # ==========================================
 # 4. DATABASE SETUP
 # ==========================================
-client = AsyncIOMotorClient(MONGO_URL)
+client = AsyncIOMotorClient(MONGO_URL, tlsCAFile=certifi.where()) 
 db = client.shanvika_db
 users_collection = db.users
 chats_collection = db.chats
