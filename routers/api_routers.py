@@ -604,6 +604,10 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
                 reply = research_data
 
         # MODE 4: AGENT MODE
+        # ✅ FIX: Pehle FINAL_SYSTEM_PROMPT bheja jaata tha user_context mein — us wajah se
+        # HF Space ka model answer ke end mein malformed <function=search_web{...}> append
+        # kar deta tha, jo 400 tool_use_failed error deta tha.
+        # Ab sirf user ka naam bhejte hain — agent ka apna system prompt hai HF Space par.
         elif mode == "ethrix_agent":
             try:
                 async with httpx.AsyncClient() as http_client:
@@ -615,24 +619,20 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
                         {"role": m["role"], "content": m["content"]}
                         for m in (chat_doc.get("messages", []) + [{"role": "user", "content": msg}])[-15:]
                     ]
-                    # Clean system prompt — remove any special XML/function-call characters that
-                    # confuse the HF agent's underlying model and trigger tool_use_failed (400)
-                    import re as _re
-                    safe_context = _re.sub(r'[<>{}]', '', FINAL_SYSTEM_PROMPT).strip()
-                    payload   = {"query": msg, "user_context": safe_context, "history": clean_history, "user_email": user['email']}
+                    minimal_context = f"The user's name is {user_display_name}."
+                    payload   = {"query": msg, "user_context": minimal_context, "history": clean_history, "user_email": user['email']}
                     AGENT_URL = os.getenv("HF_AGENT_URL", "https://shantanupathak94-ai-agent-for-ethrix-ai.hf.space/run-agent")
                     resp      = await http_client.post(AGENT_URL, headers=agent_headers, json=payload, timeout=40.0)
                     if resp.status_code == 200:
                         reply = resp.json().get("response", "Agent processing complete.")
                     else:
-                        # Fallback: run agent task locally if HF space returns error
                         from tools_lab import run_agent_task
                         reply = await run_agent_task(msg)
             except Exception as agent_error:
                 try:
                     from tools_lab import run_agent_task
                     reply = await run_agent_task(msg)
-                except Exception as fallback_error:
+                except Exception:
                     reply = f"⚠️ Ethrix Agent is offline or unreachable: {str(agent_error)}"
 
         # CUSTOM USER TOOLS
