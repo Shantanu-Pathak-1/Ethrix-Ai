@@ -69,17 +69,23 @@ def get_password_hash(password):
 async def get_current_user(request: Request):
     return request.session.get('user')
 
-def send_email(to, subject, body):
+async def send_email(to, subject, body):
+    """
+    Async email sender — server block nahi karega.
+    Brevo (Sendinblue) SMTP API use karta hai.
+    """
     api = BREVO_API_KEY
     if not api: return False
     try:
-        httpx.post(
-            "https://api.brevo.com/v3/smtp/email",
-            headers={"api-key": api, "content-type": "application/json"},
-            json={"sender": {"email": MAIL_USERNAME, "name": "Ethrix"}, "to": [{"email": to}], "subject": subject, "htmlContent": body}
-        )
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            await client.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={"api-key": api, "content-type": "application/json"},
+                json={"sender": {"email": MAIL_USERNAME, "name": "Ethrix"}, "to": [{"email": to}], "subject": subject, "htmlContent": body}
+            )
         return True
-    except:
+    except Exception as e:
+        print(f"[Email Error]: {e}")
         return False
 
 # ==========================================

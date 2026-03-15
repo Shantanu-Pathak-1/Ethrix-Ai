@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="description" content="Ethrix AI - Your highly intelligent and futuristic personal AI companion.">
-    <meta name="keywords" content="Ethrix AI, AI Assistant, Artificial Intelligence, Tech Startup, Shantanu Pathak">
+    <meta name="keywords" content="Ethrix AI, AI Assistant, Artificial Intelligence, Tech Startup, Ethrix AI">
     <meta name="robots" content="index, follow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="MwrbfdlLx3xF8CILvK16Glar7CAECETS50_zOaXseyg" />
     <meta name="description" content="Ethrix AI is an advanced cloud-based code editor with built-in AI agents, developer tools, and a seamless coding environment.">
-    <meta name="keywords" content="Ethrix AI, Cloud Code Editor, AI Agent, AI Coding, Web IDE, Shantanu Pathak">
+    <meta name="keywords" content="Ethrix AI, Cloud Code Editor, AI Agent, AI Coding, Web IDE">
     <title>Ethrix AI • Your Intelligent Companion</title>
     
     <link rel="icon" type="image/png" href="/static/images/favicon.png">
@@ -173,11 +173,12 @@
     </footer>
 
     <script>
-        // Theme Logic
+        // Theme Logic — preference saved in localStorage
         function toggleTheme() {
-            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.toggle('light-mode');
+            localStorage.setItem('landing-theme', isLight ? 'light' : 'dark');
             const icon = document.getElementById('theme-icon');
-            if (document.body.classList.contains('light-mode')) {
+            if (isLight) {
                 icon.classList.remove('fa-sun'); icon.classList.add('fa-moon');
                 icon.parentElement.classList.replace('text-yellow-400', 'text-gray-600');
             } else {
@@ -185,6 +186,15 @@
                 icon.parentElement.classList.replace('text-gray-600', 'text-yellow-400');
             }
         }
+        // Apply saved theme on page load
+        (function() {
+            const saved = localStorage.getItem('landing-theme');
+            if (saved === 'light') {
+                document.body.classList.add('light-mode');
+                const icon = document.getElementById('theme-icon');
+                if (icon) { icon.classList.remove('fa-sun'); icon.classList.add('fa-moon'); icon.parentElement.classList.replace('text-yellow-400','text-gray-600'); }
+            }
+        })();
         
         // Remove Spline Logo
         const killLogo = setInterval(() => {

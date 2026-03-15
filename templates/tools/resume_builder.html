@@ -74,7 +74,7 @@
         window.onload = loadToolHistory;
 
         function startVoiceCommand(inputId) {
-            if (!('webkitSpeechRecognition' in window)) { alert("Voice support nahi hai! Chrome use karein."); return; }
+            if (!('webkitSpeechRecognition' in window)) { alert("Voice input is not supported in your browser. Please use Chrome."); return; }
             const recognition = new webkitSpeechRecognition();
             recognition.lang = 'en-IN';
             const micBtn = document.getElementById('mic-btn');

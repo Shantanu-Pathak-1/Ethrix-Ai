@@ -8,7 +8,7 @@
     <link rel="icon" type="image/png" href="/static/images/favicon.png">
     
     <meta name="description" content="Ethrix AI - Your highly intelligent and futuristic personal AI companion.">
-    <meta name="keywords" content="Ethrix AI, AI Assistant, Artificial Intelligence, Tech Startup, Shantanu Pathak">
+    <meta name="keywords" content="Ethrix AI, AI Assistant, Artificial Intelligence, AI Companion, Productivity Tools">
     <meta name="google-site-verification" content="MwrbfdlLx3xF8CILvK16Glar7CAECETS50_zOaXseyg" />
     <meta name="robots" content="index, follow">
     
@@ -132,8 +132,8 @@
         <div id="chat-box" class="flex-1 overflow-y-auto p-3 md:p-4 pb-48 md:pb-48 scroll-smooth">
             <div id="welcome-screen" class="flex flex-col items-center justify-center h-full opacity-80 text-center animate-fade-in px-4">
                 <img src="/static/images/logo.png" class="w-20 h-20 md:w-24 md:h-24 rounded-full mb-4 md:mb-6 shadow-[0_0_30px_rgba(0,229,255,0.5)] animate-pulse border border-[#00E5FF]/50">
-                <h2 class="text-2xl md:text-3xl font-bold mb-2 text-[#00E5FF]">Namaste!</h2>
-                <p class="text-sm md:text-base text-white-400">Main taiyaar hu. Aaj kya create karein?</p>
+                <h2 class="text-2xl md:text-3xl font-bold mb-2 text-[#00E5FF]">Hello! 👋</h2>
+                <p class="text-sm md:text-base text-white-400">I'm ready. What shall we create today?</p>
             </div>
         </div>
 
@@ -167,7 +167,7 @@
             </div> </div>
     </main>
 
-    <div id="dropdown" class="dropdown-menu bg-[#121826] border border-[#00E5FF]/30 text-white shadow-xl z-50"><div class="dropdown-item hover:bg-[#00E5FF]/20" id="act-rename"><i class="fas fa-edit text-[#00E5FF]"></i> Rename</div><div class="dropdown-item hover:bg-[#00E5FF]/20 text-red-400" id="act-delete"><i class="fas fa-trash"></i> Delete</div></div>
+    <div id="dropdown" class="dropdown-menu bg-[#121826] border border-[#00E5FF]/30 text-white shadow-xl z-50"><div class="dropdown-item hover:bg-[#00E5FF]/20" id="act-rename"><i class="fas fa-edit text-[#00E5FF]"></i> Rename</div><div class="dropdown-item hover:bg-[#00E5FF]/20" onclick="showExportMenu()"><i class="fas fa-download text-green-400"></i> Export</div><div class="dropdown-item hover:bg-[#00E5FF]/20 text-red-400" id="act-delete"><i class="fas fa-trash"></i> Delete</div></div>
     
     <div id="payment-modal" class="modal"><div class="modal-content w-11/12 md:w-full max-w-md bg-[#0B0F19] border border-[#00E5FF]/30 text-white rounded-2xl relative overflow-hidden"><div class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] p-3 md:p-4 text-center"><h2 class="text-lg md:text-xl font-bold text-white"><i class="fas fa-secure"></i> Secure Payment</h2><p class="text-[10px] md:text-xs text-cyan-100">Ethrix AI Pro Plan • ₹499.00</p></div><div class="p-4 md:p-6 space-y-3 md:space-y-4"><div id="pay-loader" class="hidden text-center py-4"><i class="fas fa-circle-notch fa-spin text-2xl md:text-3xl text-[#00E5FF]"></i><p class="text-[10px] md:text-xs text-gray-400 mt-2">Processing secure transaction...</p></div><button id="pay-btn" onclick="processFakePayment()" class="w-full bg-[#00E5FF] hover:bg-[#00bfff] text-black font-bold py-2.5 md:py-3 rounded-xl transition shadow-[0_0_15px_rgba(0,229,255,0.4)] transform active:scale-95 mt-2 text-sm md:text-base">Pay ₹499.00</button><button onclick="closeModal('payment-modal')" class="w-full text-gray-500 text-xs hover:text-[#00E5FF] mt-2">Cancel Transaction</button></div></div></div>
 
@@ -220,6 +220,21 @@
             </div>
             <div class="px-4 pb-4 text-center">
                 <p class="text-[10px] text-gray-600">Pricing shown in your local currency</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PWA Install Prompt Banner -->
+    <div id="pwa-banner" class="hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm">
+        <div class="bg-[#0B0F19] border border-[#00E5FF]/30 rounded-2xl p-3.5 shadow-[0_0_30px_rgba(0,229,255,0.15)] flex items-center gap-3">
+            <img src="/static/images/logo.png" class="w-10 h-10 rounded-xl border border-[#00E5FF]/20 flex-shrink-0">
+            <div class="flex-1 min-w-0">
+                <div class="text-sm font-bold text-white">Install Ethrix AI</div>
+                <div class="text-[11px] text-gray-400">Add to home screen for an app-like experience!</div>
+            </div>
+            <div class="flex gap-2 flex-shrink-0">
+                <button id="pwa-install-btn" class="text-xs font-bold bg-[#00E5FF] text-black px-3 py-1.5 rounded-lg hover:bg-[#00bfff] transition">Install</button>
+                <button onclick="document.getElementById('pwa-banner').classList.add('hidden');localStorage.setItem('pwa-dismissed','1')" class="text-xs text-gray-500 hover:text-white px-2 py-1.5 transition">✕</button>
             </div>
         </div>
     </div>
@@ -328,11 +343,102 @@
         // Abhi payment modal kholo (Razorpay integration baad mein)
         document.getElementById('upgrade-modal').classList.add('hidden');
         openModal('payment-modal');
-        // Plan type localStorage mein save karo taaki payment ke baad sahi plan set ho
+        // Save plan type for post-payment upgrade
         localStorage.setItem('pending_plan', planType);
     }
 
     window.addEventListener('DOMContentLoaded', loadUsageBar);
+
+    // ── PWA INSTALL PROMPT ─────────────────────────────────────────────────────
+    let _pwaPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        _pwaPrompt = e;
+        if (!localStorage.getItem('pwa-dismissed') && !localStorage.getItem('pwa-installed')) {
+            setTimeout(() => {
+                document.getElementById('pwa-banner').classList.remove('hidden');
+            }, 5000); // 5 sec baad dikhao
+        }
+    });
+    document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
+        if (!_pwaPrompt) return;
+        _pwaPrompt.prompt();
+        const { outcome } = await _pwaPrompt.userChoice;
+        if (outcome === 'accepted') {
+            localStorage.setItem('pwa-installed', '1');
+        }
+        document.getElementById('pwa-banner').classList.add('hidden');
+        _pwaPrompt = null;
+    });
+    window.addEventListener('appinstalled', () => {
+        localStorage.setItem('pwa-installed', '1');
+        document.getElementById('pwa-banner').classList.add('hidden');
+    });
+
+    // ── CHAT EXPORT ────────────────────────────────────────────────────────────
+    async function exportCurrentChat(format = 'txt') {
+        const sid = localStorage.getItem('session_id');
+        if (!sid) return Swal.fire({ icon: 'info', title: 'No chat selected!', text: 'Please open a chat first.', background: '#0B0F19', color: '#fff', confirmButtonColor: '#00E5FF' });
+
+        const res  = await fetch(`/api/chat/${sid}`);
+        const data = await res.json();
+        const msgs = data.messages || [];
+        if (!msgs.length) return Swal.fire({ icon: 'info', title: 'Chat is empty!', background: '#0B0F19', color: '#fff', confirmButtonColor: '#00E5FF' });
+
+        const title = document.querySelector('.history-item.active span')?.textContent || 'Ethrix Chat';
+        const date  = new Date().toLocaleDateString('en-IN');
+
+        if (format === 'txt') {
+            let text = `Ethrix AI — Chat Export
+${title}
+${date}
+${'='.repeat(50)}
+
+`;
+            msgs.forEach(m => {
+                const role = m.role === 'user' ? 'You' : 'Ethrix';
+                text += `[${role}]
+${m.content}
+
+`;
+            });
+            const blob = new Blob([text], { type: 'text/plain' });
+            _downloadBlob(blob, `ethrix-chat-${sid}.txt`);
+
+        } else if (format === 'json') {
+            const exportData = { title, date, session_id: sid, messages: msgs };
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            _downloadBlob(blob, `ethrix-chat-${sid}.json`);
+        }
+
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Chat exported!', timer: 2000, showConfirmButton: false, background: '#0B0F19', color: '#fff' });
+    }
+
+    function _downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function showExportMenu() {
+        Swal.fire({
+            title: 'Chat Export',
+            html: `<div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+                <button onclick="Swal.close();exportCurrentChat('txt')" style="background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:#00E5FF;padding:10px 16px;border-radius:10px;font-weight:600;cursor:pointer;width:100%">
+                    📄 Text (.txt)
+                </button>
+                <button onclick="Swal.close();exportCurrentChat('json')" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;padding:10px 16px;border-radius:10px;font-weight:600;cursor:pointer;width:100%">
+                    📦 JSON (.json)
+                </button>
+            </div>`,
+            background: '#0B0F19', color: '#fff',
+            showConfirmButton: false, showCloseButton: true,
+            customClass: { popup: 'rounded-2xl border border-white/10' }
+        });
+    }
     </script>
 </body>
 </html>

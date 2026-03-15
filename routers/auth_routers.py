@@ -40,9 +40,18 @@ async def auth_callback(request: Request):
         existing_user = await users_collection.find_one({"email": user['email']})
         
         if not existing_user:
-            subject = '🚨 New User Registration on Ethrix AI'
-            body = f"Hello Shantanu,\n\nKisi ne Ethrix AI par naya account banaya hai!\n\nName: {user.get('name', 'New User')}\nEmail: {user['email']}\n\nJaldi check karo boss! 🚀"
-            send_email(ADMIN_EMAIL, subject, body)
+            subject = '🚀 New User — Ethrix AI'
+            body = f"""<div style="font-family:sans-serif;max-width:480px;margin:auto;background:#0B0F19;color:#e0e0e0;border-radius:16px;padding:24px;border:1px solid rgba(0,229,255,0.2)">
+<h2 style="color:#00E5FF;margin-bottom:4px">New User Joined! 🎉</h2>
+<p style="color:#9ca3af;font-size:14px;margin-top:0">Ethrix AI</p>
+<hr style="border-color:rgba(255,255,255,0.08);margin:16px 0">
+<p><b>Name:</b> {user.get('name','New User')}</p>
+<p><b>Email:</b> {user['email']}</p>
+<p><b>Method:</b> Google OAuth</p>
+<hr style="border-color:rgba(255,255,255,0.08);margin:16px 0">
+<a href="https://shantanupathak94-ethrix-ai.hf.space/admin" style="background:#00E5FF;color:#000;padding:10px 20px;border-radius:8px;font-weight:bold;text-decoration:none">Admin Panel Kholo</a>
+</div>"""
+            await send_email(ADMIN_EMAIL, subject, body)
 
         request.session['user'] = user
         await users_collection.update_one({"email": user['email']}, {"$set": {"name": user.get('name'), "picture": user.get('picture'), "username": user['email'].split('@')[0]}}, upsert=True)
@@ -73,7 +82,8 @@ async def send_otp_endpoint(req: OTPRequest):
     if await users_collection.find_one({"email": req.email}): return JSONResponse({"status": "error", "message": "Exists!"}, 400)
     otp = str(random.randint(100000, 999999))
     await otp_collection.update_one({"email": req.email}, {"$set": {"otp": otp}}, upsert=True)
-    if send_email(req.email, "Code", f"<h1>{otp}</h1>"): return {"status": "success"}
+    sent = await send_email(req.email, "Code", f"<h1>{otp}</h1>")
+    if sent: return {"status": "success"}
     return JSONResponse({"status": "error"}, 500)
 
 @router.post("/api/verify_otp")
@@ -93,9 +103,19 @@ async def complete_signup(req: SignupRequest, request: Request):
 
     if await users_collection.find_one({"username": req.username}): return JSONResponse({"status": "error"}, 400)
     
-    subject = '🚨 New User Registration on Ethrix AI'
-    body = f"Hello Shantanu,\n\nKisi ne Ethrix AI par manual account banaya hai!\n\nName: {req.full_name}\nEmail: {req.email}\nUsername: {req.username}\n\nJaldi check karo boss! 🚀"
-    send_email(ADMIN_EMAIL, subject, body)
+    subject = '🚀 New User (Manual) — Ethrix AI'
+    body = f"""<div style="font-family:sans-serif;max-width:480px;margin:auto;background:#0B0F19;color:#e0e0e0;border-radius:16px;padding:24px;border:1px solid rgba(0,229,255,0.2)">
+<h2 style="color:#00E5FF;margin-bottom:4px">New User Joined! 🎉</h2>
+<p style="color:#9ca3af;font-size:14px;margin-top:0">Ethrix AI</p>
+<hr style="border-color:rgba(255,255,255,0.08);margin:16px 0">
+<p><b>Name:</b> {req.full_name}</p>
+<p><b>Email:</b> {req.email}</p>
+<p><b>Username:</b> @{req.username}</p>
+<p><b>Method:</b> Manual Signup</p>
+<hr style="border-color:rgba(255,255,255,0.08);margin:16px 0">
+<a href="https://shantanupathak94-ethrix-ai.hf.space/admin" style="background:#00E5FF;color:#000;padding:10px 20px;border-radius:8px;font-weight:bold;text-decoration:none">Admin Panel Kholo</a>
+</div>"""
+    await send_email(ADMIN_EMAIL, subject, body)
 
     # ✨ YAHAN SE NAYA LOGIC SHURU HOTA HAI ✨
     random_profile = get_random_manual_profile()

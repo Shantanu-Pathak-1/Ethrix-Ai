@@ -4,8 +4,11 @@ from dotenv import load_dotenv
 # ❤️ SABSE PEHLE .env load karo taaki database file ko keys mil jayein!
 load_dotenv()
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 import routers.profile_routers as profile_routers
 import routers.settings_routers as settings_routers
@@ -39,3 +42,36 @@ app.include_router(auth_router)
 app.include_router(api_router)
 app.include_router(profile_routers.router)
 app.include_router(settings_routers.router)
+
+# ==========================================
+# CUSTOM ERROR PAGES
+# ==========================================
+_templates = Jinja2Templates(directory="templates")
+
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc: HTTPException):
+    return _templates.TemplateResponse(
+        "404.html", {"request": request}, status_code=404
+    )
+
+@app.exception_handler(500)
+async def server_error_handler(request: Request, exc: Exception):
+    return _templates.TemplateResponse(
+        "500.html", {"request": request}, status_code=500
+    )
+
+@app.exception_handler(Exception)
+async def generic_error_handler(request: Request, exc: Exception):
+    import traceback, core.database as _db
+    try:
+        await _db.error_logs_collection.insert_one({
+            "error": str(exc),
+            "trace": traceback.format_exc(),
+            "endpoint": str(request.url),
+            "timestamp": __import__("datetime").datetime.utcnow()
+        })
+    except Exception:
+        pass
+    return _templates.TemplateResponse(
+        "500.html", {"request": request}, status_code=500
+    )

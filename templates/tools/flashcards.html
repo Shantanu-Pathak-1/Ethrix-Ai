@@ -55,7 +55,7 @@
 
         <div class="flex-1 overflow-y-auto tool-page-content p-4 md:p-6 relative" id="main-content-area">
             <div class="max-w-5xl mx-auto">
-                <div id="loading" class="loading-text"><i class="fas fa-magic fa-spin mr-2"></i> Flashcards bana rahi hu... thoda wait karo! ✨</div>
+                <div id="loading" class="loading-text"><i class="fas fa-magic fa-spin mr-2"></i> Generating flashcards... please wait! ✨</div>
                 <div id="flashcard-container" class="flashcard-container">
                     <div class="text-center text-gray-500 w-full mt-20" id="welcome-msg">
                         <i class="fas fa-lightbulb text-6xl mb-4 opacity-20"></i>
@@ -80,7 +80,7 @@
 
     <script>
         let sessionId = 'flash_tool_' + Date.now();
-        let lastTopic = ""; // Yaad rakhne ke liye ki pichla topic kya tha
+        let lastTopic = ""; // Remember the last topic used
         
         window.onload = loadToolHistory;
 
@@ -137,7 +137,7 @@
             if (!topic && !isMore) return; 
             
             if (isMore) {
-                // Agar 'Generate More' par click kiya gaya hai, toh pichle topic par nayi instruction lagao
+                // If 'Generate More' was clicked, apply new instruction to the previous topic
                 topic = lastTopic + " (provide 6 completely new and different flashcards for this topic)";
             } else {
                 lastTopic = topic; 
@@ -168,7 +168,7 @@
                         document.getElementById('more-btn-container').style.display = 'block'; // Success hone par "More" button dikhao
                         document.getElementById('main-content-area').scrollTop = document.getElementById('main-content-area').scrollHeight;
                     } catch (e) {
-                        alert("Bura mat manna, par AI ne theek format mein cards nahi banaye. Phir se try karein?");
+                        alert("Sorry, the AI couldn't format the cards correctly. Please try again.");
                     }
                 }
             } catch (error) {

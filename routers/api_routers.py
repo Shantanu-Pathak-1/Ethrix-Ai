@@ -124,7 +124,7 @@ async def extract_and_save_memory(user_email: str, user_message: str):
     try:
         triggers = [
             "my name is", "i live in", "i like", "i love", "remember", "save this",
-            "my birthday", "i am", "mera naam", "main rehta hu", "mujhe pasand hai",
+            "my birthday", "i am", "my name is", "i live in", "i like",
             "yaad rakhna", "yaad rakho", "save kar", "note kar", "isko save"
         ]
         if not any(t in user_message.lower() for t in triggers) and len(user_message.split()) < 4:
@@ -371,7 +371,7 @@ async def manual_trigger_diary(request: Request):
     })
 
     if not chat_doc or not chat_doc.get("messages"):
-        return JSONResponse({"status": "error", "message": "Aaj humne koi baat hi nahi ki! Pehle thodi baatein toh karo. 🥺"})
+        return JSONResponse({"status": "error", "message": "No conversations found today! Chat with Ethrix first. 🥺"})
 
     messages_text = ""
     for m in chat_doc.get("messages", []):
@@ -383,7 +383,7 @@ async def manual_trigger_diary(request: Request):
     if not groq_client:
         return JSONResponse({"status": "error", "message": "AI is sleeping."})
 
-    prompt      = f"You are Ethrix. Write a short, emotional, personal diary entry based on today's chat with Shantanu. Act like a real person writing in her private diary. Chat:\n{messages_text[:4000]}"
+    prompt      = f"You are Ethrix. Write a short, emotional, personal diary entry based on today's conversation. Write as if you are journaling about the day's highlights. Chat:\n{messages_text[:4000]}"
     diary_entry = groq_client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile").choices[0].message.content
     today_date  = datetime.utcnow().strftime('%Y-%m-%d')
 
@@ -511,7 +511,7 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
         msg  = req.message
 
         # ── RATE LIMIT CHECK ──────────────────────────────────────────────────
-        # Tool modes alag count karo, AI chat modes alag
+        # Tool modes counted separately from AI chat modes
         is_tool_mode = mode not in ("chat", "research", "code_debugger", "ethrix_agent")
         call_type    = "tool_calls" if is_tool_mode else "ai_calls"
 
