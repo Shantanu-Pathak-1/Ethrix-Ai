@@ -80,6 +80,10 @@
         .color-circle:hover { transform: scale(1.15); }
         .color-circle.selected { border: 2px solid white; transform: scale(1.2); box-shadow: 0 0 15px currentColor; }
 
+        /* Palette Categories Styling */
+        .palette-category { margin-bottom: 15px; background: rgba(0,0,0,0.15); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .category-title { font-size: 0.85rem; font-weight: 600; color: #9ca3af; margin-bottom: 12px; display: block; }
+
         /* Custom Toggle Switch (COMPACT DESIGN FOR 5 TOGGLES) */
         .flex-between { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px;}
         .flex-between .form-label { margin: 0; color: #e0e0e0; font-size: 0.9rem; }
@@ -141,6 +145,8 @@
         body.light-mode .btn-profile:hover { background: #f1f5f9; }
         body.light-mode .color-circle { border-color: #cbd5e1; }
         body.light-mode .color-circle.selected { border-color: #0f172a; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        body.light-mode .palette-category { background: #f8fafc; border-color: #e2e8f0; }
+        body.light-mode .category-title { color: #64748b; }
     </style>
 </head>
 <body>
@@ -165,18 +171,37 @@
             </div>
             
            <label class="form-label">Ethrix AI Color Theme</label>
-            <div class="color-palette">
-                <div class="color-circle {% if prefs.primary_color == '#00E5FF' %}selected{% endif %}" style="background: #00E5FF; color: #00E5FF;" onclick="selectColor('#00E5FF', this)" title="Neon Cyan"></div>
-                <div class="color-circle {% if prefs.primary_color == '#3B82F6' %}selected{% endif %}" style="background: #3B82F6; color: #3B82F6;" onclick="selectColor('#3B82F6', this)" title="Electric Blue"></div>
-                <div class="color-circle {% if prefs.primary_color == '#A855F7' %}selected{% endif %}" style="background: #A855F7; color: #A855F7;" onclick="selectColor('#A855F7', this)" title="Cyber Purple"></div>
-                <div class="color-circle {% if prefs.primary_color == '#EC4899' %}selected{% endif %}" style="background: #EC4899; color: #EC4899;" onclick="selectColor('#EC4899', this)" title="Hot Pink"></div>
-                <div class="color-circle {% if prefs.primary_color == '#EF4444' %}selected{% endif %}" style="background: #EF4444; color: #EF4444;" onclick="selectColor('#EF4444', this)" title="Crimson Red"></div>
-                <div class="color-circle {% if prefs.primary_color == '#F59E0B' %}selected{% endif %}" style="background: #F59E0B; color: #F59E0B;" onclick="selectColor('#F59E0B', this)" title="Golden Amber"></div>
-                <div class="color-circle {% if prefs.primary_color == '#22C55E' %}selected{% endif %}" style="background: #22C55E; color: #22C55E;" onclick="selectColor('#22C55E', this)" title="Matrix Green"></div>
-                <div class="color-circle {% if prefs.primary_color == '#14B8A6' %}selected{% endif %}" style="background: #14B8A6; color: #14B8A6;" onclick="selectColor('#14B8A6', this)" title="Mint Teal"></div>
-            </div>
-            <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 25px;">Changes Vanta background, your chat bubbles, buttons, and hover effects.</p>
             
+            <div class="palette-category">
+                <span class="category-title"><i class="fas fa-moon"></i> Neon Glow (Best for Dark Theme)</span>
+                <div class="color-palette">
+                    <div class="color-circle {% if prefs.primary_color == '#00E5FF' %}selected{% endif %}" style="background: #00E5FF; color: #00E5FF;" onclick="selectColor('#00E5FF', this)" title="Neon Cyan"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#EF4444' %}selected{% endif %}" style="background: #EF4444; color: #EF4444;" onclick="selectColor('#EF4444', this)" title="Crimson Red"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#FBBF24' %}selected{% endif %}" style="background: #FBBF24; color: #FBBF24;" onclick="selectColor('#FBBF24', this)" title="Cyber Yellow"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#A855F7' %}selected{% endif %}" style="background: #A855F7; color: #A855F7;" onclick="selectColor('#A855F7', this)" title="Deep Purple"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#22C55E' %}selected{% endif %}" style="background: #22C55E; color: #22C55E;" onclick="selectColor('#22C55E', this)" title="Matrix Green"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#3B82F6' %}selected{% endif %}" style="background: #3B82F6; color: #3B82F6;" onclick="selectColor('#3B82F6', this)" title="Electric Blue"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#EC4899' %}selected{% endif %}" style="background: #EC4899; color: #EC4899;" onclick="selectColor('#EC4899', this)" title="Hot Pink"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#9CA3AF' %}selected{% endif %}" style="background: #9CA3AF; color: #9CA3AF;" onclick="selectColor('#9CA3AF', this)" title="Cool Grey"></div>
+                </div>
+            </div>
+
+            <div class="palette-category">
+                <span class="category-title" style="color: #f59e0b;"><i class="fas fa-sun"></i> Pastel Elegance (Best for Light Theme)</span>
+                <div class="color-palette">
+                    <div class="color-circle {% if prefs.primary_color == '#96DFCE' %}selected{% endif %}" style="background: #96DFCE; color: #96DFCE;" onclick="selectColor('#96DFCE', this)" title="Tiffany Blue"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#F8D5DB' %}selected{% endif %}" style="background: #F8D5DB; color: #F8D5DB;" onclick="selectColor('#F8D5DB', this)" title="Misty Rose"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#F1EB86' %}selected{% endif %}" style="background: #F1EB86; color: #F1EB86;" onclick="selectColor('#F1EB86', this)" title="Champagne Yellow"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#D9E7F4' %}selected{% endif %}" style="background: #D9E7F4; color: #D9E7F4;" onclick="selectColor('#D9E7F4', this)" title="Alice Blue"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#FEB1B3' %}selected{% endif %}" style="background: #FEB1B3; color: #FEB1B3;" onclick="selectColor('#FEB1B3', this)" title="Peach Melon"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#D8B4E2' %}selected{% endif %}" style="background: #D8B4E2; color: #D8B4E2;" onclick="selectColor('#D8B4E2', this)" title="Soft Lavender"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#AEE1CD' %}selected{% endif %}" style="background: #AEE1CD; color: #AEE1CD;" onclick="selectColor('#AEE1CD', this)" title="Soft Mint"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#94A3B8' %}selected{% endif %}" style="background: #94A3B8; color: #94A3B8;" onclick="selectColor('#94A3B8', this)" title="Slate Grey"></div>
+                </div>
+            </div>
+            
+            <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 25px;">Changes Vanta background, your chat bubbles, buttons, and hover effects.</p>
+
             <label class="form-label">Theme Mode</label>
             <div class="radio-grid">
                 <label>
