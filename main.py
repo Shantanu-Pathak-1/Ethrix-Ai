@@ -15,7 +15,6 @@ import core.database as db_module
 from routers.pages import router as pages_router
 from routers.auth_routers import router as auth_router 
 
-
 # Main app instance
 app = FastAPI(title="Ethrix AI")
 
