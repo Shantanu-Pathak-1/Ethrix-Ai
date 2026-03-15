@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from pydantic import BaseModel
 import uuid
 import random
-
+from routers.profile_routers import get_random_manual_profile
 # Import database, config and helpers from core
 from core.database import (
     oauth, users_collection, otp_collection, ADMIN_EMAIL, 
@@ -97,8 +97,21 @@ async def complete_signup(req: SignupRequest, request: Request):
     body = f"Hello Shantanu,\n\nKisi ne Ethrix AI par manual account banaya hai!\n\nName: {req.full_name}\nEmail: {req.email}\nUsername: {req.username}\n\nJaldi check karo boss! 🚀"
     send_email(ADMIN_EMAIL, subject, body)
 
-    await users_collection.insert_one({"email": req.email, "username": req.username, "password_hash": get_password_hash(req.password), "name": req.full_name, "picture": "", "memories": [], "custom_instruction": ""})
-    request.session['user'] = {"email": req.email, "name": req.full_name}
+    # ✨ YAHAN SE NAYA LOGIC SHURU HOTA HAI ✨
+    random_profile = get_random_manual_profile()
+    final_name = req.full_name if req.full_name else random_profile["name"]
+
+    await users_collection.insert_one({
+        "email": req.email, 
+        "username": req.username, 
+        "password_hash": get_password_hash(req.password), 
+        "name": final_name, 
+        "picture": random_profile["picture"], # <-- Random pyari si DP lag jayegi!
+        "memories": [], 
+        "custom_instruction": ""
+    })
+    
+    request.session['user'] = {"email": req.email, "name": final_name}
     return {"status": "success"}
 
 @router.post("/api/login_manual")

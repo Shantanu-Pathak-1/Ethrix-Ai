@@ -7,6 +7,7 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
+import routers.profile_routers as profile_routers
 
 # Ab import karo routers aur database ko
 from routers.api_routers import router as api_router
@@ -31,3 +32,4 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(pages_router)
 app.include_router(auth_router)
 app.include_router(api_router)
+app.include_router(profile_routers.router)

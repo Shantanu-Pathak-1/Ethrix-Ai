@@ -85,13 +85,13 @@
         <div id="history-list" class="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-1 scrollbar-hide"></div>
 
         <div class="p-3 md:p-4 border-t border-white/5 shrink-0">
-            <div class="flex items-center gap-2 md:gap-3 p-2 rounded-xl hover:bg-white/10 transition cursor-pointer group/profile" onclick="openProfileModal()">
+            <div class="flex items-center gap-2 md:gap-3 p-2 rounded-xl transition group/profile">
                 <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gray-700 overflow-hidden shrink-0 border border-gray-500 mx-auto"><img id="profile-img-sidebar" src="" class="w-full h-full object-cover"></div>
                 <div class="flex-1 overflow-hidden nav-label">
                     <div id="profile-name-sidebar" class="text-xs md:text-sm font-bold truncate text-white">User</div>
                     <div id="profile-plan-sidebar" class="text-[10px] md:text-xs text-gray-400">Free Plan</div>
                 </div>
-                <button class="text-gray-400 hover:text-white nav-label text-sm md:text-base" onclick="event.stopPropagation(); openSettingsModal()"><i class="fas fa-cog"></i></button>
+                <button class="text-gray-400 hover:text-white hover:bg-white/10 p-1 rounded transition nav-label text-sm md:text-base" onclick="openSettingsModal()"><i class="fas fa-cog"></i></button>
             </div>
         </div>
     </aside>
@@ -165,6 +165,9 @@
             </div>
 
             <div class="bg-[#121826] border border-[#00E5FF]/20 p-4 rounded-xl mb-6 text-center space-y-2">
+                <a href="/profile-settings" class="block w-full bg-purple-600/20 hover:bg-purple-600 text-purple-400 hover:text-white text-sm font-bold py-2 px-4 rounded-lg transition border border-purple-600/30">
+                    <i class="fas fa-user-edit mr-1"></i> Edit Profile
+                </a>
                 <a href="/memory-dashboard" class="block w-full bg-yellow-600/20 hover:bg-yellow-600 text-yellow-400 hover:text-white text-sm font-bold py-2 px-4 rounded-lg transition border border-yellow-600/30">
                     <i class="fas fa-brain mr-1"></i> Open Brain Control
                 </a>
@@ -185,8 +188,6 @@
         </div>
     </div>
 
-    <div id="profile-modal" class="modal"><div class="modal-content text-center bg-[#0B0F19] border border-[#00E5FF]/30 text-white w-11/12 md:w-auto"><h2 class="text-lg md:text-xl font-bold mb-4">Edit Profile</h2><div class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full overflow-hidden border-2 border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.4)]"><img id="profile-img-modal" src="" class="w-full h-full object-cover"></div><input type="text" id="profile-name-input" class="w-full bg-black/30 border border-[#00E5FF]/50 rounded p-2 text-center text-white mb-4 text-sm md:text-base"><button onclick="saveProfile()" class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] w-full py-2 rounded text-white font-bold hover:opacity-90 text-sm md:text-base">Save Changes</button></div></div>
-    
     <div id="dropdown" class="dropdown-menu bg-[#121826] border border-[#00E5FF]/30 text-white shadow-xl z-50"><div class="dropdown-item hover:bg-[#00E5FF]/20" id="act-rename"><i class="fas fa-edit text-[#00E5FF]"></i> Rename</div><div class="dropdown-item hover:bg-[#00E5FF]/20 text-red-400" id="act-delete"><i class="fas fa-trash"></i> Delete</div></div>
     
     <div id="payment-modal" class="modal"><div class="modal-content w-11/12 md:w-full max-w-md bg-[#0B0F19] border border-[#00E5FF]/30 text-white rounded-2xl relative overflow-hidden"><div class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] p-3 md:p-4 text-center"><h2 class="text-lg md:text-xl font-bold text-white"><i class="fas fa-secure"></i> Secure Payment</h2><p class="text-[10px] md:text-xs text-cyan-100">Ethrix AI Pro Plan • ₹499.00</p></div><div class="p-4 md:p-6 space-y-3 md:space-y-4"><div id="pay-loader" class="hidden text-center py-4"><i class="fas fa-circle-notch fa-spin text-2xl md:text-3xl text-[#00E5FF]"></i><p class="text-[10px] md:text-xs text-gray-400 mt-2">Processing secure transaction...</p></div><button id="pay-btn" onclick="processFakePayment()" class="w-full bg-[#00E5FF] hover:bg-[#00bfff] text-black font-bold py-2.5 md:py-3 rounded-xl transition shadow-[0_0_15px_rgba(0,229,255,0.4)] transform active:scale-95 mt-2 text-sm md:text-base">Pay ₹499.00</button><button onclick="closeModal('payment-modal')" class="w-full text-gray-500 text-xs hover:text-[#00E5FF] mt-2">Cancel Transaction</button></div></div></div>

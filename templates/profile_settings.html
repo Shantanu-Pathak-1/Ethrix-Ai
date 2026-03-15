@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Settings | Ethrix AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #1e293b; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .profile-preview { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 3px solid #3b82f6; }
+        .form-group { margin-bottom: 20px; }
+        input[type="text"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; margin-top: 5px; }
+        .avatars-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
+        .avatar-option { width: 60px; height: 60px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.3s; }
+        .avatar-option:hover { transform: scale(1.1); }
+        .avatar-option.selected { border-color: #3b82f6; transform: scale(1.1); box-shadow: 0 0 10px rgba(59,130,246,0.5); }
+        
+        .btn { background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .btn:hover { background: #2563eb; }
+        
+        /* Cropper Modal */
+        #cropper-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .cropper-container-inner { background: #1e293b; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; }
+        .img-container { max-height: 400px; margin-bottom: 15px; }
+        img { display: block; max-width: 100%; }
+        
+        /* Premium Lock Overlay */
+        .premium-locked-container { position: relative; display: inline-block; cursor: not-allowed; }
+        .premium-locked-img { filter: grayscale(80%) brightness(0.6); pointer-events: none; border-color: transparent; }
+        .premium-lock-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fbbf24; font-size: 1.5rem; text-shadow: 0 0 10px rgba(0,0,0,0.8); pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>✨ Profile Settings</h2>
+    
+    <div style="text-align: center;">
+        <img src="{{ current_pic }}" id="main-profile-pic" class="profile-preview" alt="Profile">
+        <br>
+        <label class="btn" for="upload-image">📸 Upload Custom Photo</label>
+        <input type="file" id="upload-image" accept="image/*" style="display: none;">
+    </div>
+
+    <div class="form-group" style="margin-top: 30px;">
+        <label>Your Display Name</label>
+        <input type="text" id="user-name" value="{{ current_name }}">
+    </div>
+
+    <div class="form-group">
+        <label>🌸 Free Avatars</label>
+        <div class="avatars-grid">
+            {% for avatar in default_avatars %}
+            <img src="{{ avatar }}" class="avatar-option" onclick="selectAvatar('{{ avatar }}', this)">
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="form-group" style="margin-top: 25px;">
+        <label style="color: #fbbf24; font-weight: bold;">👑 Premium Exclusive Avatars</label>
+        <div class="avatars-grid">
+            {% for avatar in premium_avatars %}
+                {% if is_pro %}
+                    <img src="{{ avatar }}" class="avatar-option" style="border-color: #fbbf24;" onclick="selectAvatar('{{ avatar }}', this)">
+                {% else %}
+                    <div class="premium-locked-container" onclick="showPremiumAlert()">
+                        <img src="{{ avatar }}" class="avatar-option premium-locked-img">
+                        <i class="fas fa-lock premium-lock-icon"></i>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <button class="btn" style="width: 100%; margin-top: 20px; font-size: 16px;" onclick="saveProfile()">💾 Save Changes</button>
+    <a href="/" style="display: block; text-align: center; margin-top: 15px; color: #9ca3af; text-decoration: none;">🔙 Back to Dashboard</a>
+</div>
+
+<div id="cropper-modal">
+    <div class="cropper-container-inner">
+        <h3 style="margin-top: 0;">Crop & Adjust Zoom 🔍</h3>
+        <div class="img-container">
+            <img id="image-to-crop" src="">
+        </div>
+        <button class="btn" onclick="applyCrop()">Apply Crop</button>
+        <button class="btn" style="background: #ef4444;" onclick="document.getElementById('cropper-modal').style.display='none'">Cancel</button>
+    </div>
+</div>
+
+<script>
+    let currentSelectedPic = "{{ current_pic }}";
+    let cropper;
+
+    // Default Avatar Selection
+    function selectAvatar(url, element) {
+        document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+        currentSelectedPic = url;
+        document.getElementById('main-profile-pic').src = url;
+    }
+
+    // Premium Alert Popup (SweetAlert2)
+    function showPremiumAlert() {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Premium Avatar 👑',
+            text: 'Ye ek exclusive premium avatar hai! Ise unlock karne ke liye Pro Plan mein upgrade karein.',
+            background: '#1e293b',
+            color: '#fff',
+            confirmButtonColor: '#fbbf24',
+            confirmButtonText: 'Upgrade Now 🚀',
+            showCancelButton: true,
+            cancelButtonColor: '#475569',
+            cancelButtonText: 'Maybe Later'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Abhi main wapas home par bhej rahi hu, baad me payment page laga dena
+                window.location.href = "/"; 
+            }
+        });
+    }
+
+    // Handle Upload & Open Cropper
+    document.getElementById('upload-image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('image-to-crop').src = event.target.result;
+                document.getElementById('cropper-modal').style.display = 'flex';
+                
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(document.getElementById('image-to-crop'), {
+                    aspectRatio: 1, 
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 0.8,
+                    restore: false,
+                    guides: false,
+                    center: false,
+                    highlight: false,
+                    cropBoxMovable: false,
+                    cropBoxResizable: false,
+                    toggleDragModeOnDblclick: false,
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Apply Crop and Convert to Base64
+    function applyCrop() {
+        const canvas = cropper.getCroppedCanvas({ width: 200, height: 200 });
+        currentSelectedPic = canvas.toDataURL('image/png'); 
+        document.getElementById('main-profile-pic').src = currentSelectedPic;
+        document.getElementById('cropper-modal').style.display = 'none';
+        
+        // Remove selection from default avatars
+        document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+    }
+
+    // Save to Backend
+    async function saveProfile() {
+        const newName = document.getElementById('user-name').value;
+        const response = await fetch('/api/update_advanced_profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ new_name: newName, new_picture: currentSelectedPic })
+        });
+        const result = await response.json();
+        
+        if(result.status === "success") {
+            Swal.fire({
+                icon: 'success',
+                title: 'Saved! 💖',
+                text: 'Profile ekdum beautifully update ho gayi!',
+                background: '#1e293b',
+                color: '#fff',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Kuch gadbad ho gayi, please try again!',
+                background: '#1e293b',
+                color: '#fff'
+            });
+        }
+    }
+</script>
+</body>
+</html>
