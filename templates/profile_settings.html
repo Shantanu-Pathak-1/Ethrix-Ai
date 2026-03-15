@@ -11,114 +11,144 @@
     
     <style>
         body { 
-            background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; 
-            margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+            background-color: #0B0F19; /* Ethrix Dark Theme */
+            color: #e0e0e0; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; padding: 20px; 
+            display: flex; justify-content: center; align-items: flex-start; 
+            min-height: 100vh;
         }
         
+        /* Glassmorphism Container */
         .container { 
-            width: 100%; max-width: 600px; background: #1e293b; 
-            padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            width: 100%; max-width: 650px; 
+            background: rgba(18, 24, 38, 0.85); 
+            border: 1px solid rgba(0, 229, 255, 0.2); 
+            backdrop-filter: blur(20px);
+            padding: 35px; border-radius: 20px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
             box-sizing: border-box;
         }
+
+        h2 { margin-top: 0; color: #fff; font-size: 1.6rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(0,229,255,0.1); padding-bottom: 15px; }
+        h2 i { color: #00E5FF; }
         
+        .profile-preview-wrapper { text-align: center; margin-bottom: 30px; margin-top: 10px; }
         .profile-preview { 
-            width: 120px; height: 120px; border-radius: 50%; object-fit: cover; 
-            margin-bottom: 20px; border: 3px solid #3b82f6; 
+            width: 130px; height: 130px; border-radius: 50%; object-fit: cover; 
+            margin-bottom: 20px; border: 3px solid #00E5FF; 
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+            background-color: #121826;
         }
         
-        .form-group { margin-bottom: 20px; }
+        .form-group { margin-bottom: 25px; }
+        .form-label { font-size: 0.95rem; font-weight: 600; color: #9ca3af; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .form-label i { color: #00E5FF; }
         
         input[type="text"] { 
-            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; 
-            background: #0f172a; color: white; margin-top: 5px; box-sizing: border-box; font-size: 16px;
+            width: 100%; padding: 14px; border-radius: 12px; 
+            border: 1px solid rgba(0, 229, 255, 0.3); 
+            background: rgba(0, 0, 0, 0.4); color: white; 
+            box-sizing: border-box; font-size: 16px; transition: 0.3s;
         }
+        input[type="text"]:focus { outline: none; border-color: #00E5FF; box-shadow: 0 0 15px rgba(0,229,255,0.15); }
         
-        /* Auto-adjusting Grid for Mobile & Tablet */
+        /* Avatars Grid */
         .avatars-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); 
-            gap: 12px; margin-top: 15px; justify-items: center; 
+            grid-template-columns: repeat(auto-fit, minmax(65px, 1fr)); 
+            gap: 15px; justify-items: center; margin-top: 12px;
         }
         
         .avatar-option { 
-            width: 60px; height: 60px; border-radius: 50%; cursor: pointer; 
-            border: 2px solid transparent; transition: 0.3s; 
+            width: 65px; height: 65px; border-radius: 50%; cursor: pointer; 
+            border: 2px solid transparent; transition: all 0.3s ease; 
+            background-color: #121826; object-fit: cover;
         }
         
-        .avatar-option:hover { transform: scale(1.1); }
-        .avatar-option.selected { border-color: #3b82f6; transform: scale(1.1); box-shadow: 0 0 10px rgba(59,130,246,0.5); }
+        .avatar-option:hover { transform: scale(1.1); border-color: rgba(0,229,255,0.5); }
+        .avatar-option.selected { 
+            border-color: #00E5FF; transform: scale(1.15); 
+            box-shadow: 0 0 15px rgba(0,229,255,0.6); 
+        }
         
+        /* Buttons */
         .btn { 
-            background: #3b82f6; color: white; padding: 12px 20px; border: none; 
-            border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; width: 100%; box-sizing: border-box; font-size: 16px;
+            background: linear-gradient(135deg, #1E90FF, #00E5FF); 
+            color: white; padding: 14px 20px; border: none; 
+            border-radius: 12px; cursor: pointer; transition: 0.3s; 
+            font-weight: bold; width: 100%; box-sizing: border-box; font-size: 16px;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
         }
-        .btn:hover { background: #2563eb; }
-        .btn-upload { width: auto; display: inline-block; padding: 10px 20px; font-size: 14px; }
-        
-        /* Cropper Modal */
-        #cropper-modal { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box;
-        }
-        .cropper-container-inner { 
-            background: #1e293b; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; 
-            box-sizing: border-box;
-        }
-        .img-container { width: 100%; max-height: 50vh; margin-bottom: 15px; display: flex; justify-content: center; }
-        img { display: block; max-width: 100%; }
+        .btn:hover { box-shadow: 0 0 20px rgba(0,229,255,0.5); transform: translateY(-2px); }
+        .btn-upload { width: auto; display: inline-flex; padding: 10px 20px; font-size: 14px; border-radius: 10px; }
         
         /* Premium Lock Overlay */
-        .premium-locked-container { position: relative; display: flex; justify-content: center; cursor: not-allowed; width: 60px; height: 60px; }
-        .premium-locked-img { filter: grayscale(80%) brightness(0.6); pointer-events: none; border-color: transparent; width: 100%; height: 100%; border-radius: 50%; }
-        .premium-lock-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fbbf24; font-size: 1.2rem; text-shadow: 0 0 8px rgba(0,0,0,0.8); pointer-events: none; }
+        .premium-locked-container { position: relative; display: flex; justify-content: center; cursor: pointer; width: 65px; height: 65px; transition: 0.3s; }
+        .premium-locked-container:hover { transform: scale(1.05); }
+        .premium-locked-img { filter: grayscale(80%) brightness(0.5); pointer-events: none; border: 2px solid transparent; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .premium-lock-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fbbf24; font-size: 1.3rem; text-shadow: 0 0 15px rgba(0,0,0,0.9); pointer-events: none; }
 
-        /* Media Queries for very small devices */
+        /* Premium Label overrides */
+        .premium-label { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.2); }
+        .premium-label i { color: #fbbf24; }
+
+        .back-link { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 25px; color: #9ca3af; text-decoration: none; font-size: 14px; transition: 0.3s; }
+        .back-link:hover { color: #00E5FF; }
+
+        /* Cropper Modal */
+        #cropper-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
+        .cropper-container-inner { background: #121826; padding: 25px; border-radius: 16px; border: 1px solid rgba(0,229,255,0.3); width: 100%; max-width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+        .img-container { width: 100%; max-height: 50vh; margin-bottom: 20px; display: flex; justify-content: center; }
+        .btn-cancel { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239,68,68,0.5); color: #f87171; }
+        .btn-cancel:hover { background: #ef4444; color: white; box-shadow: 0 0 15px rgba(239,68,68,0.4); }
+
         @media (max-width: 480px) {
             body { padding: 10px; }
-            .container { padding: 20px; }
-            .profile-preview { width: 100px; height: 100px; }
-            h2 { font-size: 1.5rem; text-align: center; }
+            .container { padding: 20px; border-radius: 16px; }
+            .profile-preview { width: 110px; height: 110px; }
             .avatar-option, .premium-locked-container { width: 55px; height: 55px; }
-            .avatars-grid { grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 10px; }
-            .cropper-container-inner { padding: 15px; }
+            .avatars-grid { grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 12px; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>✨ Profile Settings</h2>
+    <h2><i class="fas fa-user-cog"></i> Profile Studio</h2>
     
-    <div style="text-align: center;">
-        <img src="{{ current_pic }}" id="main-profile-pic" class="profile-preview" alt="Profile">
+    <div class="profile-preview-wrapper">
+        <img src="{{ current_pic }}" id="main-profile-pic" class="profile-preview" alt="Profile" onerror="this.src='/static/images/logo.png'">
         <br>
-        <label class="btn btn-upload" for="upload-image">📸 Upload Custom Photo</label>
+        <label class="btn btn-upload" for="upload-image">
+            <i class="fas fa-camera"></i> Upload Custom Photo
+        </label>
         <input type="file" id="upload-image" accept="image/*" style="display: none;">
     </div>
 
-    <div class="form-group" style="margin-top: 30px;">
-        <label>Your Display Name</label>
-        <input type="text" id="user-name" value="{{ current_name }}">
+    <div class="form-group">
+        <label class="form-label"><i class="fas fa-id-badge"></i> Display Name</label>
+        <input type="text" id="user-name" value="{{ current_name }}" placeholder="Enter your name...">
     </div>
 
     <div class="form-group">
-        <label>🌸 Free Avatars</label>
+        <label class="form-label"><i class="fas fa-grin-stars"></i> Standard Avatars</label>
         <div class="avatars-grid">
             {% for avatar in default_avatars %}
-            <img src="{{ avatar }}" class="avatar-option" onclick="selectAvatar('{{ avatar }}', this)">
+            <img src="{{ avatar }}" class="avatar-option" onclick="selectAvatar('{{ avatar }}', this)" onerror="this.style.display='none'">
             {% endfor %}
         </div>
     </div>
 
-    <div class="form-group" style="margin-top: 25px;">
-        <label style="color: #fbbf24; font-weight: bold;">👑 Premium Exclusive Avatars</label>
+    <div class="form-group" style="margin-top: 30px;">
+        <label class="form-label premium-label"><i class="fas fa-crown"></i> Elite Exclusives</label>
         <div class="avatars-grid">
             {% for avatar in premium_avatars %}
                 {% if is_pro %}
-                    <img src="{{ avatar }}" class="avatar-option" style="border-color: #fbbf24;" onclick="selectAvatar('{{ avatar }}', this)">
+                    <img src="{{ avatar }}" class="avatar-option" style="border-color: rgba(251,191,36,0.4);" onclick="selectAvatar('{{ avatar }}', this)" onerror="this.style.display='none'">
                 {% else %}
                     <div class="premium-locked-container" onclick="showPremiumAlert()">
-                        <img src="{{ avatar }}" class="premium-locked-img">
+                        <img src="{{ avatar }}" class="premium-locked-img" onerror="this.parentElement.style.display='none'">
                         <i class="fas fa-lock premium-lock-icon"></i>
                     </div>
                 {% endif %}
@@ -126,19 +156,26 @@
         </div>
     </div>
 
-    <button class="btn" style="margin-top: 20px;" onclick="saveProfile()">💾 Save Changes</button>
-    <a href="/" style="display: block; text-align: center; margin-top: 20px; color: #9ca3af; text-decoration: none; font-size: 14px;">🔙 Back to Dashboard</a>
+    <button class="btn" style="margin-top: 30px;" onclick="saveProfile()">
+        <i class="fas fa-save"></i> Save Profile
+    </button>
+    
+    <a href="/" class="back-link">
+        <i class="fas fa-arrow-left"></i> Return to Dashboard
+    </a>
 </div>
 
 <div id="cropper-modal">
     <div class="cropper-container-inner">
-        <h3 style="margin-top: 0; text-align: center;">Crop Photo 🔍</h3>
+        <h3 style="margin-top: 0; color: white; text-align: center; font-size: 1.2rem; border-bottom: 1px solid rgba(0,229,255,0.1); padding-bottom: 15px; margin-bottom: 20px;">
+            <i class="fas fa-crop-alt" style="color: #00E5FF; margin-right: 8px;"></i> Adjust Image
+        </h3>
         <div class="img-container">
             <img id="image-to-crop" src="">
         </div>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn" onclick="applyCrop()">Apply</button>
-            <button class="btn" style="background: #ef4444;" onclick="document.getElementById('cropper-modal').style.display='none'">Cancel</button>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn" onclick="applyCrop()"><i class="fas fa-check"></i> Apply</button>
+            <button class="btn btn-cancel" onclick="document.getElementById('cropper-modal').style.display='none'"><i class="fas fa-times"></i> Cancel</button>
         </div>
     </div>
 </div>
@@ -147,7 +184,6 @@
     let currentSelectedPic = "{{ current_pic }}";
     let cropper;
 
-    // Default Avatar Selection
     function selectAvatar(url, element) {
         document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
         element.classList.add('selected');
@@ -155,20 +191,22 @@
         document.getElementById('main-profile-pic').src = url;
     }
 
-    // Premium Alert Popup (SweetAlert2)
     function showPremiumAlert() {
         Swal.fire({
             icon: 'warning',
-            title: 'Premium Avatar 👑',
-            text: 'Ye ek exclusive premium avatar hai! Ise unlock karne ke liye Pro Plan mein upgrade karein.',
-            background: '#1e293b',
+            title: 'Elite Avatar Locked',
+            text: 'Unlock this exclusive 3D avatar by upgrading to the Ethrix Pro Plan!',
+            background: '#121826',
             color: '#fff',
-            confirmButtonColor: '#fbbf24',
-            confirmButtonText: 'Upgrade Now 🚀',
+            iconColor: '#fbbf24',
+            confirmButtonColor: '#00E5FF',
+            confirmButtonText: '<i class="fas fa-rocket"></i> Upgrade to Pro',
             showCancelButton: true,
-            cancelButtonColor: '#475569',
-            cancelButtonText: 'Maybe Later',
-            width: window.innerWidth < 480 ? '90%' : '32em' // Mobile alert size fix
+            cancelButtonColor: 'rgba(255,255,255,0.1)',
+            cancelButtonText: 'Not Now',
+            customClass: {
+                popup: 'border border-cyan-500/30 shadow-2xl rounded-2xl'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = "/"; 
@@ -176,7 +214,6 @@
         });
     }
 
-    // Handle Upload & Open Cropper
     document.getElementById('upload-image').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -190,10 +227,10 @@
                     aspectRatio: 1, 
                     viewMode: 1,
                     dragMode: 'move',
-                    autoCropArea: 0.9, // Mobile pe crop area bada rakha hai
+                    autoCropArea: 0.9,
                     restore: false,
-                    guides: false,
-                    center: false,
+                    guides: true,
+                    center: true,
                     highlight: false,
                     cropBoxMovable: false,
                     cropBoxResizable: false,
@@ -204,23 +241,21 @@
         }
     });
 
-    // Apply Crop and Convert to Base64
     function applyCrop() {
         const canvas = cropper.getCroppedCanvas({ width: 200, height: 200 });
-        currentSelectedPic = canvas.toDataURL('image/png'); 
+        currentSelectedPic = canvas.toDataURL('image/jpeg', 0.9); // using jpeg here to save space
         document.getElementById('main-profile-pic').src = currentSelectedPic;
         document.getElementById('cropper-modal').style.display = 'none';
         
-        // Remove selection from default avatars
         document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
     }
 
-    // Save to Backend
     async function saveProfile() {
         const newName = document.getElementById('user-name').value;
         const btn = document.querySelector('.btn[onclick="saveProfile()"]');
-        const originalText = btn.innerText;
-        btn.innerText = "Saving... ⏳";
+        const originalHTML = btn.innerHTML;
+        
+        btn.innerHTML = "<i class='fas fa-circle-notch fa-spin'></i> Saving...";
         btn.disabled = true;
 
         const response = await fetch('/api/update_advanced_profile', {
@@ -230,30 +265,29 @@
         });
         const result = await response.json();
         
-        btn.innerText = originalText;
+        btn.innerHTML = originalHTML;
         btn.disabled = false;
 
         if(result.status === "success") {
             Swal.fire({
                 icon: 'success',
-                title: 'Saved! 💖',
-                text: 'Profile ekdum beautifully update ho gayi!',
-                background: '#1e293b',
+                title: 'Profile Updated',
+                text: 'Your new avatar and name are synced.',
+                background: '#121826',
                 color: '#fff',
+                iconColor: '#00E5FF',
                 showConfirmButton: false,
                 timer: 1500,
-                width: window.innerWidth < 480 ? '90%' : '32em'
+                customClass: { popup: 'border border-cyan-500/30 shadow-2xl rounded-2xl' }
             }).then(() => {
                 window.location.reload();
             });
         } else {
             Swal.fire({
                 icon: 'error',
-                title: 'Oops...',
-                text: 'Kuch gadbad ho gayi, please try again!',
-                background: '#1e293b',
-                color: '#fff',
-                width: window.innerWidth < 480 ? '90%' : '32em'
+                title: 'Sync Error',
+                text: 'Unable to save profile changes.',
+                background: '#121826', color: '#fff'
             });
         }
     }
