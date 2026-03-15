@@ -41,7 +41,7 @@ def get_llm_response(prompt, model="llama-3.3-70b-versatile"):
         )
         return chat_completion.choices[0].message.content
     except Exception as e:
-        # 🛡️ Agar Groq (Main Chat) fail hota hai, toh OpenRouter ke heavy models handle karenge!
+        # 🛡️ If Groq fails, OpenRouter heavy models will handle it as fallback!
         print(f"Groq API Busy! Falling back to OpenRouter: {str(e)}")
         return get_openrouter_response(prompt, task_type="heavy")
 
@@ -66,7 +66,7 @@ def get_openrouter_response(prompt, task_type="fast"):
     elif task_type == "vision":
         models = ["nvidia/nemotron-mini-4b-instruct"] # Vision ke liye specific
     elif task_type == "heavy":
-        # Research aur Main Chat Fallback ke liye sabse smart models
+        # Smartest models for Research and Main Chat Fallback
         models = [
             "meta-llama/llama-3.3-70b-instruct:free",
             "nvidia/llama-3.1-nemotron-70b-instruct:free",
@@ -91,7 +91,7 @@ def get_openrouter_response(prompt, task_type="fast"):
         "Content-Type": "application/json"
     }
     
-    # 🚀 FALLBACK LOOP: Ek fail hua toh dusra chalega!
+    # 🚀 FALLBACK LOOP: If one model fails, next one will try!
     for model in models:
         try:
             data = {
@@ -105,7 +105,7 @@ def get_openrouter_response(prompt, task_type="fast"):
             if 'choices' in response_json and len(response_json['choices']) > 0:
                 return response_json['choices'][0]['message']['content']
             else:
-                # Agar choice nahi aayi (server busy), toh chup-chap continue karke next model try karo
+                # If no choice returned (server busy), silently continue to next model
                 print(f"Model {model} is busy. Trying next model...")
                 continue 
                 
@@ -113,7 +113,7 @@ def get_openrouter_response(prompt, task_type="fast"):
             print(f"Network error with {model}. Trying next...")
             continue
             
-    # Agar 5 ke 5 models fail ho jayein (jo ki almost impossible hai)
+    # If all 5 models fail (extremely unlikely)
     return "⚠️ All AI Servers are currently overloaded. Please give me a few seconds and try again!"
 
 # ==================================================================================

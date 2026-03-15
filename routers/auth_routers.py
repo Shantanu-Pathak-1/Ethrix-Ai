@@ -49,7 +49,7 @@ async def auth_callback(request: Request):
 <p><b>Email:</b> {user['email']}</p>
 <p><b>Method:</b> Google OAuth</p>
 <hr style="border-color:rgba(255,255,255,0.08);margin:16px 0">
-<a href="https://shantanupathak94-ethrix-ai.hf.space/admin" style="background:#00E5FF;color:#000;padding:10px 20px;border-radius:8px;font-weight:bold;text-decoration:none">Admin Panel Kholo</a>
+<a href="/admin" style="background:#00E5FF;color:#000;padding:10px 20px;border-radius:8px;font-weight:bold;text-decoration:none">Open Admin Panel</a>
 </div>"""
             await send_email(ADMIN_EMAIL, subject, body)
 
@@ -113,7 +113,7 @@ async def complete_signup(req: SignupRequest, request: Request):
 <p><b>Username:</b> @{req.username}</p>
 <p><b>Method:</b> Manual Signup</p>
 <hr style="border-color:rgba(255,255,255,0.08);margin:16px 0">
-<a href="https://shantanupathak94-ethrix-ai.hf.space/admin" style="background:#00E5FF;color:#000;padding:10px 20px;border-radius:8px;font-weight:bold;text-decoration:none">Admin Panel Kholo</a>
+<a href="/admin" style="background:#00E5FF;color:#000;padding:10px 20px;border-radius:8px;font-weight:bold;text-decoration:none">Open Admin Panel</a>
 </div>"""
     await send_email(ADMIN_EMAIL, subject, body)
 

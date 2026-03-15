@@ -658,7 +658,7 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
             try:
                 async with httpx.AsyncClient() as http_client:
                     agent_headers = {
-                        "x-api-key":    os.getenv("AGENT_API_KEY", "shantanu_super_secret_key"),
+                        "x-api-key":    os.getenv("AGENT_API_KEY", "ethrix_agent_key"),
                         "Content-Type": "application/json"
                     }
                     clean_history = [
