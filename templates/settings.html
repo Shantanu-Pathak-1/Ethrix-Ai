@@ -177,11 +177,11 @@
             <label class="form-label">Theme Mode</label>
             <div class="radio-grid">
                 <label>
-                    <input type="radio" name="theme" value="dark" class="radio-input" {% if prefs.theme == 'dark' %}checked{% endif %}>
+                    <input type="radio" name="theme" value="dark" class="radio-input" onchange="previewTheme()" {% if prefs.theme == 'dark' %}checked{% endif %}>
                     <div class="radio-card"><i class="fas fa-moon"></i> Dark</div>
                 </label>
                 <label>
-                    <input type="radio" name="theme" value="light" class="radio-input" {% if prefs.theme == 'light' %}checked{% endif %}>
+                    <input type="radio" name="theme" value="light" class="radio-input" onchange="previewTheme()" {% if prefs.theme == 'light' %}checked{% endif %}>
                     <div class="radio-card"><i class="fas fa-sun"></i> Light</div>
                 </label>
             </div>
@@ -270,7 +270,15 @@
         chosenColor = hex;
         document.documentElement.style.setProperty('--dynamic-color', chosenColor);
     }
-
+// ✨ Live Theme Preview
+    function previewTheme() {
+        const selectedTheme = document.querySelector('input[name="theme"]:checked').value;
+        if (selectedTheme === 'light') {
+            document.body.classList.add('light-mode');
+        } else {
+            document.body.classList.remove('light-mode');
+        }
+    }
     function previewFont() {
         const selectedFont = document.querySelector('input[name="font"]:checked').value;
         document.body.style.fontFamily = selectedFont + ", sans-serif";
