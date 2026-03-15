@@ -697,6 +697,59 @@ async function loadGlobalPreferences() {
         if(voiceToggle) voiceToggle.checked = prefs.voice;
         localStorage.setItem('voice_reply', prefs.voice);
 
+        // 🚀 THE ZEN MODE & TEXT SIZE MAGIC
+        if (!document.getElementById('ethrix-features-style')) {
+            let style = document.createElement('style');
+            style.id = 'ethrix-features-style';
+            // CSS jo automatically Sidebar aur Tools ko control karegi
+            style.innerHTML = `
+                /* 🧘 ZEN MODE RULES */
+                .zen-mode-active a[href="/tools"],
+                .zen-mode-active a[href="/diary"] { display: none !important; }
+                
+                .zen-mode-active #history-list .history-item { display: none !important; }
+                
+                .zen-mode-active #history-list::after { 
+                    content: '🧘 Zen Mode ON'; 
+                    display: block; 
+                    text-align: center; 
+                    color: var(--dynamic-color, #00E5FF); 
+                    margin-top: 20px; 
+                    font-size: 0.85rem; 
+                    font-weight: bold; 
+                    background: rgba(0,0,0,0.3); 
+                    padding: 10px; 
+                    border-radius: 10px; 
+                    margin-inline: 15px; 
+                    border: 1px dashed var(--dynamic-color, #00E5FF); 
+                }
+                
+                /* 💬 TEXT SIZE RULES */
+                body[data-text-size="small"] .msg-user, body[data-text-size="small"] .msg-ai { font-size: 0.85rem !important; }
+                body[data-text-size="large"] .msg-user, body[data-text-size="large"] .msg-ai { font-size: 1.15rem !important; }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Apply Zen Mode Status
+        if (prefs.zen_mode) {
+            document.body.classList.add('zen-mode-active');
+        } else {
+            document.body.classList.remove('zen-mode-active');
+        }
+
+        // Apply Chat Text Size
+        document.body.setAttribute('data-text-size', prefs.chat_text_size || 'default');
+
+        // Update Global Prefs for Chat API
+        window.ethrixPrefs = {
+            send_on_enter: prefs.send_on_enter !== false,
+            ui_sfx: prefs.ui_sfx !== false,
+            fast_mode: prefs.fast_mode === true,
+            auto_scroll: prefs.auto_scroll !== false,
+            smart_memory: prefs.smart_memory !== false,
+            ai_persona: prefs.ai_persona || 'friendly'
+        };
         // 🚀 NAYA: 4 Naye Features ko Global Variable mein save karna
         window.ethrixPrefs = {
             send_on_enter: prefs.send_on_enter !== false,

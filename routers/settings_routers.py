@@ -18,10 +18,14 @@ class PreferencesRequest(BaseModel):
     font: str
     voice: bool
     primary_color: str
-    send_on_enter: bool  # Naya
-    ui_sfx: bool         # Naya
-    fast_mode: bool      # Naya
+    send_on_enter: bool
+    ui_sfx: bool
+    fast_mode: bool
     auto_scroll: bool
+    smart_memory: bool    # 🧠 Naya
+    zen_mode: bool        # 🧘 Naya
+    ai_persona: str       # 🎭 Naya
+    chat_text_size: str   # 💬 Naya
 
 @router.get("/settings", response_class=HTMLResponse)
 async def settings_page(request: Request):
@@ -34,7 +38,8 @@ async def settings_page(request: Request):
     # Default preferences with Ethrix Cyan Color
     default_prefs = {
     "theme": "dark", "font": "Inter", "voice": False, "primary_color": "#00E5FF",
-    "send_on_enter": True, "ui_sfx": True, "fast_mode": False, "auto_scroll": True
+    "send_on_enter": True, "ui_sfx": True, "fast_mode": False, "auto_scroll": True,
+    "smart_memory": True, "zen_mode": False, "ai_persona": "friendly", "chat_text_size": "default"
 }
     prefs = db_user.get("preferences", default_prefs) if db_user else default_prefs
     
