@@ -715,15 +715,19 @@ async function loadGlobalPreferences() {
     }
 }
 
+// Ye function tumhare custom color ki magic injection karta hai!
 function applyCustomColor(color) {
+    // Purana dynamic style hatao
     let oldStyle = document.getElementById('dynamic-theme-style');
     if(oldStyle) oldStyle.remove();
 
+    // Hex to RGB conversion for transparency effects (rgba)
     let r = parseInt(color.slice(1, 3), 16);
     let g = parseInt(color.slice(3, 5), 16);
     let b = parseInt(color.slice(5, 7), 16);
     let rgb = `${r}, ${g}, ${b}`;
 
+    // Naya CSS Style banaya gaya custom color ke sath!
     let css = `
         /* User Chat Bubbles */
         .msg-user { background: linear-gradient(135deg, rgba(${rgb}, 0.7), ${color}) !important; box-shadow: 0 4px 12px rgba(${rgb}, 0.3) !important; }
@@ -738,18 +742,26 @@ function applyCustomColor(color) {
         /* Highlights & Borders */
         #chat-search:focus { border-color: rgba(${rgb}, 0.5) !important; box-shadow: 0 0 15px rgba(${rgb}, 0.15) !important; }
         
+        /* ✨ Send Button & File Upload Icon Glow Fix ✨ */
+        .input-container button[type="submit"] { background: linear-gradient(135deg, rgba(${rgb}, 0.8), ${color}) !important; box-shadow: 0 0 15px rgba(${rgb}, 0.4) !important; }
+        .input-container button:hover i { color: ${color} !important; }
+        
         /* Cursor Glow (Only on desktop) */
         .cursor-dot { background: ${color} !important; box-shadow: 0 0 10px ${color}, 0 0 20px ${color} !important; }
         .cursor-outline { border-color: rgba(${rgb}, 0.6) !important; }
         .click-ripple { background: radial-gradient(circle, rgba(${rgb}, 0.8) 0%, rgba(0, 0, 0, 0) 70%) !important; }
     `;
 
+    // Usko document mein inject kar diya
     let style = document.createElement('style');
     style.id = 'dynamic-theme-style';
     style.innerHTML = css;
     document.head.appendChild(style);
 
-    initVanta();
+    // Initialize/Restart Vanta background to apply this new color
+    if (typeof initVanta === 'function') {
+        initVanta();
+    }
 }
 // ==================================================================================
 // 🎵 NAYA: UI SOUND EFFECTS & ENTER KEY LOGIC
