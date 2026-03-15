@@ -624,7 +624,15 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
                     AGENT_URL = os.getenv("HF_AGENT_URL", "https://shantanupathak94-ai-agent-for-ethrix-ai.hf.space/run-agent")
                     resp      = await http_client.post(AGENT_URL, headers=agent_headers, json=payload, timeout=40.0)
                     if resp.status_code == 200:
-                        reply = resp.json().get("response", "Agent processing complete.")
+                        hf_reply = resp.json().get("response", "")
+                        # HF Space 200 deta hai lekin response mein error string bhejta hai
+                        # (tool_use_failed) — matlab HF ka model fail hua, local fallback chalao
+                        HF_ERROR_SIGNALS = ["Processing Error", "tool_use_failed", "failed_generation", "Failed to call a function", "<function="]
+                        if any(s in hf_reply for s in HF_ERROR_SIGNALS) or not hf_reply.strip():
+                            from tools_lab import run_agent_task
+                            reply = await run_agent_task(msg)
+                        else:
+                            reply = hf_reply
                     else:
                         from tools_lab import run_agent_task
                         reply = await run_agent_task(msg)

@@ -227,47 +227,21 @@ async def run_agent_task(query):
 # [EXISTING TOOLS BELOW]
 # ==================================================================================
 async def generate_image_hf(prompt):
-    enhanced_prompt = prompt
+    """
+    Chat mode image generation — uses image_generation.py (Pollinations + Groq enhance).
+    Default: pro tier + realistic style for best quality.
+    """
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
-        enhancement_request = f"Convert this simple user idea into a highly detailed, professional AI image generation prompt (photorealistic, 8k, lighting details). User idea: '{prompt}'. Return ONLY the prompt text, no intro."
-        res = model.generate_content(enhancement_request)
-        if res.text:
-            enhanced_prompt = res.text
-    except:
-        pass 
-
-    API_URL = "[https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev](https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev)"
-    headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-    
-    try:
-        response = requests.post(API_URL, headers=headers, json={"inputs": enhanced_prompt}, timeout=25)
-        
-        if response.status_code == 200:
-            image_bytes = response.content
-            base64_image = base64.b64encode(image_bytes).decode('utf-8')
-            return f"""
+        from image_generation import generate_image_pro
+        image_url = await generate_image_pro(prompt, style_mode="realistic")
+        return f"""
             <div class="glass p-2 rounded-xl">
-                <p class="text-xs text-gray-400 mb-2">✨ Prompt: {enhanced_prompt[:100]}...</p>
-                <img src="data:image/jpeg;base64,{base64_image}" alt="Generated Image" class="rounded-lg w-full">
+                <p class="text-xs text-gray-400 mb-2">✨ AI-Enhanced Prompt | Pro · Realistic</p>
+                <img src="{image_url}" alt="Generated Image" class="rounded-lg w-full" loading="lazy">
             </div>
-            """
-        else:
-            raise Exception("HF Busy")
-
+        """
     except Exception as e:
-        try:
-            safe_prompt = enhanced_prompt.replace(" ", "%20")
-            pollinations_url = f"[https://image.pollinations.ai/prompt/](https://image.pollinations.ai/prompt/){safe_prompt}"
-            return f"""
-            <div class="glass p-2 rounded-xl">
-                <p class="text-xs text-yellow-400 mb-2">⚠️ Server Busy. Switched to Backup AI.</p>
-                <img src="{pollinations_url}" alt="Generated Image" class="rounded-lg w-full">
-            </div>
-            """
-        except:
-            return "⚠️ All Image Servers are currently down. Please try again later."
-
+        return f"⚠️ Image generation failed: {str(e)}"
 async def analyze_resume(file_data, user_msg):
     if not file_data: return "⚠️ Please upload a PDF or DOCX resume first."
     try:

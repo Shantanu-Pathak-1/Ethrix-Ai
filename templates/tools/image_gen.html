@@ -8,14 +8,33 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .image-card { animation: fadeIn 0.5s ease-in-out; transition: transform 0.3s ease; }
-        .image-card:hover { transform: scale(1.02); }
+        .image-card { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Option toggle buttons */
+        .opt-btn {
+            padding: 6px 18px; border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+            border: 1.5px solid rgba(255,255,255,0.15); background: transparent;
+            color: #9ca3af; cursor: pointer; transition: all 0.2s;
+        }
+        .opt-btn.active-tier-fast  { background: rgba(236,72,153,0.2); border-color: #ec4899; color: #f472b6; }
+        .opt-btn.active-tier-pro   { background: rgba(168,85,247,0.2); border-color: #a855f7; color: #c084fc; }
+        .opt-btn.active-style-realistic { background: rgba(59,130,246,0.2); border-color: #3b82f6; color: #60a5fa; }
+        .opt-btn.active-style-painting  { background: rgba(245,158,11,0.2); border-color: #f59e0b; color: #fbbf24; }
+
         .magic-loader { display: none; text-align: center; padding: 40px; }
-        .magic-loader i { font-size: 2rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: pulse 1.5s infinite; }
+        .magic-loader .spin-icon { font-size: 2.2rem; background: linear-gradient(135deg,#f093fb,#f5576c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation: pulse 1.2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+        .gen-image { width: 100%; border-radius: 12px; display: block; }
+
+        /* Download button */
+        .dl-btn { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:7px 16px; border-radius:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#e5e7eb; font-size:0.78rem; cursor:pointer; text-decoration:none; transition:background 0.2s; }
+        .dl-btn:hover { background:rgba(255,255,255,0.15); }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex h-screen overflow-hidden">
+
     <!-- Mobile top bar -->
     <div class="tools-mobile-topbar hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-gray-900/95 backdrop-blur-md border-b border-gray-700">
         <button onclick="document.getElementById('tools-sidebar').classList.toggle('mobile-open')" class="text-white text-xl"><i class="fas fa-bars"></i></button>
@@ -23,110 +42,267 @@
         <a href="/tools" class="text-gray-400 hover:text-white text-sm"><i class="fas fa-flask"></i> Tools</a>
     </div>
     <div class="tools-mobile-spacer h-14 md:hidden"></div>
+
+    <!-- Sidebar -->
     <nav id="tools-sidebar" class="tools-nav-sidebar w-64 bg-gray-800 border-r border-gray-700 flex flex-col hidden md:flex">
         <div class="p-4 shrink-0">
-            <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-500 mb-6 flex items-center gap-2"><i class="fas fa-image"></i> Image Studio</h2>
-            <div class="space-y-2"><a href="/tools" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 transition text-gray-300"><i class="fas fa-arrow-left w-5"></i> Back to Tools</a></div>
+            <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-500 mb-6 flex items-center gap-2">
+                <i class="fas fa-image"></i> Image Studio
+            </h2>
+            <div class="space-y-2">
+                <a href="/tools" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 transition text-gray-300">
+                    <i class="fas fa-arrow-left w-5"></i> Back to Tools
+                </a>
+            </div>
         </div>
-        
+
         <div class="flex-1 overflow-y-auto px-4 border-t border-gray-700 pt-4">
-            <h3 class="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider">History</h3>
+            <h3 class="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider">Recent</h3>
             <div id="tool-history-list" class="space-y-2"></div>
         </div>
 
         <div class="p-4 border-t border-gray-700 shrink-0">
             <div class="flex items-center gap-3 p-2 bg-gray-700/50 rounded-xl">
-                <img src="{{ user.picture if user.picture else url_for('static', filename='images/logo.png') }}" alt="Profile" class="w-9 h-9 rounded-full object-cover border-2 border-pink-500">
+                <img src="{{ user.picture if user.picture else url_for('static', filename='images/logo.png') }}"
+                     alt="Profile" class="w-9 h-9 rounded-full object-cover border-2 border-pink-500">
                 <span class="font-medium truncate">{{ user.name }}</span>
             </div>
         </div>
     </nav>
 
+    <!-- Main -->
     <main class="tools-main-content flex-1 flex flex-col h-full bg-gray-900 relative">
-        <header class="p-5 border-b border-gray-800 bg-gray-900/80 z-10 flex justify-between">
+        <header class="p-5 border-b border-gray-800 bg-gray-900/80 z-10 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-white">AI Image Studio 🎨</h1>
-            <button onclick="window.location.reload()" class="text-gray-400 hover:text-white"><i class="fas fa-plus"></i> New Canvas</button>
+            <button onclick="clearCanvas()" class="text-gray-400 hover:text-white text-sm flex items-center gap-2">
+                <i class="fas fa-plus"></i> New Canvas
+            </button>
         </header>
 
-        <div class="flex-1 overflow-y-auto tool-page-content p-4 md:p-6 relative" id="main-content-area">
-            <div class="max-w-4xl mx-auto flex flex-col gap-6" id="gallery-container">
-                <div class="text-center text-gray-400 mt-10" id="welcome-msg">
-                    <i class="fas fa-magic text-4xl mb-4 text-gray-600"></i>
-                    <p class="text-lg">Type your imagination or tap the mic 🎙️</p>
+        <!-- Gallery -->
+        <div class="flex-1 overflow-y-auto tool-page-content p-4 md:p-6" id="main-content-area">
+            <div class="max-w-3xl mx-auto flex flex-col gap-6" id="gallery-container">
+                <div class="text-center text-gray-400 mt-12" id="welcome-msg">
+                    <i class="fas fa-magic text-5xl mb-4 text-gray-600"></i>
+                    <p class="text-lg font-medium">Describe anything — AI will paint it ✨</p>
+                    <p class="text-sm mt-2 text-gray-500">Choose speed &amp; style below, then type your idea</p>
                 </div>
-                <div id="loading" class="magic-loader"><i class="fas fa-wand-magic-sparkles mb-3"></i><p class="text-pink-400">Creating art... ✨</p></div>
+                <div id="loading" class="magic-loader">
+                    <i class="fas fa-wand-magic-sparkles spin-icon mb-3"></i>
+                    <p class="text-pink-400 font-medium" id="loading-text">Enhancing prompt & generating...</p>
+                </div>
             </div>
         </div>
 
-        <div class="p-5 bg-gray-800 border-t border-gray-700">
-            <div class="max-w-4xl mx-auto flex gap-3 items-center">
-                <button id="mic-btn" onclick="startVoiceCommand('prompt-input')" class="w-12 h-12 rounded-full bg-gray-700 border border-gray-600 text-gray-400 hover:text-pink-400 transition flex items-center justify-center text-xl shrink-0"><i class="fas fa-microphone"></i></button>
-                <input type="text" id="prompt-input" class="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-pink-500" placeholder="Describe the image...">
-                <button onclick="generateImage()" class="bg-gradient-to-r from-pink-500 to-rose-500 px-8 py-4 rounded-xl font-bold hover:opacity-90 transition"><i class="fas fa-paint-brush"></i></button>
+        <!-- Input area -->
+        <div class="p-4 bg-gray-800 border-t border-gray-700">
+            <div class="max-w-3xl mx-auto space-y-3">
+
+                <!-- Tier + Style toggles -->
+                <div class="flex flex-wrap gap-3 items-center">
+                    <span class="text-xs text-gray-500 font-bold uppercase tracking-wider">Speed:</span>
+                    <button id="btn-fast" class="opt-btn active-tier-fast" onclick="setTier('fast')">
+                        <i class="fas fa-bolt mr-1"></i> Fast
+                    </button>
+                    <button id="btn-pro" class="opt-btn" onclick="setTier('pro')">
+                        <i class="fas fa-gem mr-1"></i> Pro
+                    </button>
+
+                    <span class="text-xs text-gray-500 font-bold uppercase tracking-wider ml-2">Style:</span>
+                    <button id="btn-realistic" class="opt-btn active-style-realistic" onclick="setStyle('realistic')">
+                        <i class="fas fa-camera mr-1"></i> Realistic
+                    </button>
+                    <button id="btn-painting" class="opt-btn" onclick="setStyle('painting')">
+                        <i class="fas fa-palette mr-1"></i> Painting
+                    </button>
+                </div>
+
+                <!-- Prompt row -->
+                <div class="flex gap-3 items-center">
+                    <button id="mic-btn" onclick="startVoice()" class="w-12 h-12 rounded-full bg-gray-700 border border-gray-600 text-gray-400 hover:text-pink-400 transition flex items-center justify-center text-xl shrink-0">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <input type="text" id="prompt-input"
+                           class="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-pink-500 transition"
+                           placeholder="Describe your image... (e.g. 'a cat in rain')"
+                           onkeydown="if(event.key==='Enter') generateImage()">
+                    <button onclick="generateImage()"
+                            class="bg-gradient-to-r from-pink-500 to-rose-500 px-8 py-4 rounded-xl font-bold hover:opacity-90 transition shrink-0">
+                        <i class="fas fa-paint-brush"></i>
+                    </button>
+                </div>
+
+                <!-- Current mode indicator -->
+                <p class="text-xs text-gray-500 text-center" id="mode-indicator">
+                    Mode: <span class="text-pink-400" id="mode-text">Fast · Realistic</span> —
+                    <span class="text-gray-400">Groq AI will auto-enhance your prompt</span>
+                </p>
             </div>
         </div>
     </main>
 
     <script>
-        let sessionId = 'img_tool_' + Date.now();
-        window.onload = loadToolHistory;
+        let currentTier  = 'fast';
+        let currentStyle = 'realistic';
 
-        function startVoiceCommand(inputId) {
-            if (!('webkitSpeechRecognition' in window)) { alert("Browser does not support voice!"); return; }
-            const recognition = new webkitSpeechRecognition();
-            recognition.lang = 'en-IN';
-            const micBtn = document.getElementById('mic-btn');
-            micBtn.classList.add('text-pink-500', 'animate-pulse');
-            recognition.onresult = (e) => { document.getElementById(inputId).value = e.results[0][0].transcript; micBtn.classList.remove('text-pink-500', 'animate-pulse'); };
-            recognition.onerror = () => micBtn.classList.remove('text-pink-500', 'animate-pulse');
-            recognition.onend = () => micBtn.classList.remove('text-pink-500', 'animate-pulse');
-            recognition.start();
+        // ── Option setters ──
+        function setTier(tier) {
+            currentTier = tier;
+            document.getElementById('btn-fast').className = 'opt-btn' + (tier === 'fast' ? ' active-tier-fast' : '');
+            document.getElementById('btn-pro').className  = 'opt-btn' + (tier === 'pro'  ? ' active-tier-pro'  : '');
+            updateIndicator();
         }
 
-        async function loadToolHistory() {
+        function setStyle(style) {
+            currentStyle = style;
+            document.getElementById('btn-realistic').className = 'opt-btn' + (style === 'realistic' ? ' active-style-realistic' : '');
+            document.getElementById('btn-painting').className  = 'opt-btn' + (style === 'painting'  ? ' active-style-painting'  : '');
+            updateIndicator();
+        }
+
+        function updateIndicator() {
+            const tierLabel  = currentTier  === 'pro'      ? '💎 Pro'      : '⚡ Fast';
+            const styleLabel = currentStyle === 'painting' ? '🎨 Painting' : '📷 Realistic';
+            document.getElementById('mode-text').textContent = `${tierLabel} · ${styleLabel}`;
+        }
+
+        // ── Voice input ──
+        function startVoice() {
+            if (!('webkitSpeechRecognition' in window)) { alert('Voice not supported in this browser.'); return; }
+            const rec    = new webkitSpeechRecognition();
+            const micBtn = document.getElementById('mic-btn');
+            rec.lang = 'en-IN';
+            micBtn.classList.add('text-pink-500', 'animate-pulse');
+            rec.onresult = (e) => {
+                document.getElementById('prompt-input').value = e.results[0][0].transcript;
+                micBtn.classList.remove('text-pink-500', 'animate-pulse');
+            };
+            rec.onerror = rec.onend = () => micBtn.classList.remove('text-pink-500', 'animate-pulse');
+            rec.start();
+        }
+
+        // ── Main generation ──
+        async function generateImage() {
+            const input = document.getElementById('prompt-input');
+            const prompt = input.value.trim();
+            if (!prompt) return;
+
+            const container = document.getElementById('gallery-container');
+            document.getElementById('welcome-msg').style.display = 'none';
+
+            const loadingEl   = document.getElementById('loading');
+            const loadingText = document.getElementById('loading-text');
+            loadingEl.style.display = 'block';
+            loadingText.textContent = currentTier === 'pro'
+                ? '💎 Pro mode: enhancing prompt & rendering high-quality image...'
+                : '⚡ Fast mode: generating your image...';
+
             try {
-                const res = await fetch('/api/history');
+                const res  = await fetch('/api/image_gen', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt, tier: currentTier, style: currentStyle })
+                });
+                const data = await res.json();
+                loadingEl.style.display = 'none';
+
+                if (data.status === 'success' && data.image_url) {
+                    const tierBadge  = currentTier  === 'pro'      ? '<span class="text-purple-400">💎 Pro</span>'  : '<span class="text-pink-400">⚡ Fast</span>';
+                    const styleBadge = currentStyle === 'painting' ? '<span class="text-yellow-400">🎨 Painting</span>' : '<span class="text-blue-400">📷 Realistic</span>';
+                    const card = `
+                        <div class="image-card bg-gray-800 border border-gray-700 rounded-2xl p-4 shadow-xl mb-4">
+                            <div class="flex items-center gap-2 mb-3 text-sm">
+                                ${tierBadge} · ${styleBadge}
+                                <span class="text-gray-500 text-xs ml-auto truncate max-w-xs">${escHtml(prompt)}</span>
+                            </div>
+                            <img src="${data.image_url}" alt="Generated Image" class="gen-image" loading="lazy"
+                                 onerror="this.src=''; this.parentElement.innerHTML='<p class=\\'text-red-400 text-sm p-2\\'>Image load failed. Try regenerating.</p>'">
+                            <a href="${data.image_url}" download="ethrix_art.jpg" target="_blank" class="dl-btn">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        </div>`;
+                    container.insertAdjacentHTML('afterbegin', card);
+                    input.value = '';
+                    document.getElementById('main-content-area').scrollTop = 0;
+                } else {
+                    loadingEl.style.display = 'none';
+                    showError(data.message || 'Generation failed. Please try again.');
+                }
+            } catch (err) {
+                loadingEl.style.display = 'none';
+                showError('Network error. Please try again.');
+            }
+        }
+
+        function escHtml(str) {
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function showError(msg) {
+            const container = document.getElementById('gallery-container');
+            container.insertAdjacentHTML('afterbegin', `
+                <div class="bg-red-900/30 border border-red-700 rounded-xl p-4 mb-4 text-red-300 text-sm">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>${msg}
+                </div>`);
+        }
+
+        function clearCanvas() {
+            document.getElementById('gallery-container').innerHTML = `
+                <div class="text-center text-gray-400 mt-12" id="welcome-msg">
+                    <i class="fas fa-magic text-5xl mb-4 text-gray-600"></i>
+                    <p class="text-lg font-medium">Describe anything — AI will paint it ✨</p>
+                    <p class="text-sm mt-2 text-gray-500">Choose speed & style below, then type your idea</p>
+                </div>
+                <div id="loading" class="magic-loader">
+                    <i class="fas fa-wand-magic-sparkles spin-icon mb-3"></i>
+                    <p class="text-pink-400 font-medium" id="loading-text">Enhancing prompt & generating...</p>
+                </div>`;
+        }
+
+        // ── History ──
+        window.onload = loadHistory;
+        async function loadHistory() {
+            try {
+                const res  = await fetch('/api/history');
                 const data = await res.json();
                 const list = document.getElementById('tool-history-list');
                 list.innerHTML = '';
-                data.history.filter(c => c.title.toLowerCase().includes('image gen')).forEach(chat => {
-                    list.innerHTML += `<div onclick="loadOldSession('${chat.id}')" class="p-2 hover:bg-gray-700 rounded-lg cursor-pointer text-sm text-gray-300 truncate transition"><i class="fas fa-history text-gray-500 mr-2"></i> ${chat.title.replace('Tool: Image Gen - ', '')}</div>`;
-                });
+                data.history
+                    .filter(c => c.title.toLowerCase().includes('image'))
+                    .slice(0, 10)
+                    .forEach(chat => {
+                        list.innerHTML += `
+                            <div class="p-2 hover:bg-gray-700 rounded-lg cursor-pointer text-sm text-gray-300 truncate transition"
+                                 onclick="loadSession('${chat.id}')">
+                                <i class="fas fa-history text-gray-500 mr-2"></i>
+                                ${chat.title.replace('Tool: Image Gen - ', '')}
+                            </div>`;
+                    });
             } catch(e) {}
         }
 
-        async function loadOldSession(id) {
-            sessionId = id;
+        async function loadSession(id) {
             const container = document.getElementById('gallery-container');
-            container.innerHTML = '<div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl"></i> Loading...</div>';
+            container.innerHTML = '<div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
             try {
-                const res = await fetch(`/api/chat/${id}`);
+                const res  = await fetch(`/api/chat/${id}`);
                 const data = await res.json();
                 container.innerHTML = '';
                 data.messages.forEach(msg => {
-                    if (msg.role === 'assistant' && !msg.content.includes("⚠️")) {
-                        container.insertAdjacentHTML('afterbegin', `<div class="image-card bg-gray-800 border border-gray-700 rounded-2xl p-4 shadow-xl mb-4"><div class="flex items-center gap-2 mb-2 text-pink-400 text-sm"><i class="fas fa-history"></i> Past Generation</div><div class="overflow-hidden rounded-xl">${msg.content}</div></div>`);
+                    if (msg.role === 'assistant' && !msg.content.includes('⚠️')) {
+                        container.insertAdjacentHTML('afterbegin', `
+                            <div class="image-card bg-gray-800 border border-gray-700 rounded-2xl p-4 shadow-xl mb-4">
+                                <div class="text-pink-400 text-xs mb-2"><i class="fas fa-history mr-1"></i> Past Generation</div>
+                                ${msg.content}
+                            </div>`);
                     }
                 });
-            } catch(e) { container.innerHTML = `<p class="text-red-400">Failed to load</p>`; }
-        }
-
-        async function generateImage() {
-            const promptInput = document.getElementById('prompt-input');
-            if(!promptInput.value.trim()) return;
-            const container = document.getElementById('gallery-container');
-            document.getElementById('welcome-msg').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
-            try {
-                const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: promptInput.value, session_id: sessionId, mode: 'image_gen' }) });
-                const data = await response.json();
-                document.getElementById('loading').style.display = 'none';
-                promptInput.value = '';
-                if(data.reply && !data.reply.includes("⚠️ Server Error")) {
-                    container.insertAdjacentHTML('afterbegin', `<div class="image-card bg-gray-800 border border-gray-700 rounded-2xl p-4 shadow-xl mb-4"><div class="overflow-hidden rounded-xl">${data.reply}</div></div>`);
-                    loadToolHistory();
+                if (!container.children.length) {
+                    container.innerHTML = '<p class="text-gray-500 text-center mt-10">No images in this session.</p>';
                 }
-            } catch (error) {}
+            } catch(e) {
+                container.innerHTML = '<p class="text-red-400 text-center">Failed to load.</p>';
+            }
         }
     </script>
 </body>
