@@ -8,7 +8,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+   <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+        });
+    </script>
     <style>
         body { 
             background-color: #0B0F19; /* Ethrix Dark Theme */
@@ -110,6 +114,17 @@
             .avatar-option, .premium-locked-container { width: 55px; height: 55px; }
             .avatars-grid { grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 12px; }
         }
+        /* ☀️ LIGHT MODE OVERRIDES ☀️ */
+        body.light-mode { background-color: #f8fafc; color: #0f172a; }
+        body.light-mode .container { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        body.light-mode h2, body.light-mode .form-label { color: #1e293b; border-bottom-color: #e2e8f0; }
+        body.light-mode input[type="text"] { background: #f1f5f9; border-color: #cbd5e1; color: #0f172a; }
+        body.light-mode input[type="text"]:focus { background: #ffffff; border-color: #3b82f6; }
+        body.light-mode .avatar-option { background-color: #f1f5f9; border-color: #cbd5e1; }
+        body.light-mode .back-link { color: #64748b; }
+        body.light-mode .back-link:hover { color: #3b82f6; }
+        body.light-mode .cropper-container-inner { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        body.light-mode .cropper-container-inner h3 { color: #0f172a; border-bottom-color: #e2e8f0; }
     </style>
 </head>
 <body>
