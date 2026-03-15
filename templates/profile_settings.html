@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Profile Settings | Ethrix AI</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -10,29 +10,78 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #1e293b; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .profile-preview { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 3px solid #3b82f6; }
+        body { 
+            background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; 
+            margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+        }
+        
+        .container { 
+            width: 100%; max-width: 600px; background: #1e293b; 
+            padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            box-sizing: border-box;
+        }
+        
+        .profile-preview { 
+            width: 120px; height: 120px; border-radius: 50%; object-fit: cover; 
+            margin-bottom: 20px; border: 3px solid #3b82f6; 
+        }
+        
         .form-group { margin-bottom: 20px; }
-        input[type="text"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; margin-top: 5px; }
-        .avatars-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
-        .avatar-option { width: 60px; height: 60px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.3s; }
+        
+        input[type="text"] { 
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; 
+            background: #0f172a; color: white; margin-top: 5px; box-sizing: border-box; font-size: 16px;
+        }
+        
+        /* Auto-adjusting Grid for Mobile & Tablet */
+        .avatars-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); 
+            gap: 12px; margin-top: 15px; justify-items: center; 
+        }
+        
+        .avatar-option { 
+            width: 60px; height: 60px; border-radius: 50%; cursor: pointer; 
+            border: 2px solid transparent; transition: 0.3s; 
+        }
+        
         .avatar-option:hover { transform: scale(1.1); }
         .avatar-option.selected { border-color: #3b82f6; transform: scale(1.1); box-shadow: 0 0 10px rgba(59,130,246,0.5); }
         
-        .btn { background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .btn { 
+            background: #3b82f6; color: white; padding: 12px 20px; border: none; 
+            border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; width: 100%; box-sizing: border-box; font-size: 16px;
+        }
         .btn:hover { background: #2563eb; }
+        .btn-upload { width: auto; display: inline-block; padding: 10px 20px; font-size: 14px; }
         
         /* Cropper Modal */
-        #cropper-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .cropper-container-inner { background: #1e293b; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; }
-        .img-container { max-height: 400px; margin-bottom: 15px; }
+        #cropper-modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box;
+        }
+        .cropper-container-inner { 
+            background: #1e293b; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; 
+            box-sizing: border-box;
+        }
+        .img-container { width: 100%; max-height: 50vh; margin-bottom: 15px; display: flex; justify-content: center; }
         img { display: block; max-width: 100%; }
         
         /* Premium Lock Overlay */
-        .premium-locked-container { position: relative; display: inline-block; cursor: not-allowed; }
-        .premium-locked-img { filter: grayscale(80%) brightness(0.6); pointer-events: none; border-color: transparent; }
-        .premium-lock-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fbbf24; font-size: 1.5rem; text-shadow: 0 0 10px rgba(0,0,0,0.8); pointer-events: none; }
+        .premium-locked-container { position: relative; display: flex; justify-content: center; cursor: not-allowed; width: 60px; height: 60px; }
+        .premium-locked-img { filter: grayscale(80%) brightness(0.6); pointer-events: none; border-color: transparent; width: 100%; height: 100%; border-radius: 50%; }
+        .premium-lock-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fbbf24; font-size: 1.2rem; text-shadow: 0 0 8px rgba(0,0,0,0.8); pointer-events: none; }
+
+        /* Media Queries for very small devices */
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 20px; }
+            .profile-preview { width: 100px; height: 100px; }
+            h2 { font-size: 1.5rem; text-align: center; }
+            .avatar-option, .premium-locked-container { width: 55px; height: 55px; }
+            .avatars-grid { grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)); gap: 10px; }
+            .cropper-container-inner { padding: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -43,7 +92,7 @@
     <div style="text-align: center;">
         <img src="{{ current_pic }}" id="main-profile-pic" class="profile-preview" alt="Profile">
         <br>
-        <label class="btn" for="upload-image">📸 Upload Custom Photo</label>
+        <label class="btn btn-upload" for="upload-image">📸 Upload Custom Photo</label>
         <input type="file" id="upload-image" accept="image/*" style="display: none;">
     </div>
 
@@ -69,7 +118,7 @@
                     <img src="{{ avatar }}" class="avatar-option" style="border-color: #fbbf24;" onclick="selectAvatar('{{ avatar }}', this)">
                 {% else %}
                     <div class="premium-locked-container" onclick="showPremiumAlert()">
-                        <img src="{{ avatar }}" class="avatar-option premium-locked-img">
+                        <img src="{{ avatar }}" class="premium-locked-img">
                         <i class="fas fa-lock premium-lock-icon"></i>
                     </div>
                 {% endif %}
@@ -77,18 +126,20 @@
         </div>
     </div>
 
-    <button class="btn" style="width: 100%; margin-top: 20px; font-size: 16px;" onclick="saveProfile()">💾 Save Changes</button>
-    <a href="/" style="display: block; text-align: center; margin-top: 15px; color: #9ca3af; text-decoration: none;">🔙 Back to Dashboard</a>
+    <button class="btn" style="margin-top: 20px;" onclick="saveProfile()">💾 Save Changes</button>
+    <a href="/" style="display: block; text-align: center; margin-top: 20px; color: #9ca3af; text-decoration: none; font-size: 14px;">🔙 Back to Dashboard</a>
 </div>
 
 <div id="cropper-modal">
     <div class="cropper-container-inner">
-        <h3 style="margin-top: 0;">Crop & Adjust Zoom 🔍</h3>
+        <h3 style="margin-top: 0; text-align: center;">Crop Photo 🔍</h3>
         <div class="img-container">
             <img id="image-to-crop" src="">
         </div>
-        <button class="btn" onclick="applyCrop()">Apply Crop</button>
-        <button class="btn" style="background: #ef4444;" onclick="document.getElementById('cropper-modal').style.display='none'">Cancel</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn" onclick="applyCrop()">Apply</button>
+            <button class="btn" style="background: #ef4444;" onclick="document.getElementById('cropper-modal').style.display='none'">Cancel</button>
+        </div>
     </div>
 </div>
 
@@ -116,10 +167,10 @@
             confirmButtonText: 'Upgrade Now 🚀',
             showCancelButton: true,
             cancelButtonColor: '#475569',
-            cancelButtonText: 'Maybe Later'
+            cancelButtonText: 'Maybe Later',
+            width: window.innerWidth < 480 ? '90%' : '32em' // Mobile alert size fix
         }).then((result) => {
             if (result.isConfirmed) {
-                // Abhi main wapas home par bhej rahi hu, baad me payment page laga dena
                 window.location.href = "/"; 
             }
         });
@@ -139,7 +190,7 @@
                     aspectRatio: 1, 
                     viewMode: 1,
                     dragMode: 'move',
-                    autoCropArea: 0.8,
+                    autoCropArea: 0.9, // Mobile pe crop area bada rakha hai
                     restore: false,
                     guides: false,
                     center: false,
@@ -167,6 +218,11 @@
     // Save to Backend
     async function saveProfile() {
         const newName = document.getElementById('user-name').value;
+        const btn = document.querySelector('.btn[onclick="saveProfile()"]');
+        const originalText = btn.innerText;
+        btn.innerText = "Saving... ⏳";
+        btn.disabled = true;
+
         const response = await fetch('/api/update_advanced_profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -174,6 +230,9 @@
         });
         const result = await response.json();
         
+        btn.innerText = originalText;
+        btn.disabled = false;
+
         if(result.status === "success") {
             Swal.fire({
                 icon: 'success',
@@ -182,7 +241,8 @@
                 background: '#1e293b',
                 color: '#fff',
                 showConfirmButton: false,
-                timer: 1500
+                timer: 1500,
+                width: window.innerWidth < 480 ? '90%' : '32em'
             }).then(() => {
                 window.location.reload();
             });
@@ -192,7 +252,8 @@
                 title: 'Oops...',
                 text: 'Kuch gadbad ho gayi, please try again!',
                 background: '#1e293b',
-                color: '#fff'
+                color: '#fff',
+                width: window.innerWidth < 480 ? '90%' : '32em'
             });
         }
     }
