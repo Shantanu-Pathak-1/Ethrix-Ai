@@ -1,17 +1,14 @@
 import os
 import hashlib
+import httpx
+import certifi
 from motor.motor_asyncio import AsyncIOMotorClient
 from pinecone import Pinecone, ServerlessSpec
 from passlib.context import CryptContext
 from authlib.integrations.starlette_client import OAuth
-import httpx
 from fastapi import Request
-import certifi
-from dotenv import load_dotenv # ❤️ Yeh naya import add karo
 
-load_dotenv() # ❤️ Aur yeh function call kar do taaki saari keys load ho jayein!
-
-# =========================================
+# ==========================================
 # 1. KEYS & CONFIG
 # ==========================================
 ADMIN_EMAIL = "shantanupathak94@gmail.com"
@@ -22,8 +19,6 @@ MONGO_URL = os.getenv("MONGO_URL")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 MAIL_USERNAME = os.getenv("MAIL_USERNAME") 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
-
-MAINTENANCE_MODE = True
 
 # ==========================================
 # 2. OAUTH SETUP (GOOGLE LOGIN)
