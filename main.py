@@ -13,7 +13,9 @@ import routers.settings_routers as settings_routers
 from routers.api_routers import router as api_router
 import core.database as db_module
 from routers.pages import router as pages_router
-from routers.auth_routers import router as auth_router 
+from routers.auth_routers import router as auth_router
+# 🎮 Arcade Zone import
+from arcade_zone.arcade_backend import arcade_app
 
 # Main app instance
 app = FastAPI(title="Ethrix AI")
@@ -27,6 +29,9 @@ app.add_middleware(
 
 # Tumhari UI ko sundar banane ke liye static files mount kar rahe hain
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# 🎮 Arcade Zone ko /arcade prefix par mount karo
+app.mount("/arcade", arcade_app)
 
 # Ab saare routers ko main app ke sath connect kar diya
 app.include_router(pages_router)

@@ -259,6 +259,8 @@ pre { background: #1e1e1e !important; padding: 0.75rem; border-radius: 10px; bor
 @media (min-width: 768px) { pre { padding: 1rem; border-radius: 12px; font-size: 0.9em; } }
 code { font-family: 'Consolas', monospace; color: #d4d4d4; }
 .copy-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.15); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; border: none; }
+/* Ensure copy-btn always shows pointer (even on neon cursor pages) */
+body.neon-cursor-active .copy-btn { cursor: none !important; }
 
 /* =========================================
    [CATEGORY] 8. MODALS & DROPDOWNS
@@ -317,10 +319,25 @@ code { font-family: 'Consolas', monospace; color: #d4d4d4; }
    🚀 CUSTOM NEON CURSOR & CLICK ANIMATION (DESKTOP ONLY)
    ========================================================= */
 @media (pointer: fine) {
-    /* Hide default cursor only on devices with a real mouse */
-    * {
-    cursor: none !important;
-}
+    /* Tool pages (non-neon): show image-based cursor */
+    body:not(.neon-cursor-active) {
+        cursor: url('/static/cursors/tools-cursor.png'), auto !important;
+    }
+    body:not(.neon-cursor-active) a,
+    body:not(.neon-cursor-active) button,
+    body:not(.neon-cursor-active) input,
+    body:not(.neon-cursor-active) select,
+    body:not(.neon-cursor-active) textarea,
+    body:not(.neon-cursor-active) [role="button"],
+    body:not(.neon-cursor-active) label[for],
+    body:not(.neon-cursor-active) .cursor-pointer {
+        cursor: url('/static/cursors/tools-pointer.png'), pointer !important;
+    }
+
+    /* Main chat page (neon): hide default cursor */
+    body.neon-cursor-active * {
+        cursor: none !important;
+    }
 
     /* The tiny glowing dot */
     .cursor-dot {

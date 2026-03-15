@@ -266,11 +266,39 @@ function appendMessage(role, text, timestamp = null) {
         chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll ON
     }
 
-    // Code blocks ke liye syntax highlight... (Ye tumhare purane code mein pehle se hoga)
-
+    // Code blocks ke liye syntax highlight + copy button add karo
     if (role === 'assistant') {
         div.querySelectorAll('pre code').forEach((block) => {
             if (window.hljs) hljs.highlightElement(block);
+            // Copy button add karo har code block par
+            const pre = block.parentElement;
+            if (pre && !pre.querySelector('.copy-btn')) {
+                pre.style.position = 'relative';
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(block.innerText).then(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        copyBtn.style.background = 'rgba(74,222,128,0.3)';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+                            copyBtn.style.background = '';
+                        }, 2000);
+                    }).catch(() => {
+                        // Fallback for older browsers
+                        const ta = document.createElement('textarea');
+                        ta.value = block.innerText;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        ta.remove();
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
+                    });
+                });
+                pre.appendChild(copyBtn);
+            }
         });
     }
 }
@@ -563,6 +591,9 @@ function editMyMessage(msgId) {
 // --- CUSTOM CURSOR LOGIC ---
 document.addEventListener("DOMContentLoaded", () => {
     if (window.matchMedia("(pointer: fine)").matches) {
+        // Mark body so CSS knows neon cursor is active (tool pages won't have this class)
+        document.body.classList.add("neon-cursor-active");
+
         const dot = document.createElement("div"); 
         dot.className = "cursor-dot";
         

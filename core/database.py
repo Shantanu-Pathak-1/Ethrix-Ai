@@ -87,8 +87,13 @@ def send_email(to, subject, body):
 # Both connections share the same MONGO_URL.
 # They just point to different databases inside
 # the same MongoDB Atlas cluster.
+#
+# ⚠️  connect=False  → Motor will NOT open a connection at import time.
+#     It connects lazily on the FIRST actual DB call, which always happens
+#     inside an async route (correct event loop). This eliminates the
+#     "Future attached to a different loop" error from background tasks.
 # ==========================================
-_mongo_client = AsyncIOMotorClient(MONGO_URL, tlsCAFile=certifi.where())
+_mongo_client = AsyncIOMotorClient(MONGO_URL, tlsCAFile=certifi.where(), connect=False)
 
 _old_db = _mongo_client.shanvika_db   # ← Legacy data lives here (READ ONLY effectively)
 _new_db = _mongo_client.ethrix_db     # ← All new data goes here (READ + WRITE)
