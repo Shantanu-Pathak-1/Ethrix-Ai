@@ -41,22 +41,17 @@ async def diary_page(request: Request):
 async def about_page(request: Request):
     return templates.TemplateResponse(request=request, name="about.html")
 
-# @router.get("/legal", response_class=HTMLResponse)
-# async def legal_page(request: Request):
-#     return templates.TemplateResponse(request=request, name="legal.html")
-
-# Agar tum FastAPI use kar rahe ho, toh aisa kuch code hoga:
-@router.get("/legal")
+@router.get("/legal", response_class=HTMLResponse)
 async def legal_page(request: Request):
-    return templates.TemplateResponse("legal.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="legal.html")
 
-@router.get("/privacy")
+@router.get("/privacy", response_class=HTMLResponse)
 async def privacy_page(request: Request):
-    return templates.TemplateResponse("legal.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="legal.html")
 
-@router.get("/disclaimer")
+@router.get("/disclaimer", response_class=HTMLResponse)
 async def disclaimer_page(request: Request):
-    return templates.TemplateResponse("legal.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="legal.html")
 
 @router.get("/gallery", response_class=HTMLResponse)
 async def gallery_page(request: Request):
