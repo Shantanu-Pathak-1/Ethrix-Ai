@@ -885,3 +885,30 @@ async def forgot_send_otp(req: ForgotOTPRequest):
             
     except Exception as e:
         return {"status": "error", "message": str(e)}
+    
+class BetaRequest(BaseModel):
+    name: str
+    email: str
+
+@router.post("/api/request_beta")
+async def request_beta(req: BetaRequest):
+    try:
+        # Check if already requested
+        existing = await db_module.users_collection.find_one({"email": req.email, "type": "beta_request"})
+        if existing:
+            return {"status": "error", "message": "You are already on the waitlist!"}
+
+        # Save to database (using users_collection temporarily or create a new waitlist_collection)
+        await db_module.users_collection.insert_one({
+            "name": req.name,
+            "email": req.email,
+            "type": "beta_request",
+            "status": "pending",
+            "requested_at": datetime.utcnow()
+        })
+
+        # (Optional) Tumhe ek email alert bhejne ka logic yahan daal sakte ho
+        
+        return {"status": "success", "message": "Added to waitlist!"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}

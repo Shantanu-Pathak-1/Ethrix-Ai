@@ -57,12 +57,17 @@ async def settings_page(request: Request):
     }
     prefs = db_user.get("preferences", default_prefs) if db_user else default_prefs
 
+google_connected = False
+if user.get("google_access_token") or user.get("google_refresh_token"):
+    google_connected = True
+    
     return templates.TemplateResponse(
         request=request,
         name="settings.html",
-        context={"user": user, "prefs": prefs}
+        context={"user": user, "prefs": prefs,
+        "google_connected": google_connected
+        }
     )
-
 
 # ==========================================
 # SAVE / GET PREFERENCES

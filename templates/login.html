@@ -102,6 +102,9 @@
             Continue with Google
         </button>
     </div>
+        <p class="text-xs text-gray-400 mt-4">
+    Don't have Beta Access? <span onclick="showBetaForm()" class="text-[#00E5FF] cursor-pointer hover:underline">Request Invite</span>
+</p>
 
     <div id="signup-form" class="hidden">
         <div id="step-1">
@@ -179,6 +182,16 @@
 
             <button class="btn" id="btn-reset-pass" onclick="resetMyPassword(this)" disabled style="opacity: 0.5; cursor: not-allowed;">Update Password 🚀</button>
         </div>
+    </div>
+    <div id="beta-form" class="hidden">
+        <h3 class="text-[#00E5FF] text-lg font-bold mb-2">Join Exclusive Beta 🚀</h3>
+        <p class="text-xs text-gray-400 mb-4">Ethrix AI is currently invite-only. Request access below!</p>
+        
+        <input type="text" id="beta-name" placeholder="Your Name">
+        <input type="email" id="beta-email" placeholder="Your Google Email">
+        
+        <button class="btn" onclick="requestBetaAccess(this)">Join Waitlist</button>
+        <p onclick="switchTab('login')" class="text-xs text-gray-400 cursor-pointer mt-4 hover:text-white transition-all">← Back to Login</p>
     </div>
 
 </div>
@@ -502,6 +515,46 @@
             } else { Swal.fire('Error', data.message || 'Failed to reset password.', 'error'); }
         } catch(e) { Swal.fire('Error', 'Connection failed.', 'error'); }
         setLoading(btn, false, 'Update Password 🚀');
+    }
+    // Show Beta Form
+    function showBetaForm() {
+        document.getElementById('login-form').classList.add('hidden');
+        document.getElementById('signup-form').classList.add('hidden');
+        document.getElementById('forgot-form').classList.add('hidden');
+        document.getElementById('beta-form').classList.remove('hidden');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    }
+
+    // Submit Beta Request
+    async function requestBetaAccess(btn) {
+        const name = document.getElementById('beta-name').value;
+        const email = document.getElementById('beta-email').value;
+        
+        if(!name || !email) return Swal.fire('Oops!', 'Please enter your name and email.', 'warning');
+        
+        setLoading(btn, true);
+        try {
+            const res = await fetch('/api/request_beta', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({name: name, email: email}) 
+            });
+            const data = await res.json();
+            
+            if(data.status === 'success') { 
+                Swal.fire({ 
+                    title: 'You are on the list! 🎉', 
+                    text: 'We will send you an email once your beta access is approved.', 
+                    icon: 'success', 
+                    background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00E5FF' 
+                }).then(() => switchTab('login')); 
+            } else { 
+                Swal.fire('Notice', data.message, 'info'); 
+            }
+        } catch(e) { 
+            Swal.fire('Error', 'Connection failed.', 'error'); 
+        }
+        setLoading(btn, false, 'Join Waitlist');
     }
 </script>
 </body>
