@@ -31,10 +31,10 @@
 
         .main-container { max-width: 1200px; margin: 0 auto; padding: 40px 5%; }
         .page-header { margin-bottom: 40px; text-align: center; }
-        .page-header h1 { margin: 0; font-size: 2.5rem; font-weight: 700; color: white; }
-        .page-header p { color: #6b7280; font-size: 1.1rem; margin-top: 8px; }
+        .page-header h1 { margin: 0; font-size: 2.5rem; font-weight: 700; color: white; transition: 0.3s; }
+        .page-header p { color: #6b7280; font-size: 1.1rem; margin-top: 8px; transition: 0.3s; }
 
-        /* ✨ NAYA 2-COLUMN PREMIUM LAYOUT ✨ */
+        /* ✨ 2-COLUMN PREMIUM LAYOUT ✨ */
         .settings-layout { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -44,11 +44,6 @@
         }
         .col-left, .col-right { display: flex; flex-direction: column; gap: 30px; }
         
-        /* 📱 Responsive Breakpoints */
-        @media (max-width: 992px) { 
-            .settings-layout { grid-template-columns: 1fr; } 
-        }
-
         /* Glass Cards */
         .settings-card { 
             background: rgba(18, 24, 38, 0.6); 
@@ -57,7 +52,7 @@
             border-radius: 20px; 
             backdrop-filter: blur(10px); transition: 0.3s;
             display: flex; flex-direction: column; box-sizing: border-box;
-            height: 100%; /* Stretches card to fill column height */
+            height: 100%; 
         }
         .settings-card:hover { border-color: rgba(255, 255, 255, 0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
@@ -76,7 +71,7 @@
         .radio-input:checked + .radio-card { border-color: var(--dynamic-color, #00E5FF); background: rgba(255,255,255,0.1); color: white; box-shadow: 0 0 15px var(--dynamic-glow, rgba(0,229,255,0.2)); }
 
         .color-palette { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px; }
-        .color-circle { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.3s; }
+        .color-circle { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.3s; flex-shrink: 0; }
         .color-circle:hover { transform: scale(1.15); }
         .color-circle.selected { border: 2px solid white; transform: scale(1.2); box-shadow: 0 0 15px currentColor; }
 
@@ -84,7 +79,7 @@
         .category-title { font-size: 0.85rem; font-weight: 600; color: #9ca3af; margin-bottom: 12px; display: block; }
 
         /* Custom Toggle Switch */
-        .flex-between { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 12px;}
+        .flex-between { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 12px; gap: 15px;}
         .flex-between .form-label { margin: 0; color: #e0e0e0; font-size: 0.95rem; }
         .flex-between .form-desc { font-size: 0.75rem; color: #6b7280; font-weight: normal; margin-top: 4px; display: block; }
         
@@ -120,6 +115,37 @@
         }
         .premium-select:hover { border-color: rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.4); }
         .premium-select:focus { border-color: var(--dynamic-color, #00E5FF); box-shadow: 0 0 10px var(--dynamic-glow, rgba(0,229,255,0.2)); }
+
+        /* 📱 RESPONSIVE BREAKPOINTS 📱 */
+        
+        /* Tablet & Smaller Laptops */
+        @media (max-width: 1024px) {
+            .settings-layout { grid-template-columns: 1fr; gap: 20px; }
+            .col-left, .col-right { gap: 20px; }
+            .main-container { padding: 30px 5%; }
+            .settings-card { height: auto; }
+        }
+
+        /* Mobile Devices */
+        @media (max-width: 768px) {
+            .page-header h1 { font-size: 2rem; }
+            .page-header p { font-size: 1rem; }
+            .settings-card { padding: 20px; border-radius: 16px; }
+            .btn-primary { max-width: 100%; width: 100%; }
+            .color-palette { justify-content: center; gap: 12px; }
+            .flex-between { flex-direction: row; flex-wrap: wrap; }
+            .radio-grid, .font-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* Small Mobile Devices */
+        @media (max-width: 480px) {
+            .page-header h1 { font-size: 1.75rem; }
+            .radio-grid, .font-grid { grid-template-columns: 1fr; }
+            .settings-nav { padding: 15px 5%; }
+            .settings-nav .brand { font-size: 1.1rem; }
+            .flex-between { flex-direction: column; align-items: flex-start; }
+            .switch { align-self: flex-end; margin-top: -35px; } /* Aligns switch perfectly on small mobile */
+        }
 
         /* ☀️ LIGHT MODE OVERRIDES ☀️ */
         body.light-mode { background-color: #f8fafc; color: #0f172a; }
@@ -441,7 +467,6 @@
                 didOpen: () => Swal.showLoading()
             });
             try {
-                // Hum wahi same endpoint use kar rahe hain jo login form ke liye banaya tha
                 const res = await fetch('/api/request_beta', { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
