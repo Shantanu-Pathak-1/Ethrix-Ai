@@ -313,5 +313,35 @@
             event.target.classList.add('active');
         }
     </script>
+    <script>
+    // Ye function user ke click karne par tab change karta hai (Jo tumhare paas pehle se hai)
+    function showTab(id) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + id).classList.add('active');
+        
+        // Tab button ko active class dene ke liye
+        const activeBtn = document.querySelector(`button[onclick="showTab('${id}')"]`);
+        if (activeBtn) activeBtn.classList.add('active');
+        
+        // URL ko bina page reload kiye update karna (optional but good for UX)
+        if(id === 'tos') window.history.replaceState(null, null, '/legal');
+        if(id === 'privacy') window.history.replaceState(null, null, '/privacy');
+        if(id === 'disclaimer') window.history.replaceState(null, null, '/disclaimer');
+    }
+
+    // Ye code page load hone par check karega ki URL kya hai, aur wahi tab open karega
+    document.addEventListener("DOMContentLoaded", function() {
+        const currentPath = window.location.pathname; // URL path nikalega jaise '/privacy'
+
+        if (currentPath === "/privacy" || currentPath === "/privacy/") {
+            showTab('privacy');
+        } else if (currentPath === "/disclaimer" || currentPath === "/disclaimer/") {
+            showTab('disclaimer');
+        } else {
+            showTab('tos'); // Agar '/legal' hai ya kuch aur hai, toh default Terms dikhayega
+        }
+    });
+</script>
 </body>
 </html>
