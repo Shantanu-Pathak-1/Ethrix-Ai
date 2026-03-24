@@ -12,31 +12,29 @@ from fastapi.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 import routers.profile_routers as profile_routers
 import routers.settings_routers as settings_routers
-# Ab import karo routers aur database ko
 from routers.api_routers import router as api_router
 import core.database as db_module
 from routers.pages import router as pages_router
 from routers.auth_routers import router as auth_router
-# 🎮 Arcade Zone import
 from arcade_zone.arcade_backend import arcade_app
 
 # Main app instance
 app = FastAPI(title="Ethrix AI")
 
-# Sabse zaroori: Session Middleware add karna
+# Session Middleware
 app.add_middleware(
-    SessionMiddleware, 
+    SessionMiddleware,
     secret_key=db_module.SECRET_KEY,
-    max_age=3600 * 24 * 7  # 7 days tak session valid rahega
+    max_age=3600 * 24 * 7  # 7 days
 )
 
-# Tumhari UI ko sundar banane ke liye static files mount kar rahe hain
+# Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# 🎮 Arcade Zone ko /arcade prefix par mount karo
+# Arcade Zone
 app.mount("/arcade", arcade_app)
 
-# Ab saare routers ko main app ke sath connect kar diya
+# Routers
 app.include_router(pages_router)
 app.include_router(auth_router)
 app.include_router(api_router)
@@ -51,13 +49,17 @@ _templates = Jinja2Templates(directory="templates")
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc: HTTPException):
     return _templates.TemplateResponse(
-        "404.html", {"request": request}, status_code=404
+        request=request,
+        name="404.html",
+        status_code=404
     )
 
 @app.exception_handler(500)
 async def server_error_handler(request: Request, exc: Exception):
     return _templates.TemplateResponse(
-        "500.html", {"request": request}, status_code=500
+        request=request,
+        name="500.html",
+        status_code=500
     )
 
 @app.exception_handler(Exception)
@@ -65,13 +67,15 @@ async def generic_error_handler(request: Request, exc: Exception):
     import traceback, core.database as _db
     try:
         await _db.error_logs_collection.insert_one({
-            "error": str(exc),
-            "trace": traceback.format_exc(),
-            "endpoint": str(request.url),
+            "error":     str(exc),
+            "trace":     traceback.format_exc(),
+            "endpoint":  str(request.url),
             "timestamp": __import__("datetime").datetime.utcnow()
         })
     except Exception:
         pass
     return _templates.TemplateResponse(
-        "500.html", {"request": request}, status_code=500
+        request=request,
+        name="500.html",
+        status_code=500
     )
