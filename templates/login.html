@@ -47,10 +47,7 @@
         .consent-text a:hover { text-decoration-color: #00E5FF; color: #fff; }
 
         .magic-input-wrapper { position: relative; width: 100%; }
-        .magic-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s; }
-        .magic-btn:hover { transform: translateY(-50%) scale(1.2); }
-        .magic-btn:active { transform: translateY(-50%) scale(0.9); }
-
+        
         .hidden { display: none; }
         .otp-sent { color: #4ade80; font-size: 0.8rem; margin-top: 5px; }
         
@@ -153,8 +150,26 @@
             <input type="date" id="reg-dob">
             
             <div class="magic-input-wrapper">
-                <input type="password" id="reg-pass" placeholder="Create Password">
-                <button class="magic-btn" onclick="generateMagicPass()" title="Generate Magic Password">🪄</button>
+                <input type="password" id="reg-pass" placeholder="Create Password" style="padding-right: 70px;">
+                <div style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; gap: 8px; align-items: center;">
+                    <button type="button" id="toggle-eye" onclick="togglePasswordVisibility()" title="Show/Hide Password" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0; outline: none; transition: transform 0.2s;">👁️</button>
+                    <button type="button" class="magic-btn" onclick="generateMagicPass()" title="Generate Magic Password" style="position: static; transform: none; padding: 0; outline: none; font-size: 1.2rem; cursor: pointer; background: none; border: none; transition: transform 0.2s;">🪄</button>
+                </div>
+            </div>
+
+            <div id="password-reqs" class="text-left text-[0.75rem] text-gray-500 mt-2 mb-3 px-2 hidden transition-all duration-300">
+                <div id="req-length" class="flex items-center gap-2 mb-1">
+                    <span class="icon">❌</span> <span class="text">8 to 20 characters</span>
+                </div>
+                <div id="req-case" class="flex items-center gap-2 mb-1">
+                    <span class="icon">❌</span> <span class="text">Uppercase & lowercase letters</span>
+                </div>
+                <div id="req-number" class="flex items-center gap-2 mb-1">
+                    <span class="icon">❌</span> <span class="text">At least 1 number</span>
+                </div>
+                <div id="req-special" class="flex items-center gap-2">
+                    <span class="icon">❌</span> <span class="text">At least 1 special character (@$!%*?&)</span>
+                </div>
             </div>
 
             <div class="consent-wrapper">
@@ -244,17 +259,53 @@
         }
     }
 
+    // 🔥 NEW: Password Show/Hide Toggle Logic 🔥
+    function togglePasswordVisibility() {
+        const passInput = document.getElementById('reg-pass');
+        const eyeIcon = document.getElementById('toggle-eye');
+        
+        if (passInput.type === "password") {
+            passInput.type = "text";
+            eyeIcon.innerText = "🙈"; 
+            eyeIcon.style.transform = "scale(1.1)";
+        } else {
+            passInput.type = "password";
+            eyeIcon.innerText = "👁️"; 
+            eyeIcon.style.transform = "scale(1)";
+        }
+    }
+
+    // 🔥 UPDATED: Magic Password Logic (Based on Email) 🔥
     function generateMagicPass() {
         const email = document.getElementById('reg-email').value;
-        const passField = document.getElementById('reg-pass');
-        if (!email) { return Swal.fire('Oops!', 'Email is required to generate magic password!', 'warning'); }
-        let namePart = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
-        if(namePart.length < 3) namePart = "EthrixUser";
+        const passInput = document.getElementById('reg-pass');
+        const eyeIcon = document.getElementById('toggle-eye');
+        
+        if (!email) { 
+            return Swal.fire('Oops!', 'Email is required to generate a personalized magic password!', 'warning'); 
+        }
+        
+        let namePart = email.split('@')[0].replace(/[^a-zA-Z]/g, '');
+        if(namePart.length < 3) namePart = "Ethrix"; 
+        
         const randomNum = Math.floor(1000 + Math.random() * 9000);
-        const magicPass = namePart.charAt(0).toUpperCase() + namePart.slice(1) + '@' + randomNum;
-        passField.value = magicPass; passField.type = "text";
-        const btn = document.querySelector('.magic-btn'); btn.innerHTML = "✨"; setTimeout(() => btn.innerHTML = "🪄", 1000);
-        Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: '#1e1e1e', color: '#fff', icon: 'success', title: 'Magic Password Generated!' });
+        const magicPass = namePart.charAt(0).toUpperCase() + namePart.slice(1).toLowerCase() + '@' + randomNum;
+        
+        passInput.value = magicPass; 
+        passInput.type = "text";
+        eyeIcon.innerText = "🙈"; 
+        
+        passInput.dispatchEvent(new Event('input'));
+        
+        const btn = document.querySelector('.magic-btn'); 
+        btn.innerHTML = "✨"; 
+        setTimeout(() => btn.innerHTML = "🪄", 1000);
+        
+        Swal.fire({ 
+            toast: true, position: 'top-end', showConfirmButton: false, 
+            timer: 3000, background: '#1e1e1e', color: '#fff', 
+            icon: 'success', title: 'Personalized Password Generated!' 
+        });
     }
 
     async function sendOTP(btn) {
@@ -315,7 +366,7 @@
         window.location.href = '/auth/login';
     }
 
-    // 🔥 HANDLE SIGNUP CONSENT 🔥
+    // 🔥 HANDLE SIGNUP CONSENT & CREATION 🔥
     async function completeSignup(btn) {
         const consentChecked = document.getElementById('signup-consent')?.checked;
         
@@ -368,6 +419,74 @@
         }
         setLoading(btn, false, 'Create Account 🚀');
     }
+
+    // 🔥 NEW: PASSWORD LIVE VALIDATION 🔥
+    document.addEventListener("DOMContentLoaded", () => {
+        const passInput = document.getElementById('reg-pass');
+        const reqBox = document.getElementById('password-reqs');
+        const btnCreate = document.querySelector('#step-3 .btn'); 
+
+        // Initial state: Disable the button
+        if(btnCreate) {
+            btnCreate.disabled = true;
+            btnCreate.style.opacity = '0.5';
+            btnCreate.style.cursor = 'not-allowed';
+        }
+
+        const rules = {
+            length: (val) => val.length >= 8 && val.length <= 20,
+            case: (val) => /[A-Z]/.test(val) && /[a-z]/.test(val),
+            number: (val) => /[0-9]/.test(val),
+            special: (val) => /[@$!%*?&]/.test(val)
+        };
+
+        function updateRequirementUI(elementId, isValid) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const icon = el.querySelector('.icon');
+            const text = el.querySelector('.text');
+            
+            if (isValid) {
+                icon.textContent = '✅';
+                text.style.color = '#4ade80'; 
+            } else {
+                icon.textContent = '❌';
+                text.style.color = '#ef4444'; 
+            }
+        }
+
+        if(passInput) {
+            passInput.addEventListener('input', (e) => {
+                const val = e.target.value;
+                
+                if (val.length > 0) {
+                    reqBox.classList.remove('hidden');
+                } else {
+                    reqBox.classList.add('hidden');
+                }
+
+                const isLengthValid = rules.length(val);
+                const isCaseValid = rules.case(val);
+                const isNumberValid = rules.number(val);
+                const isSpecialValid = rules.special(val);
+
+                updateRequirementUI('req-length', isLengthValid);
+                updateRequirementUI('req-case', isCaseValid);
+                updateRequirementUI('req-number', isNumberValid);
+                updateRequirementUI('req-special', isSpecialValid);
+
+                if (isLengthValid && isCaseValid && isNumberValid && isSpecialValid) {
+                    btnCreate.disabled = false;
+                    btnCreate.style.opacity = '1';
+                    btnCreate.style.cursor = 'pointer';
+                } else {
+                    btnCreate.disabled = true;
+                    btnCreate.style.opacity = '0.5';
+                    btnCreate.style.cursor = 'not-allowed';
+                }
+            });
+        }
+    });
 </script>
 </body>
 </html>
