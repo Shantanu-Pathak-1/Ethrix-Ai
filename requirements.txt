@@ -29,3 +29,4 @@ lyricsgenius
 beautifulsoup4
 aiohttp
 certifi
+bcrypt==3.2.2

@@ -169,7 +169,15 @@
                     <button type="button" id="toggle-forgot-eye" onclick="toggleForgotVisibility()" title="Show/Hide Password" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0; outline: none; transition: transform 0.2s;">👁️</button>
                 </div>
             </div>
-            <button class="btn" onclick="resetMyPassword(this)">Update Password 🚀</button>
+
+            <div id="forgot-password-reqs" class="text-left text-[0.75rem] text-gray-500 mt-2 mb-3 px-2 hidden transition-all duration-300">
+                <div id="freq-length" class="flex items-center gap-2 mb-1"><span class="icon">❌</span> <span class="text">8 to 20 characters</span></div>
+                <div id="freq-case" class="flex items-center gap-2 mb-1"><span class="icon">❌</span> <span class="text">Uppercase & lowercase</span></div>
+                <div id="freq-number" class="flex items-center gap-2 mb-1"><span class="icon">❌</span> <span class="text">At least 1 number</span></div>
+                <div id="freq-special" class="flex items-center gap-2"><span class="icon">❌</span> <span class="text">Special character (@$!%*?&)</span></div>
+            </div>
+
+            <button class="btn" id="btn-reset-pass" onclick="resetMyPassword(this)" disabled style="opacity: 0.5; cursor: not-allowed;">Update Password 🚀</button>
         </div>
     </div>
 
@@ -367,6 +375,33 @@
                     btnCreate.disabled = false; btnCreate.style.opacity = '1'; btnCreate.style.cursor = 'pointer';
                 } else {
                     btnCreate.disabled = true; btnCreate.style.opacity = '0.5'; btnCreate.style.cursor = 'not-allowed';
+                }
+            });
+        }
+        // 🔥 NEW: FORGOT PASSWORD LIVE VALIDATION 🔥
+        const forgotPassInput = document.getElementById('forgot-pass-new');
+        const forgotReqBox = document.getElementById('forgot-password-reqs');
+        const btnResetPass = document.getElementById('btn-reset-pass');
+
+        if(forgotPassInput) {
+            forgotPassInput.addEventListener('input', (e) => {
+                const val = e.target.value;
+                if (val.length > 0) { forgotReqBox.classList.remove('hidden'); } else { forgotReqBox.classList.add('hidden'); }
+
+                const isLengthValid = rules.length(val);
+                const isCaseValid = rules.case(val);
+                const isNumberValid = rules.number(val);
+                const isSpecialValid = rules.special(val);
+
+                updateRequirementUI('freq-length', isLengthValid);
+                updateRequirementUI('freq-case', isCaseValid);
+                updateRequirementUI('freq-number', isNumberValid);
+                updateRequirementUI('freq-special', isSpecialValid);
+
+                if (isLengthValid && isCaseValid && isNumberValid && isSpecialValid) {
+                    btnResetPass.disabled = false; btnResetPass.style.opacity = '1'; btnResetPass.style.cursor = 'pointer';
+                } else {
+                    btnResetPass.disabled = true; btnResetPass.style.opacity = '0.5'; btnResetPass.style.cursor = 'not-allowed';
                 }
             });
         }
