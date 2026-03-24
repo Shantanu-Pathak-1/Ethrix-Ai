@@ -158,8 +158,8 @@
             </div>
 
             <div class="consent-wrapper">
-                <input type="checkbox" id="terms-agree" class="consent-checkbox">
-                <label for="terms-agree" class="consent-text">
+                <input type="checkbox" id="signup-consent" class="consent-checkbox">
+                <label for="signup-consent" class="consent-text">
                     I agree to the <a href="/legal" target="_blank">Terms of Service</a> and <a href="/privacy" target="_blank">Privacy Policy</a>. I am at least 13 years old.
                 </label>
             </div>
@@ -284,31 +284,6 @@
         setLoading(btn, false, 'Verify & Continue');
     }
 
-    async function completeSignup(btn) {
-        const termsChecked = document.getElementById('terms-agree')?.checked;
-        if (!termsChecked) return Swal.fire({
-            title: 'Action Required',
-            html: 'Please agree to our <a href="/legal" target="_blank" style="color:#00E5FF">Terms & Privacy Policy</a> to continue.',
-            icon: 'warning', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00E5FF'
-        });
-        const payload = {
-            email: document.getElementById('reg-email').value,
-            full_name: document.getElementById('reg-name').value,
-            username: document.getElementById('reg-user').value,
-            dob: document.getElementById('reg-dob').value,
-            password: document.getElementById('reg-pass').value
-        };
-        if(!payload.full_name || !payload.username || !payload.dob || !payload.password) return Swal.fire('Hold up!', 'Please fill in all fields.', 'warning');
-        setLoading(btn, true);
-        try {
-            const res = await fetch('/api/complete_signup', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            const data = await res.json();
-            if(data.status === 'success') { Swal.fire({ title: 'Welcome Aboard! 🚀', text: 'Your account has been created successfully.', icon: 'success', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00E5FF' }).then(() => window.location.href = '/'); } 
-            else { Swal.fire('Error', data.message || 'Signup failed', 'error'); }
-        } catch(e) { Swal.fire('Error', 'Connection failed.', 'error'); }
-        setLoading(btn, false, 'Create Account 🚀');
-    }
-
     async function handleLogin(btn) {
         const identifier = document.getElementById('login-id').value;
         const password = document.getElementById('login-pass').value;
@@ -323,7 +298,7 @@
         setLoading(btn, false, "Let's Go!");
     }
 
-    // 🔥 NEW FUNCTION: HANDLE GOOGLE LOGIN CONSENT 🔥
+    // 🔥 HANDLE GOOGLE LOGIN CONSENT 🔥
     function handleGoogleLogin() {
         const consentChecked = document.getElementById('google-consent').checked;
         if (!consentChecked) {
@@ -337,8 +312,61 @@
             });
             return;
         }
-        // Redirect to auth endpoint only if checked
         window.location.href = '/auth/login';
+    }
+
+    // 🔥 HANDLE SIGNUP CONSENT 🔥
+    async function completeSignup(btn) {
+        const consentChecked = document.getElementById('signup-consent')?.checked;
+        
+        if (!consentChecked) {
+            return Swal.fire({
+                title: 'Action Required',
+                html: 'Please agree to our <a href="/legal" target="_blank" style="color:#00E5FF">Terms & Privacy Policy</a> to create your account.',
+                icon: 'warning', 
+                background: '#1e1e1e', 
+                color: '#fff', 
+                confirmButtonColor: '#00E5FF'
+            });
+        }
+
+        const payload = {
+            email: document.getElementById('reg-email').value,
+            full_name: document.getElementById('reg-name').value,
+            username: document.getElementById('reg-user').value,
+            dob: document.getElementById('reg-dob').value,
+            password: document.getElementById('reg-pass').value
+        };
+
+        if(!payload.full_name || !payload.username || !payload.dob || !payload.password) {
+            return Swal.fire('Hold up!', 'Please fill in all fields.', 'warning');
+        }
+
+        setLoading(btn, true);
+        try {
+            const res = await fetch('/api/complete_signup', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(payload) 
+            });
+            const data = await res.json();
+            
+            if(data.status === 'success') { 
+                Swal.fire({ 
+                    title: 'Welcome Aboard! 🚀', 
+                    text: 'Your account has been created successfully.', 
+                    icon: 'success', 
+                    background: '#1e1e1e', 
+                    color: '#fff', 
+                    confirmButtonColor: '#00E5FF' 
+                }).then(() => window.location.href = '/'); 
+            } else { 
+                Swal.fire('Error', data.message || 'Signup failed', 'error'); 
+            }
+        } catch(e) { 
+            Swal.fire('Error', 'Connection failed.', 'error'); 
+        }
+        setLoading(btn, false, 'Create Account 🚀');
     }
 </script>
 </body>
