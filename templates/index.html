@@ -439,6 +439,51 @@ ${m.content}
             customClass: { popup: 'rounded-2xl border border-white/10' }
         });
     }
+    // ── GOOGLE WORKSPACE — Post-OAuth Toast ──────────────────────────────
+    // (Ye code existing script tag ke andar add karo — DOMContentLoaded ke baad)
+    (function() {
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get('google_connected') === 'true') {
+            // Clean URL without reload
+            window.history.replaceState({}, document.title, '/');
+            // Wait for Swal to be ready
+            setTimeout(() => {
+                Swal.fire({
+                    icon:              'success',
+                    title:             '🔗 Google Account Connected!',
+                    html:
+                        '<p style="color:#9ca3af;font-size:0.9rem;margin-top:4px;">' +
+                        'Gmail, Calendar, Drive &amp; Tasks are now available in ' +
+                        '<strong style="color:#00E5FF;">🌌 Agent Mode</strong>.' +
+                        '</p>',
+                    background:        '#0B0F19',
+                    color:             '#fff',
+                    confirmButtonColor:'#00E5FF',
+                    confirmButtonText: 'Got it!',
+                    timer:             6000,
+                    timerProgressBar:  true,
+                    customClass:       { popup: 'border border-cyan-500/30 shadow-2xl rounded-2xl' }
+                });
+            }, 400);
+        }
+
+        if (params.get('google_error')) {
+            window.history.replaceState({}, document.title, '/');
+            const errorMsg = params.get('google_error');
+            setTimeout(() => {
+                Swal.fire({
+                    icon:              'error',
+                    title:             'Google Connection Failed',
+                    text:              `Error: ${errorMsg}. Please try again from Settings.`,
+                    background:        '#0B0F19',
+                    color:             '#fff',
+                    confirmButtonColor:'#ef4444',
+                    customClass:       { popup: 'border border-red-500/30 shadow-2xl rounded-2xl' }
+                });
+            }, 400);
+        }
+    })();
     </script>
 </body>
 </html>
