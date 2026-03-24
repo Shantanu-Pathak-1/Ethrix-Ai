@@ -28,7 +28,6 @@
 </head>
 <body class="min-h-screen">
 
-    <!-- Navbar -->
     <nav class="flex items-center justify-between px-6 py-4 border-b border-white/5 sticky top-0 bg-[#0B0F19]/90 backdrop-blur-md z-10">
         <a href="/" class="flex items-center gap-2 no-underline">
             <img src="/static/images/logo.png" class="w-8 h-8 rounded-full border border-[#00E5FF]/30">
@@ -41,13 +40,11 @@
 
     <div class="max-w-3xl mx-auto px-4 py-12">
 
-        <!-- Header -->
         <div class="text-center mb-10">
             <h1 class="text-3xl font-bold text-white mb-3">Legal & Privacy</h1>
-            <p class="text-gray-500 text-sm">Last updated: January 2025 &nbsp;·&nbsp; Ethrix AI by Shantanu Pathak</p>
+            <p class="text-gray-500 text-sm">Last updated: March 2026 &nbsp;·&nbsp; Ethrix AI by Shantanu Pathak</p>
         </div>
 
-        <!-- Tabs -->
         <div class="flex gap-3 justify-center mb-8">
             <button class="tab-btn active" onclick="showTab('tos')">Terms of Service</button>
             <button class="tab-btn" onclick="showTab('privacy')">Privacy Policy</button>
@@ -56,9 +53,6 @@
 
         <div class="glass rounded-2xl p-6 sm:p-8">
 
-            <!-- ══════════════════════════════════════════════ -->
-            <!-- TERMS OF SERVICE                              -->
-            <!-- ══════════════════════════════════════════════ -->
             <div id="tab-tos" class="tab-panel active">
 
                 <div class="bg-[#00E5FF]/5 border border-[#00E5FF]/20 rounded-xl p-4 mb-6">
@@ -96,6 +90,13 @@
                     <li>Infringe on any intellectual property rights of third parties.</li>
                     <li>Generate content that exploits minors in any way.</li>
                 </ul>
+                
+                <h3>Code Execution Policy</h3>
+                <p>The execute_python tool is provided for data analysis and legitimate calculations. You agree not to use this tool for any malicious activities, including but not limited to hacking, unauthorized data access, or attacking third-party servers.</p>
+
+                <h3>User Responsibility for Actions</h3>
+                <p>By using the Google Workspace integration, you acknowledge that Ethrix AI acts as your authorized agent. Any email sent or event deleted by the AI based on your prompt is your legal responsibility.</p>
+                
                 <p class="mt-2">Violation of these rules may result in immediate account termination without notice.</p>
 
                 <h2>6. AI-Generated Content</h2>
@@ -134,9 +135,6 @@
 
             </div>
 
-            <!-- ══════════════════════════════════════════════ -->
-            <!-- PRIVACY POLICY                                -->
-            <!-- ══════════════════════════════════════════════ -->
             <div id="tab-privacy" class="tab-panel">
 
                 <div class="bg-blue-900/20 border border-blue-500/20 rounded-xl p-4 mb-6">
@@ -145,12 +143,22 @@
                 </div>
 
                 <h2>1. Information We Collect</h2>
+                
                 <h3>Account Information</h3>
                 <ul>
                     <li>Name, email address, username, date of birth (provided at signup)</li>
                     <li>Profile picture (from Google OAuth or assigned automatically)</li>
                     <li>Password (stored as a secure bcrypt hash — never plain text)</li>
                 </ul>
+
+                <h3>Google User Data (OAuth)</h3>
+                <p>If you connect your Google Account, Ethrix AI accesses your Gmail (to send/read emails), Google Calendar (to manage events), Google Drive (to read file content for analysis), and Google Tasks. This access is only used to execute specific commands given by you to the AI agent.</p>
+
+                <h3>Data Storage (Tokens)</h3>
+                <p>We store your Google 'Refresh Token' securely in our encrypted database (MongoDB) to ensure the AI agent can perform tasks even when you are not actively using the site. We do not store the content of your emails or files on our servers.</p>
+
+                <h3>Third-Party Processing</h3>
+                <p>To provide AI responses, text from your connected services (like email snippets or calendar titles) may be processed via Groq or Google Gemini APIs. This data is processed in real-time and not used for training those models.</p>
 
                 <h3>Usage Data</h3>
                 <ul>
@@ -227,9 +235,6 @@
 
             </div>
 
-            <!-- ══════════════════════════════════════════════ -->
-            <!-- DISCLAIMER                                     -->
-            <!-- ══════════════════════════════════════════════ -->
             <div id="tab-disclaimer" class="tab-panel">
 
                 <div class="bg-yellow-900/20 border border-yellow-500/20 rounded-xl p-4 mb-6">
@@ -239,6 +244,12 @@
 
                 <h2>AI Accuracy Disclaimer</h2>
                 <p>Ethrix AI uses large language models that generate responses based on patterns in training data. These responses may contain <span class="highlight">errors, outdated information, or hallucinations</span>. Always verify important information from authoritative sources before acting on it.</p>
+                
+                <h2>Financial & Trading Risk</h2>
+                <p>The get_stock_price tool provides real-time or delayed market data for informational purposes only. Ethrix AI is not a financial advisor. Always verify stock data with a certified broker before making investment decisions.</p>
+
+                <h2>Experimental Features (Alpha/Beta)</h2>
+                <p>Creative tools like generate_image and youtube_summarize are experimental. We do not guarantee the accuracy of AI-generated summaries or the copyright status of generated images.</p>
 
                 <h2>Not Professional Advice</h2>
                 <p>Nothing on this platform constitutes:</p>
@@ -265,7 +276,6 @@
 
         </div>
 
-        <!-- Quick Summary Card -->
         <div class="glass rounded-2xl p-6 mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             <div>
                 <div class="text-2xl mb-2">🛡️</div>
@@ -286,14 +296,13 @@
 
     </div>
 
-    <!-- Footer -->
     <footer class="border-t border-white/5 py-8 text-center text-gray-600 text-sm mt-8">
         <div class="flex items-center justify-center gap-6 mb-3">
             <a href="/" class="hover:text-[#00E5FF] transition">Home</a>
             <a href="/pricing" class="hover:text-[#00E5FF] transition">Pricing</a>
             <a href="/about" class="hover:text-[#00E5FF] transition">About</a>
         </div>
-        <p>© 2025 Ethrix AI · Made with ❤️ by Shantanu Pathak · India</p>
+        <p>© 2026 Ethrix AI · Made with ❤️ by Shantanu Pathak · India</p>
     </footer>
 
     <script>
