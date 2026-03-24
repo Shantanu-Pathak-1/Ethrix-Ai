@@ -318,23 +318,35 @@ body.neon-cursor-active .copy-btn { cursor: none !important; }
 /* =========================================================
    🚀 CUSTOM NEON CURSOR & CLICK ANIMATION (DESKTOP ONLY)
    ========================================================= */
+/*
+  =====================================================================
+  style.css mein sirf yeh CURSOR SECTION replace karo
+  (line ~420 ke aaspaas — "@media (pointer: fine)" wala block)
+  =====================================================================
+*/
+
+/* 🚀 CUSTOM NEON CURSOR & CLICK ANIMATION (DESKTOP ONLY) */
 @media (pointer: fine) {
-    /* Tool pages (non-neon): show image-based cursor */
-    body:not(.neon-cursor-active) {
+
+    /* DEFAULT MODE: body.default-cursor-active ho toh kuch mat karo
+       — JS wala cursor-override-style handle karega */
+
+    /* TOOL PAGES (non-neon, non-default): PNG cursor dikhao */
+    body:not(.neon-cursor-active):not(.default-cursor-active) {
         cursor: url('/static/cursors/tools-cursor.png'), auto !important;
     }
-    body:not(.neon-cursor-active) a,
-    body:not(.neon-cursor-active) button,
-    body:not(.neon-cursor-active) input,
-    body:not(.neon-cursor-active) select,
-    body:not(.neon-cursor-active) textarea,
-    body:not(.neon-cursor-active) [role="button"],
-    body:not(.neon-cursor-active) label[for],
-    body:not(.neon-cursor-active) .cursor-pointer {
+    body:not(.neon-cursor-active):not(.default-cursor-active) a,
+    body:not(.neon-cursor-active):not(.default-cursor-active) button,
+    body:not(.neon-cursor-active):not(.default-cursor-active) input,
+    body:not(.neon-cursor-active):not(.default-cursor-active) select,
+    body:not(.neon-cursor-active):not(.default-cursor-active) textarea,
+    body:not(.neon-cursor-active):not(.default-cursor-active) [role="button"],
+    body:not(.neon-cursor-active):not(.default-cursor-active) label[for],
+    body:not(.neon-cursor-active):not(.default-cursor-active) .cursor-pointer {
         cursor: url('/static/cursors/tools-pointer.png'), pointer !important;
     }
 
-    /* Main chat page (neon): hide default cursor */
+    /* NEON MODE: cursor bilkul hide karo */
     body.neon-cursor-active * {
         cursor: none !important;
     }
@@ -344,7 +356,7 @@ body.neon-cursor-active .copy-btn { cursor: none !important; }
         position: fixed;
         top: 0; left: 0;
         width: 8px; height: 8px;
-        background: #00E5FF; /* Cyan Glow */
+        background: #00E5FF;
         border-radius: 50%;
         transform: translate(-50%, -50%);
         z-index: 99999;
@@ -379,8 +391,8 @@ body.neon-cursor-active .copy-btn { cursor: none !important; }
     }
 
     @keyframes ripple-anim {
-        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-        100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+        0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(3);   opacity: 0; }
     }
 }
 /* ==================================================================================
