@@ -57,15 +57,19 @@ async def settings_page(request: Request):
     }
     prefs = db_user.get("preferences", default_prefs) if db_user else default_prefs
 
-google_connected = False
-if user.get("google_access_token") or user.get("google_refresh_token"):
-    google_connected = True
+    # 🔥 FIX: Properly Indented Inside the Function 🔥
+    google_connected = False
+    # Checking both direct tokens and db_user token field based on your logic
+    if user.get("google_access_token") or user.get("google_refresh_token") or (db_user and db_user.get("google_token")):
+        google_connected = True
     
     return templates.TemplateResponse(
         request=request,
         name="settings.html",
-        context={"user": user, "prefs": prefs,
-        "google_connected": google_connected
+        context={
+            "user": user, 
+            "prefs": prefs,
+            "google_connected": google_connected
         }
     )
 
@@ -99,6 +103,21 @@ async def get_preferences(request: Request):
     }
     return prefs
 
+# ==========================================
+# DELETE CHATS (Added for the new UI button)
+# ==========================================
+@router.delete("/api/delete_all_chats")
+async def delete_all_chats(request: Request):
+    user = await db_module.get_current_user(request)
+    if not user:
+        return JSONResponse({"status": "error", "message": "Login required!"}, 400)
+    
+    try:
+        # Assuming your chats collection logic here
+        await db_module.chats_collection.delete_many({"user_email": user["email"]})
+        return {"status": "success", "message": "All chats deleted"}
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": str(e)}, 500)
 
 # ==========================================
 # GOOGLE WORKSPACE — OAUTH ENDPOINTS
