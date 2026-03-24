@@ -161,48 +161,73 @@ def create_file_tool(filename, content):
 # [CATEGORY] NEW: THE AGENT BRAIN (ReAct Loop)
 # ==================================================================================
 async def run_agent_task(query):
-    max_steps = 5 
+    max_steps = 7
     history = f"Task: {query}\n"
     
+    # Bad domains filter - generic pages jo cricket ke liye useless hain
+    BAD_DOMAINS = [
+        'wikipedia.org/wiki/India"', 'britannica.com/place/India',
+        'countryreports.org', 'en.wikipedia.org/wiki/India '
+    ]
+    
     for step in range(max_steps):
-        prompt = f"""
-        You are an Autonomous AI Agent.
-        Goal: {query}
-        
-        Available Tools:
-        1. SEARCH: <query> (Use to find info on Google/DuckDuckGo)
-        2. SCRAPE: <url> (Use to read content of a link found in search)
-        3. PYTHON: <code> (Use for math, logic, or data processing. Print the result.)
-        4. CREATE_FILE: <filename>|<content> (Use to save code/text to a file)
-        5. ANSWER: <final_response> (Use when you have the result)
+        prompt = f"""You are an Autonomous AI Agent. Today's date is March 24, 2026.
+Task: {query}
 
-        History so far:
-        {history}
+Tools available:
+1. SEARCH: <query>        → DuckDuckGo search. Keep queries 3-5 words ONLY.
+2. SCRAPE: <url>          → Read a specific webpage
+3. PYTHON: <code>         → Run Python, print results
+4. CREATE_FILE: <f>|<c>   → Save file
+5. ANSWER: <response>     → Final answer (use when you have enough info)
 
-        INSTRUCTIONS:
-        - Decide the NEXT STEP based on History.
-        - Return ONLY the command (e.g., SEARCH: python tutorials).
-        - Do not talk, just command.
-        """
+History:
+{history}
+
+RULES:
+- SEARCH queries must be SHORT (3-5 words). BAD: "India cricket team wins 2026 latest news". GOOD: "India cricket 2026"
+- If search results look irrelevant or empty, use SCRAPE on a known site directly
+- For cricket/sports news: try SCRAPE: https://www.espncricinfo.com/cricket-news
+- For general news: try SCRAPE: https://news.google.com/search?q={query.replace(' ', '+')}
+- Return ONLY the command on one line. Nothing else.
+
+NEXT COMMAND:"""
         
         command = get_llm_response(prompt).strip()
-        history += f"\nStep {step+1}: AI Thought: {command}\n"
+        # Clean up if model adds extra text
+        for prefix in ["SEARCH:", "SCRAPE:", "PYTHON:", "CREATE_FILE:", "ANSWER:"]:
+            if prefix in command and not command.startswith(prefix):
+                command = command[command.index(prefix):]
+                break
+        
+        history += f"\nStep {step+1}: {command}\n"
         print(f"🤖 Agent Step {step+1}: {command}")
 
         result = ""
         
         if command.startswith("SEARCH:"):
             q = command.replace("SEARCH:", "").strip()
-            res = DDGS().text(q, max_results=3)
-            result = str(res)
-            
+            try:
+                res = DDGS().text(q, max_results=5)
+                # Filter out useless generic country pages
+                filtered = [r for r in res if not any(
+                    bad in r.get('href', '') for bad in BAD_DOMAINS
+                )]
+                if filtered:
+                    result = str(filtered)
+                else:
+                    result = f"Search returned irrelevant results. Try: SCRAPE: https://www.espncricinfo.com/cricket-news"
+            except Exception as e:
+                result = f"Search failed: {str(e)}. Try SCRAPE on a direct URL."
+                
         elif command.startswith("SCRAPE:"):
             url = command.replace("SCRAPE:", "").strip()
             result = scrape_website(url)
             
         elif command.startswith("PYTHON:"):
             code = command.replace("PYTHON:", "").strip()
-            if code.startswith("```"): code = code.replace("```python", "").replace("```", "")
+            if code.startswith("```"):
+                code = code.replace("```python", "").replace("```", "")
             result = execute_python_code(code)
             
         elif command.startswith("CREATE_FILE:"):
@@ -213,14 +238,17 @@ async def run_agent_task(query):
                 result = "Error: Use format CREATE_FILE: filename|content"
                 
         elif command.startswith("ANSWER:"):
-            return command.replace("ANSWER:", "").strip() + f"\n\n_(Process: {step} steps)_"
+            return command.replace("ANSWER:", "").strip() + f"\n\n_(Process: {step+1} steps)_"
         
         else:
-            result = "Invalid Command. Please use SEARCH, SCRAPE, PYTHON, CREATE_FILE, or ANSWER."
+            # Model ne kuch aur likha - force ANSWER
+            if step >= 3:
+                return f"Based on my research: {command}\n\n_(Fallback answer after {step+1} steps)_"
+            result = "Invalid command format. Use SEARCH, SCRAPE, PYTHON, CREATE_FILE, or ANSWER."
 
-        history += f"Observation: {result[:1000]}...\n" 
+        history += f"Result: {result[:800]}\n"
 
-    return "⚠️ Agent timed out (Too many steps). Here is what I found:\n" + history
+    return "⚠️ Agent couldn't find a definitive answer. Please try the Research mode instead!"
     
 
 # ==================================================================================

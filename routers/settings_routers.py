@@ -12,7 +12,6 @@ import core.database as db_module
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-# ✨ Naya primary_color add kar diya gaya hai
 class PreferencesRequest(BaseModel):
     theme: str
     font: str
@@ -22,10 +21,11 @@ class PreferencesRequest(BaseModel):
     ui_sfx: bool
     fast_mode: bool
     auto_scroll: bool
-    smart_memory: bool    # 🧠 Naya
-    zen_mode: bool        # 🧘 Naya
-    ai_persona: str       # 🎭 Naya
-    chat_text_size: str   # 💬 Naya
+    smart_memory: bool
+    zen_mode: bool
+    ai_persona: str
+    chat_text_size: str
+    cursor_mode: str = "neon"  # ✅ NEW — default neon
 
 @router.get("/settings", response_class=HTMLResponse)
 async def settings_page(request: Request):

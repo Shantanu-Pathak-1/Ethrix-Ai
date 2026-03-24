@@ -562,8 +562,27 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
             f"\n\n[IMPORTANT CONTEXT]: You are Ethrix. {name_instruction} "
             "DO NOT call the user 'Ethrix' ever. DO NOT save memories about your own name."
         )
+
         if retrieved_memory:
             FINAL_SYSTEM_PROMPT += f"\n\n[USER LONG-TERM MEMORY]:\n{retrieved_memory}\n(Use this information to personalise the conversation)"
+
+        # ✅ AI PERSONA — DB se fetch karke system prompt mein inject karo
+        ai_persona = "friendly"
+        if db_user and db_user.get("preferences"):
+            ai_persona = db_user["preferences"].get("ai_persona", "friendly")
+
+        persona_map = {
+            "friendly":     "Maintain a warm, caring, and emotionally supportive tone in every response. Be sweet and genuine.",
+            "professional": "Be concise, formal, and professionally precise. Avoid casual language or emojis. Stick to facts.",
+            "sarcastic":    "Be witty and lightly sarcastic with a sharp sense of humor, but always remain helpful underneath the sarcasm.",
+            "motivator":    "Be highly energetic, enthusiastic, and motivating! Push the user to achieve their best with hype and encouragement.",
+            "tutor":        "Be patient, clear, and educational. Explain everything step-by-step like a great teacher. Never rush the user.",
+            "bestfriend":   "Be super casual and relaxed. Use natural slang, be playful, talk exactly like a very close best friend would.",
+            "strict":       "Be direct, blunt, and strict. No fluff, no filler — just accurate, concise answers. Don't sugarcoat anything.",
+        }
+
+        persona_instruction = persona_map.get(ai_persona, persona_map["friendly"])
+        FINAL_SYSTEM_PROMPT += f"\n\n[ACTIVE COMMUNICATION PERSONA]: {persona_instruction}"
 
         chat_doc = await db_module.chats_collection.find_one({"session_id": sid})
         if not chat_doc:

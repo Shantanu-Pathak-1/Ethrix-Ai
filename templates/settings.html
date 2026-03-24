@@ -6,12 +6,12 @@
     <title>Control Center | Ethrix AI</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;600&family=Roboto:wght@400;600&family=Courier+Prime&family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;600&family=Roboto:wght@400;600&family=Courier+Prime&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Lato:wght@400;700&family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
-        });
+       document.getElementById('cursor-toggle')?.addEventListener('change', function() {
+    const hint = document.getElementById('cursor-hint');
+    hint.style.display = this.checked ? 'none' : 'block';
+});
     </script>
     
     <style>
@@ -221,13 +221,16 @@
                 </div>
 
                 <label class="form-label mt-2">Typography</label>
-                <div class="radio-grid" style="margin-bottom: 0;">
-                    <label><input type="radio" name="font" value="Inter" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Inter' %}checked{% endif %}><div class="radio-card" style="font-family: 'Inter';">Inter</div></label>
-                    <label><input type="radio" name="font" value="Poppins" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Poppins' %}checked{% endif %}><div class="radio-card" style="font-family: 'Poppins';">Poppins</div></label>
-                    <label><input type="radio" name="font" value="Roboto" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Roboto' %}checked{% endif %}><div class="radio-card" style="font-family: 'Roboto';">Roboto</div></label>
-                    <label><input type="radio" name="font" value="Courier Prime" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Courier Prime' %}checked{% endif %}><div class="radio-card" style="font-family: 'Courier Prime';">Courier</div></label>
-                </div>
-            </div>
+<div class="radio-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 0;">
+    <label><input type="radio" name="font" value="Inter" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Inter' %}checked{% endif %}><div class="radio-card" style="font-family:'Inter';">Inter</div></label>
+    <label><input type="radio" name="font" value="Poppins" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Poppins' %}checked{% endif %}><div class="radio-card" style="font-family:'Poppins';">Poppins</div></label>
+    <label><input type="radio" name="font" value="Roboto" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Roboto' %}checked{% endif %}><div class="radio-card" style="font-family:'Roboto';">Roboto</div></label>
+    <label><input type="radio" name="font" value="Courier Prime" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Courier Prime' %}checked{% endif %}><div class="radio-card" style="font-family:'Courier Prime';">Courier</div></label>
+    <label><input type="radio" name="font" value="Nunito" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Nunito' %}checked{% endif %}><div class="radio-card" style="font-family:'Nunito',sans-serif;">Nunito</div></label>
+    <label><input type="radio" name="font" value="JetBrains Mono" class="radio-input" onchange="previewFont()" {% if prefs.font == 'JetBrains Mono' %}checked{% endif %}><div class="radio-card" style="font-family:'JetBrains Mono',monospace;">JetBrains</div></label>
+    <label><input type="radio" name="font" value="Lato" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Lato' %}checked{% endif %}><div class="radio-card" style="font-family:'Lato',sans-serif;">Lato</div></label>
+    <label><input type="radio" name="font" value="Outfit" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Outfit' %}checked{% endif %}><div class="radio-card" style="font-family:'Outfit',sans-serif;">Outfit</div></label>
+</div>
 
             <div class="settings-card" style="border-color: rgba(239,68,68,0.2);">
                 <div class="card-header" style="border-bottom-color: rgba(239,68,68,0.1);">
@@ -289,25 +292,32 @@
                         <label class="switch"><input type="checkbox" id="zen-toggle" {% if prefs.zen_mode %}checked{% endif %}><span class="slider"></span></label>
                     </div>
 
-                    <div style="display: flex; gap: 15px; margin-top: 20px;">
-                        <div style="flex: 1;">
-                            <label class="form-label" style="font-size: 0.85rem; margin-bottom: 8px;">🎭 AI Persona</label>
-                            <select id="persona-select" class="premium-select">
-                                <option value="friendly" {% if prefs.ai_persona == 'friendly' %}selected{% endif %}>😊 Friendly</option>
-                                <option value="professional" {% if prefs.ai_persona == 'professional' %}selected{% endif %}>💼 Pro</option>
-                                <option value="sarcastic" {% if prefs.ai_persona == 'sarcastic' %}selected{% endif %}>😏 Witty</option>
-                            </select>
-                        </div>
-                        <div style="flex: 1;">
-                            <label class="form-label" style="font-size: 0.85rem; margin-bottom: 8px;">💬 Text Size</label>
-                            <select id="text-size-select" class="premium-select">
-                                <option value="small" {% if prefs.chat_text_size == 'small' %}selected{% endif %}>Small</option>
-                                <option value="default" {% if prefs.chat_text_size == 'default' %}selected{% endif %}>Normal</option>
-                                <option value="large" {% if prefs.chat_text_size == 'large' %}selected{% endif %}>Large</option>
-                            </select>
-                        </div>
-                    </div>
-                </div> 
+                    <div class="flex-between">
+    <label class="form-label">🖱️ Cursor Style<span class="form-desc">Ethrix neon cursor ya normal system cursor</span></label>
+    <label class="switch">
+        <input type="checkbox" id="cursor-toggle" {% if prefs.cursor_mode != 'default' %}checked{% endif %}>
+        <span class="slider"></span>
+    </label>
+</div>
+<div id="cursor-hint" style="font-size:0.72rem;color:#6b7280;margin:-4px 0 6px 8px;display:{% if prefs.cursor_mode == 'default' %}block{% else %}none{% endif %};">
+    ✓ Default system cursor active — no neon effect
+</div>
+
+                    <select id="persona-select" class="premium-select">
+    <option value="friendly"      {% if prefs.ai_persona == 'friendly'      %}selected{% endif %}>😊 Friendly & Warm</option>
+    <option value="professional"  {% if prefs.ai_persona == 'professional'  %}selected{% endif %}>💼 Professional</option>
+    <option value="sarcastic"     {% if prefs.ai_persona == 'sarcastic'     %}selected{% endif %}>😏 Witty & Sarcastic</option>
+    <option value="motivator"     {% if prefs.ai_persona == 'motivator'     %}selected{% endif %}>🔥 Motivator</option>
+    <option value="tutor"         {% if prefs.ai_persona == 'tutor'         %}selected{% endif %}>📚 Patient Tutor</option>
+    <option value="bestfriend"    {% if prefs.ai_persona == 'bestfriend'    %}selected{% endif %}>🤝 Best Friend</option>
+    <option value="strict"        {% if prefs.ai_persona == 'strict'        %}selected{% endif %}>🎯 Strict & Direct</option>
+</select>
+                        <select id="text-size-select" class="premium-select">
+    <option value="small"   {% if prefs.chat_text_size == 'small'   %}selected{% endif %}>Small</option>
+    <option value="default" {% if prefs.chat_text_size == 'default' %}selected{% endif %}>Normal</option>
+    <option value="large"   {% if prefs.chat_text_size == 'large'   %}selected{% endif %}>Large</option>
+    <option value="xlarge"  {% if prefs.chat_text_size == 'xlarge'  %}selected{% endif %}>Extra Large</option>
+</select>
 
                 <a href="/profile-settings" class="btn-profile" style="margin-top: 25px;">
                     <i class="fas fa-user-edit"></i> Edit Avatar & Name
@@ -370,19 +380,21 @@
         document.body.style.fontFamily = selectedFont + ", sans-serif";
     }
 
-    async function saveSettings() {
-        const theme = document.querySelector('input[name="theme"]:checked').value;
-        const font = document.querySelector('input[name="font"]:checked').value;
-        
-        const voice = document.getElementById('voice-toggle').checked;
-        const send_on_enter = document.getElementById('enter-toggle').checked;
-        const ui_sfx = document.getElementById('sfx-toggle').checked;
-        const fast_mode = document.getElementById('fast-toggle').checked;
-        const auto_scroll = document.getElementById('scroll-toggle').checked;
-        const smart_memory = document.getElementById('memory-toggle').checked;
-        const zen_mode = document.getElementById('zen-toggle').checked;
-        const ai_persona = document.getElementById('persona-select').value;
-        const chat_text_size = document.getElementById('text-size-select').value;
+   async function saveSettings() {
+    const theme = document.querySelector('input[name="theme"]:checked').value;
+    const font = document.querySelector('input[name="font"]:checked').value;
+    const voice = document.getElementById('voice-toggle').checked;
+    const send_on_enter = document.getElementById('enter-toggle').checked;
+    const ui_sfx = document.getElementById('sfx-toggle').checked;
+    const fast_mode = document.getElementById('fast-toggle').checked;
+    const auto_scroll = document.getElementById('scroll-toggle').checked;
+    const smart_memory = document.getElementById('memory-toggle').checked;
+    const zen_mode = document.getElementById('zen-toggle').checked;
+    const ai_persona = document.getElementById('persona-select').value;
+    const chat_text_size = document.getElementById('text-size-select').value;
+    // ✅ NEW
+    const cursor_toggle = document.getElementById('cursor-toggle').checked;
+    const cursor_mode = cursor_toggle ? 'neon' : 'default';
 
         const btn = document.querySelector('.btn-primary');
         const originalHTML = btn.innerHTML;
@@ -390,23 +402,15 @@
         btn.disabled = true;
 
         const response = await fetch('/api/save_preferences', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                theme: theme, 
-                font: font, 
-                voice: voice, 
-                primary_color: chosenColor,
-                send_on_enter: send_on_enter,
-                ui_sfx: ui_sfx,
-                fast_mode: fast_mode,
-                auto_scroll: auto_scroll,
-                smart_memory: smart_memory,
-                zen_mode: zen_mode,
-                ai_persona: ai_persona,
-                chat_text_size: chat_text_size
-            })
-        });
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            theme, font, voice, primary_color: chosenColor,
+            send_on_enter, ui_sfx, fast_mode, auto_scroll,
+            smart_memory, zen_mode, ai_persona, chat_text_size,
+            cursor_mode  // ✅ NEW
+        })
+    });
         const result = await response.json();
         
         btn.innerHTML = originalHTML;

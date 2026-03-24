@@ -605,58 +605,6 @@ function editMyMessage(msgId) {
     }
 }
 
-// --- CUSTOM CURSOR LOGIC ---
-document.addEventListener("DOMContentLoaded", () => {
-    if (window.matchMedia("(pointer: fine)").matches) {
-        // Mark body so CSS knows neon cursor is active (tool pages won't have this class)
-        document.body.classList.add("neon-cursor-active");
-
-        const dot = document.createElement("div"); 
-        dot.className = "cursor-dot";
-        
-        const outline = document.createElement("div"); 
-        outline.className = "cursor-outline";
-        
-        document.body.appendChild(dot); 
-        document.body.appendChild(outline);
-
-        window.addEventListener("mousemove", (e) => {
-            dot.style.left = `${e.clientX}px`; 
-            dot.style.top = `${e.clientY}px`;
-            outline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
-        });
-
-        window.addEventListener("mousedown", (e) => {
-            const ripple = document.createElement("div"); 
-            ripple.className = "click-ripple";
-            ripple.style.left = `${e.clientX}px`; 
-            ripple.style.top = `${e.clientY}px`;
-            
-            document.body.appendChild(ripple);
-            outline.style.transform = "translate(-50%, -50%) scale(0.7)";
-            
-            setTimeout(() => { outline.style.transform = "translate(-50%, -50%) scale(1)"; }, 150);
-            setTimeout(() => { ripple.remove(); }, 500);
-        });
-
-        const addHoverEffect = () => {
-            document.querySelectorAll("a, button, input, textarea, select, .tool-card, .goti, .dice").forEach(el => {
-                el.addEventListener("mouseenter", () => { 
-                    outline.style.width = "50px"; 
-                    outline.style.height = "50px"; 
-                    outline.style.backgroundColor = "rgba(236, 72, 153, 0.1)"; 
-                });
-                el.addEventListener("mouseleave", () => { 
-                    outline.style.width = "32px"; 
-                    outline.style.height = "32px"; 
-                    outline.style.backgroundColor = "transparent"; 
-                });
-            });
-        };
-        addHoverEffect();
-    }
-});
-
 // --- REGENERATE MESSAGE ---
 async function regenerateMessage(msgId) {
     const chatBox = document.getElementById('chat-box');
@@ -725,9 +673,10 @@ async function loadGlobalPreferences() {
         
         // 1. Font Apply
         if(prefs.font) {
-            document.body.style.fontFamily = prefs.font + ", sans-serif";
+            const fontFamily = prefs.font + ", sans-serif";
+            document.body.style.fontFamily = fontFamily;
             document.querySelectorAll('input, button, select, textarea').forEach(el => {
-                el.style.fontFamily = prefs.font + ", sans-serif";
+                el.style.fontFamily = fontFamily;
             });
         }
         
@@ -745,74 +694,135 @@ async function loadGlobalPreferences() {
         if(voiceToggle) voiceToggle.checked = prefs.voice;
         localStorage.setItem('voice_reply', prefs.voice);
 
-        // 🚀 THE ZEN MODE & TEXT SIZE MAGIC
-        if (!document.getElementById('ethrix-features-style')) {
-            let style = document.createElement('style');
-            style.id = 'ethrix-features-style';
-            // CSS jo automatically Sidebar aur Tools ko control karegi
-            style.innerHTML = `
-                /* 🧘 ZEN MODE RULES */
-                .zen-mode-active a[href="/tools"],
-                .zen-mode-active a[href="/diary"] { display: none !important; }
-                
-                .zen-mode-active #history-list .history-item { display: none !important; }
-                
-                .zen-mode-active #history-list::after { 
-                    content: '🧘 Zen Mode ON'; 
-                    display: block; 
-                    text-align: center; 
-                    color: var(--dynamic-color, #00E5FF); 
-                    margin-top: 20px; 
-                    font-size: 0.85rem; 
-                    font-weight: bold; 
-                    background: rgba(0,0,0,0.3); 
-                    padding: 10px; 
-                    border-radius: 10px; 
-                    margin-inline: 15px; 
-                    border: 1px dashed var(--dynamic-color, #00E5FF); 
-                }
-                
-                /* 💬 TEXT SIZE RULES */
-                body[data-text-size="small"] .msg-user, body[data-text-size="small"] .msg-ai { font-size: 0.85rem !important; }
-                body[data-text-size="large"] .msg-user, body[data-text-size="large"] .msg-ai { font-size: 1.15rem !important; }
-            `;
-            document.head.appendChild(style);
-        }
+        // 4. Cursor Mode Apply — neon ya default
+        applyCursorMode(prefs.cursor_mode || 'neon');
 
-        // Apply Zen Mode Status
+        // 5. Text Size Apply — FIXED with !important override
+        const textSize = prefs.chat_text_size || 'default';
+        document.body.setAttribute('data-text-size', textSize);
+        
+        // Style tag se force override (CSS specificity fix)
+        let textSizeStyle = document.getElementById('text-size-override');
+        if (!textSizeStyle) {
+            textSizeStyle = document.createElement('style');
+            textSizeStyle.id = 'text-size-override';
+            document.head.appendChild(textSizeStyle);
+        }
+        const sizeMap = { small: '0.82rem', default: '0.95rem', large: '1.1rem', xlarge: '1.25rem' };
+        const sz = sizeMap[textSize] || '0.95rem';
+        textSizeStyle.innerHTML = `.msg-user, .msg-ai { font-size: ${sz} !important; line-height: 1.6 !important; }`;
+
+        // 6. Zen Mode
         if (prefs.zen_mode) {
             document.body.classList.add('zen-mode-active');
         } else {
             document.body.classList.remove('zen-mode-active');
         }
 
-        // Apply Chat Text Size
-        document.body.setAttribute('data-text-size', prefs.chat_text_size || 'default');
-
-        // Update Global Prefs for Chat API
+        // 7. ✅ FIXED — Single window.ethrixPrefs (no more double set bug)
         window.ethrixPrefs = {
-            send_on_enter: prefs.send_on_enter !== false,
-            ui_sfx: prefs.ui_sfx !== false,
-            fast_mode: prefs.fast_mode === true,
-            auto_scroll: prefs.auto_scroll !== false,
-            smart_memory: prefs.smart_memory !== false,
-            ai_persona: prefs.ai_persona || 'friendly'
-        };
-        // 🚀 NAYA: 4 Naye Features ko Global Variable mein save karna
-        window.ethrixPrefs = {
-            send_on_enter: prefs.send_on_enter !== false,
-            ui_sfx: prefs.ui_sfx !== false,
-            fast_mode: prefs.fast_mode === true,
-            auto_scroll: prefs.auto_scroll !== false
+            send_on_enter:  prefs.send_on_enter !== false,
+            ui_sfx:         prefs.ui_sfx !== false,
+            fast_mode:      prefs.fast_mode === true,
+            auto_scroll:    prefs.auto_scroll !== false,
+            smart_memory:   prefs.smart_memory !== false,
+            ai_persona:     prefs.ai_persona || 'friendly',
+            chat_text_size: textSize,
+            cursor_mode:    prefs.cursor_mode || 'neon'
         };
 
-        // 4. ✨ Custom User Colors Apply Karna
+        // 8. Custom Color
         let pColor = prefs.primary_color || '#00E5FF';
         localStorage.setItem('primary_color', pColor); 
         applyCustomColor(pColor);
 
     } catch (e) { 
         console.log("Preferences load error", e); 
+    }
+}
+
+// ✅ NEW — Cursor mode function
+function applyCursorMode(mode) {
+    // Pehle saari cursor classes hatao
+    document.body.classList.remove('neon-cursor-active', 'default-cursor-active');
+    
+    // Purani cursor dots remove karo
+    document.querySelector('.cursor-dot')?.remove();
+    document.querySelector('.cursor-outline')?.remove();
+    
+    if (mode === 'default') {
+        // System default cursor restore karo
+        document.body.classList.add('default-cursor-active');
+        // CSS override inject karo
+        let s = document.getElementById('cursor-override-style');
+        if (!s) { s = document.createElement('style'); s.id = 'cursor-override-style'; document.head.appendChild(s); }
+        s.innerHTML = `
+            body.default-cursor-active,
+            body.default-cursor-active *,
+            body.default-cursor-active a,
+            body.default-cursor-active button,
+            body.default-cursor-active input,
+            body.default-cursor-active textarea,
+            body.default-cursor-active .mode-btn {
+                cursor: auto !important;
+            }
+            body.default-cursor-active a,
+            body.default-cursor-active button,
+            body.default-cursor-active [role="button"],
+            body.default-cursor-active .mode-btn,
+            body.default-cursor-active .history-item {
+                cursor: pointer !important;
+            }
+        `;
+        return;
+    }
+    
+    // Neon cursor (default Ethrix style)
+    if (window.matchMedia("(pointer: fine)").matches) {
+        document.body.classList.add('neon-cursor-active');
+        
+        // Remove old cursor override
+        document.getElementById('cursor-override-style')?.remove();
+        
+        const dot = document.createElement("div"); 
+        dot.className = "cursor-dot";
+        const outline = document.createElement("div"); 
+        outline.className = "cursor-outline";
+        document.body.appendChild(dot); 
+        document.body.appendChild(outline);
+
+        window.addEventListener("mousemove", (e) => {
+            dot.style.left = `${e.clientX}px`; 
+            dot.style.top = `${e.clientY}px`;
+            outline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
+        });
+
+        window.addEventListener("mousedown", (e) => {
+            const ripple = document.createElement("div"); 
+            ripple.className = "click-ripple";
+            ripple.style.left = `${e.clientX}px`; 
+            ripple.style.top = `${e.clientY}px`;
+            document.body.appendChild(ripple);
+            outline.style.transform = "translate(-50%, -50%) scale(0.7)";
+            setTimeout(() => outline.style.transform = "translate(-50%, -50%) scale(1)", 150);
+            setTimeout(() => ripple.remove(), 500);
+        });
+
+        const addHoverEffect = () => {
+            document.querySelectorAll("a, button, input, textarea, select, .tool-card, .goti, .dice").forEach(el => {
+                el.addEventListener("mouseenter", () => { 
+                    outline.style.width = "50px"; 
+                    outline.style.height = "50px"; 
+                    outline.style.backgroundColor = "rgba(236, 72, 153, 0.1)"; 
+                });
+                el.addEventListener("mouseleave", () => { 
+                    outline.style.width = "32px"; 
+                    outline.style.height = "32px"; 
+                    outline.style.backgroundColor = "transparent"; 
+                });
+            });
+        };
+        addHoverEffect();
     }
 }
 
