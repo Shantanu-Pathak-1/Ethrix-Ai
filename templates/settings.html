@@ -34,15 +34,13 @@
         .page-header h1 { margin: 0; font-size: 2.5rem; font-weight: 700; color: white; transition: 0.3s; }
         .page-header p { color: #6b7280; font-size: 1.1rem; margin-top: 8px; transition: 0.3s; }
 
-        /* ✨ 2-COLUMN PREMIUM LAYOUT ✨ */
-        .settings-layout { 
+        /* ✨ PERFECT SYMMETRICAL GRID ✨ */
+        .settings-grid { 
             display: grid; 
-            grid-template-columns: 1fr 1fr; 
+            grid-template-columns: repeat(2, 1fr); 
             gap: 30px; 
             margin-bottom: 40px; 
-            align-items: stretch; 
         }
-        .col-left, .col-right { display: flex; flex-direction: column; gap: 30px; }
         
         /* Glass Cards */
         .settings-card { 
@@ -52,7 +50,7 @@
             border-radius: 20px; 
             backdrop-filter: blur(10px); transition: 0.3s;
             display: flex; flex-direction: column; box-sizing: border-box;
-            height: 100%; 
+            height: 100%; /* Yeh har row ke cards ko ek barabar height dega */
         }
         .settings-card:hover { border-color: rgba(255, 255, 255, 0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
@@ -104,7 +102,6 @@
 
         .action-bar { display: flex; justify-content: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 20px;}
         
-        /* Premium Dropdown Styling */
         .premium-select {
             width: 100%; padding: 14px 18px; border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(0, 0, 0, 0.3);
@@ -117,16 +114,10 @@
         .premium-select:focus { border-color: var(--dynamic-color, #00E5FF); box-shadow: 0 0 10px var(--dynamic-glow, rgba(0,229,255,0.2)); }
 
         /* 📱 RESPONSIVE BREAKPOINTS 📱 */
-        
-        /* Tablet & Smaller Laptops */
         @media (max-width: 1024px) {
-            .settings-layout { grid-template-columns: 1fr; gap: 20px; }
-            .col-left, .col-right { gap: 20px; }
+            .settings-grid { grid-template-columns: 1fr; gap: 20px; }
             .main-container { padding: 30px 5%; }
-            .settings-card { height: auto; }
         }
-
-        /* Mobile Devices */
         @media (max-width: 768px) {
             .page-header h1 { font-size: 2rem; }
             .page-header p { font-size: 1rem; }
@@ -136,15 +127,13 @@
             .flex-between { flex-direction: row; flex-wrap: wrap; }
             .radio-grid, .font-grid { grid-template-columns: 1fr 1fr; }
         }
-
-        /* Small Mobile Devices */
         @media (max-width: 480px) {
             .page-header h1 { font-size: 1.75rem; }
             .radio-grid, .font-grid { grid-template-columns: 1fr; }
             .settings-nav { padding: 15px 5%; }
             .settings-nav .brand { font-size: 1.1rem; }
             .flex-between { flex-direction: column; align-items: flex-start; }
-            .switch { align-self: flex-end; margin-top: -35px; } /* Aligns switch perfectly on small mobile */
+            .switch { align-self: flex-end; margin-top: -35px; } 
         }
 
         /* ☀️ LIGHT MODE OVERRIDES ☀️ */
@@ -192,74 +181,170 @@
         <p>Customize your workspace, colors, and account settings.</p>
     </div>
 
-    <div class="settings-layout">
-        <div class="col-left">
-            <div class="settings-card">
-                <div class="card-header">
-                    <i class="fas fa-palette" style="color: #ec4899; background: rgba(236, 72, 153, 0.1);"></i>
-                    <h3>Look & Feel</h3>
-                </div>
-                
-                <label class="form-label">Ethrix AI Color Theme</label>
-                <div class="palette-category">
-                    <span class="category-title"><i class="fas fa-moon"></i> Neon Glow (Best for Dark Theme)</span>
-                    <div class="color-palette">
-                        <div class="color-circle {% if prefs.primary_color == '#00E5FF' %}selected{% endif %}" style="background: #00E5FF; color: #00E5FF;" onclick="selectColor('#00E5FF', this)" title="Neon Cyan"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#EF4444' %}selected{% endif %}" style="background: #EF4444; color: #EF4444;" onclick="selectColor('#EF4444', this)" title="Crimson Red"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#FBBF24' %}selected{% endif %}" style="background: #FBBF24; color: #FBBF24;" onclick="selectColor('#FBBF24', this)" title="Cyber Yellow"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#A855F7' %}selected{% endif %}" style="background: #A855F7; color: #A855F7;" onclick="selectColor('#A855F7', this)" title="Deep Purple"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#22C55E' %}selected{% endif %}" style="background: #22C55E; color: #22C55E;" onclick="selectColor('#22C55E', this)" title="Matrix Green"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#3B82F6' %}selected{% endif %}" style="background: #3B82F6; color: #3B82F6;" onclick="selectColor('#3B82F6', this)" title="Electric Blue"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#EC4899' %}selected{% endif %}" style="background: #EC4899; color: #EC4899;" onclick="selectColor('#EC4899', this)" title="Hot Pink"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#9CA3AF' %}selected{% endif %}" style="background: #9CA3AF; color: #9CA3AF;" onclick="selectColor('#9CA3AF', this)" title="Cool Grey"></div>
-                    </div>
-                </div>
-
-                <div class="palette-category">
-                    <span class="category-title" style="color: #f59e0b;"><i class="fas fa-sun"></i> Pastel Elegance (Best for Light Theme)</span>
-                    <div class="color-palette">
-                        <div class="color-circle {% if prefs.primary_color == '#96DFCE' %}selected{% endif %}" style="background: #96DFCE; color: #96DFCE;" onclick="selectColor('#96DFCE', this)" title="Tiffany Blue"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#F8D5DB' %}selected{% endif %}" style="background: #F8D5DB; color: #F8D5DB;" onclick="selectColor('#F8D5DB', this)" title="Misty Rose"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#F1EB86' %}selected{% endif %}" style="background: #F1EB86; color: #F1EB86;" onclick="selectColor('#F1EB86', this)" title="Champagne Yellow"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#D9E7F4' %}selected{% endif %}" style="background: #D9E7F4; color: #D9E7F4;" onclick="selectColor('#D9E7F4', this)" title="Alice Blue"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#FEB1B3' %}selected{% endif %}" style="background: #FEB1B3; color: #FEB1B3;" onclick="selectColor('#FEB1B3', this)" title="Peach Melon"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#D8B4E2' %}selected{% endif %}" style="background: #D8B4E2; color: #D8B4E2;" onclick="selectColor('#D8B4E2', this)" title="Soft Lavender"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#AEE1CD' %}selected{% endif %}" style="background: #AEE1CD; color: #AEE1CD;" onclick="selectColor('#AEE1CD', this)" title="Soft Mint"></div>
-                        <div class="color-circle {% if prefs.primary_color == '#94A3B8' %}selected{% endif %}" style="background: #94A3B8; color: #94A3B8;" onclick="selectColor('#94A3B8', this)" title="Slate Grey"></div>
-                    </div>
-                </div>
-
-                <label class="form-label mt-2">Theme Mode</label>
-                <div class="radio-grid">
-                    <label>
-                        <input type="radio" name="theme" value="dark" class="radio-input" onchange="previewTheme()" {% if prefs.theme == 'dark' %}checked{% endif %}>
-                        <div class="radio-card"><i class="fas fa-moon"></i> Dark</div>
-                    </label>
-                    <label>
-                        <input type="radio" name="theme" value="light" class="radio-input" onchange="previewTheme()" {% if prefs.theme == 'light' %}checked{% endif %}>
-                        <div class="radio-card"><i class="fas fa-sun"></i> Light</div>
-                    </label>
-                </div>
-
-                <label class="form-label mt-2">Typography</label>
-                <div class="font-grid">
-                    <label><input type="radio" name="font" value="Inter" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Inter' %}checked{% endif %}><div class="radio-card" style="font-family:'Inter';">Inter</div></label>
-                    <label><input type="radio" name="font" value="Poppins" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Poppins' %}checked{% endif %}><div class="radio-card" style="font-family:'Poppins';">Poppins</div></label>
-                    <label><input type="radio" name="font" value="Roboto" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Roboto' %}checked{% endif %}><div class="radio-card" style="font-family:'Roboto';">Roboto</div></label>
-                    <label><input type="radio" name="font" value="Courier Prime" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Courier Prime' %}checked{% endif %}><div class="radio-card" style="font-family:'Courier Prime';">Courier</div></label>
-                    <label><input type="radio" name="font" value="Nunito" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Nunito' %}checked{% endif %}><div class="radio-card" style="font-family:'Nunito',sans-serif;">Nunito</div></label>
-                    <label><input type="radio" name="font" value="JetBrains Mono" class="radio-input" onchange="previewFont()" {% if prefs.font == 'JetBrains Mono' %}checked{% endif %}><div class="radio-card" style="font-family:'JetBrains Mono',monospace;">JetBrains</div></label>
-                    <label><input type="radio" name="font" value="Lato" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Lato' %}checked{% endif %}><div class="radio-card" style="font-family:'Lato',sans-serif;">Lato</div></label>
-                    <label><input type="radio" name="font" value="Outfit" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Outfit' %}checked{% endif %}><div class="radio-card" style="font-family:'Outfit',sans-serif;">Outfit</div></label>
+    <div class="settings-grid">
+        
+        <div class="settings-card">
+            <div class="card-header">
+                <i class="fas fa-palette" style="color: #ec4899; background: rgba(236, 72, 153, 0.1);"></i>
+                <h3>Look & Feel</h3>
+            </div>
+            
+            <label class="form-label">Ethrix AI Color Theme</label>
+            <div class="palette-category">
+                <span class="category-title"><i class="fas fa-moon"></i> Neon Glow (Best for Dark Theme)</span>
+                <div class="color-palette">
+                    <div class="color-circle {% if prefs.primary_color == '#00E5FF' %}selected{% endif %}" style="background: #00E5FF; color: #00E5FF;" onclick="selectColor('#00E5FF', this)" title="Neon Cyan"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#EF4444' %}selected{% endif %}" style="background: #EF4444; color: #EF4444;" onclick="selectColor('#EF4444', this)" title="Crimson Red"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#FBBF24' %}selected{% endif %}" style="background: #FBBF24; color: #FBBF24;" onclick="selectColor('#FBBF24', this)" title="Cyber Yellow"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#A855F7' %}selected{% endif %}" style="background: #A855F7; color: #A855F7;" onclick="selectColor('#A855F7', this)" title="Deep Purple"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#22C55E' %}selected{% endif %}" style="background: #22C55E; color: #22C55E;" onclick="selectColor('#22C55E', this)" title="Matrix Green"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#3B82F6' %}selected{% endif %}" style="background: #3B82F6; color: #3B82F6;" onclick="selectColor('#3B82F6', this)" title="Electric Blue"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#EC4899' %}selected{% endif %}" style="background: #EC4899; color: #EC4899;" onclick="selectColor('#EC4899', this)" title="Hot Pink"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#9CA3AF' %}selected{% endif %}" style="background: #9CA3AF; color: #9CA3AF;" onclick="selectColor('#9CA3AF', this)" title="Cool Grey"></div>
                 </div>
             </div>
 
-            <div class="settings-card" style="border-color: rgba(0,229,255,0.2); height: auto;">
-                <div class="card-header" style="border-bottom-color: rgba(0,229,255,0.1);">
-                    <i class="fab fa-google" style="color: #00E5FF; background: rgba(0,229,255,0.1);"></i>
-                    <h3 style="color: #00E5FF;">Google Integrations</h3>
+            <div class="palette-category">
+                <span class="category-title" style="color: #f59e0b;"><i class="fas fa-sun"></i> Pastel Elegance (Best for Light Theme)</span>
+                <div class="color-palette">
+                    <div class="color-circle {% if prefs.primary_color == '#96DFCE' %}selected{% endif %}" style="background: #96DFCE; color: #96DFCE;" onclick="selectColor('#96DFCE', this)" title="Tiffany Blue"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#F8D5DB' %}selected{% endif %}" style="background: #F8D5DB; color: #F8D5DB;" onclick="selectColor('#F8D5DB', this)" title="Misty Rose"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#F1EB86' %}selected{% endif %}" style="background: #F1EB86; color: #F1EB86;" onclick="selectColor('#F1EB86', this)" title="Champagne Yellow"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#D9E7F4' %}selected{% endif %}" style="background: #D9E7F4; color: #D9E7F4;" onclick="selectColor('#D9E7F4', this)" title="Alice Blue"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#FEB1B3' %}selected{% endif %}" style="background: #FEB1B3; color: #FEB1B3;" onclick="selectColor('#FEB1B3', this)" title="Peach Melon"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#D8B4E2' %}selected{% endif %}" style="background: #D8B4E2; color: #D8B4E2;" onclick="selectColor('#D8B4E2', this)" title="Soft Lavender"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#AEE1CD' %}selected{% endif %}" style="background: #AEE1CD; color: #AEE1CD;" onclick="selectColor('#AEE1CD', this)" title="Soft Mint"></div>
+                    <div class="color-circle {% if prefs.primary_color == '#94A3B8' %}selected{% endif %}" style="background: #94A3B8; color: #94A3B8;" onclick="selectColor('#94A3B8', this)" title="Slate Grey"></div>
                 </div>
-                
+            </div>
+
+            <label class="form-label mt-2">Theme Mode</label>
+            <div class="radio-grid">
+                <label>
+                    <input type="radio" name="theme" value="dark" class="radio-input" onchange="previewTheme()" {% if prefs.theme == 'dark' %}checked{% endif %}>
+                    <div class="radio-card"><i class="fas fa-moon"></i> Dark</div>
+                </label>
+                <label>
+                    <input type="radio" name="theme" value="light" class="radio-input" onchange="previewTheme()" {% if prefs.theme == 'light' %}checked{% endif %}>
+                    <div class="radio-card"><i class="fas fa-sun"></i> Light</div>
+                </label>
+            </div>
+
+            <label class="form-label mt-2">Typography</label>
+            <div class="font-grid">
+                <label><input type="radio" name="font" value="Inter" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Inter' %}checked{% endif %}><div class="radio-card" style="font-family:'Inter';">Inter</div></label>
+                <label><input type="radio" name="font" value="Poppins" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Poppins' %}checked{% endif %}><div class="radio-card" style="font-family:'Poppins';">Poppins</div></label>
+                <label><input type="radio" name="font" value="Roboto" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Roboto' %}checked{% endif %}><div class="radio-card" style="font-family:'Roboto';">Roboto</div></label>
+                <label><input type="radio" name="font" value="Courier Prime" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Courier Prime' %}checked{% endif %}><div class="radio-card" style="font-family:'Courier Prime';">Courier</div></label>
+                <label><input type="radio" name="font" value="Nunito" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Nunito' %}checked{% endif %}><div class="radio-card" style="font-family:'Nunito',sans-serif;">Nunito</div></label>
+                <label><input type="radio" name="font" value="JetBrains Mono" class="radio-input" onchange="previewFont()" {% if prefs.font == 'JetBrains Mono' %}checked{% endif %}><div class="radio-card" style="font-family:'JetBrains Mono',monospace;">JetBrains</div></label>
+                <label><input type="radio" name="font" value="Lato" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Lato' %}checked{% endif %}><div class="radio-card" style="font-family:'Lato',sans-serif;">Lato</div></label>
+                <label><input type="radio" name="font" value="Outfit" class="radio-input" onchange="previewFont()" {% if prefs.font == 'Outfit' %}checked{% endif %}><div class="radio-card" style="font-family:'Outfit',sans-serif;">Outfit</div></label>
+            </div>
+        </div>
+
+        <div class="settings-card">
+            <div class="card-header">
+                <i class="fas fa-bolt" style="color: #eab308; background: rgba(234, 179, 8, 0.1);"></i>
+                <h3>Features & Profile</h3>
+            </div>
+            
+            <div class="flex-between">
+                <label class="form-label">🔊 Voice Reply<span class="form-desc">AI reads responses aloud</span></label>
+                <label class="switch"><input type="checkbox" id="voice-toggle" {% if prefs.voice %}checked{% endif %}><span class="slider"></span></label>
+            </div>
+
+            <div class="flex-between">
+                <label class="form-label">⌨️ Send on 'Enter'<span class="form-desc">Press Enter to send (Shift+Enter for newline)</span></label>
+                <label class="switch"><input type="checkbox" id="enter-toggle" {% if prefs.send_on_enter %}checked{% endif %}><span class="slider"></span></label>
+            </div>
+
+            <div class="flex-between">
+                <label class="form-label">🎵 UI Sound Effects<span class="form-desc">Play soft SFX on actions</span></label>
+                <label class="switch"><input type="checkbox" id="sfx-toggle" {% if prefs.ui_sfx %}checked{% endif %}><span class="slider"></span></label>
+            </div>
+
+            <div class="flex-between">
+                <label class="form-label">⚡ Fast Mode<span class="form-desc">Skip AI typing animations</span></label>
+                <label class="switch"><input type="checkbox" id="fast-toggle" {% if prefs.fast_mode %}checked{% endif %}><span class="slider"></span></label>
+            </div>
+
+            <div class="flex-between">
+                <label class="form-label">📜 Auto-Scroll<span class="form-desc">Always scroll to latest message</span></label>
+                <label class="switch"><input type="checkbox" id="scroll-toggle" {% if prefs.auto_scroll %}checked{% endif %}><span class="slider"></span></label>
+            </div>
+
+            <div class="flex-between">
+                <label class="form-label">🧠 Smart Memory<span class="form-desc">Remember past chat context</span></label>
+                <label class="switch"><input type="checkbox" id="memory-toggle" {% if prefs.smart_memory != false %}checked{% endif %}><span class="slider"></span></label>
+            </div>
+
+            <div class="flex-between">
+                <label class="form-label">🧘 Zen Mode<span class="form-desc">Hide tools & history for deep focus</span></label>
+                <label class="switch"><input type="checkbox" id="zen-toggle" {% if prefs.zen_mode %}checked{% endif %}><span class="slider"></span></label>
+            </div>
+
+            <div class="flex-between" style="margin-bottom: 4px;">
+                <label class="form-label">🖱️ Cursor Style<span class="form-desc">Ethrix neon cursor ya normal system cursor</span></label>
+                <label class="switch">
+                    <input type="checkbox" id="cursor-toggle" {% if prefs.cursor_mode != 'default' %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div id="cursor-hint" style="font-size:0.75rem;color:#6b7280;margin: 0 0 15px 8px;display:{% if prefs.cursor_mode == 'default' %}block{% else %}none{% endif %};">
+                ✓ Default system cursor active — no neon effect
+            </div>
+
+            <div style="margin-top: 10px;">
+                <label class="form-label">AI Persona</label>
+                <select id="persona-select" class="premium-select">
+                    <option value="friendly"      {% if prefs.ai_persona == 'friendly'      %}selected{% endif %}>😊 Friendly & Warm</option>
+                    <option value="professional"  {% if prefs.ai_persona == 'professional'  %}selected{% endif %}>💼 Professional</option>
+                    <option value="sarcastic"     {% if prefs.ai_persona == 'sarcastic'     %}selected{% endif %}>😏 Witty & Sarcastic</option>
+                    <option value="motivator"     {% if prefs.ai_persona == 'motivator'     %}selected{% endif %}>🔥 Motivator</option>
+                    <option value="tutor"         {% if prefs.ai_persona == 'tutor'         %}selected{% endif %}>📚 Patient Tutor</option>
+                    <option value="bestfriend"    {% if prefs.ai_persona == 'bestfriend'    %}selected{% endif %}>🤝 Best Friend</option>
+                    <option value="strict"        {% if prefs.ai_persona == 'strict'        %}selected{% endif %}>🎯 Strict & Direct</option>
+                </select>
+
+                <label class="form-label mt-2">Chat Text Size</label>
+                <select id="text-size-select" class="premium-select">
+                    <option value="small"   {% if prefs.chat_text_size == 'small'   %}selected{% endif %}>Small</option>
+                    <option value="default" {% if prefs.chat_text_size == 'default' %}selected{% endif %}>Normal</option>
+                    <option value="large"   {% if prefs.chat_text_size == 'large'   %}selected{% endif %}>Large</option>
+                    <option value="xlarge"  {% if prefs.chat_text_size == 'xlarge'  %}selected{% endif %}>Extra Large</option>
+                </select>
+            </div>
+
+            <a href="/profile-settings" class="btn-profile" style="margin-top: auto;">
+                <i class="fas fa-user-edit"></i> Edit Avatar & Name
+            </a>
+        </div>
+
+        <div class="settings-card" style="border-color: rgba(239,68,68,0.2);">
+            <div class="card-header" style="border-bottom-color: rgba(239,68,68,0.1);">
+                <i class="fas fa-shield-alt" style="color: #f87171; background: rgba(239,68,68,0.1);"></i>
+                <h3 style="color: #f87171;">Account & Security</h3>
+            </div>
+            <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 20px;">Manage your Ethrix AI data and secure your account.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-top: auto;">
+                <button class="btn-danger" style="margin-bottom: 0;" onclick="deleteAllChats()">
+                    <i class="fas fa-trash-alt"></i> Clear Chat History
+                </button>
+                <a href="/logout" class="btn-logout" style="margin-top: 0;">
+                    <i class="fas fa-power-off"></i> Logout Safely
+                </a>
+            </div>
+        </div>
+
+        <div class="settings-card" style="border-color: rgba(0,229,255,0.2);">
+            <div class="card-header" style="border-bottom-color: rgba(0,229,255,0.1);">
+                <i class="fab fa-google" style="color: #00E5FF; background: rgba(0,229,255,0.1);"></i>
+                <h3 style="color: #00E5FF;">Google Integrations</h3>
+            </div>
+            
+            <div style="margin-top: auto;">
                 {% if not google_connected %}
                 <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 15px; border-radius: 12px; margin-bottom: 10px;">
                     <div style="color: #ef4444; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -286,104 +371,8 @@
                 </div>
                 {% endif %}
             </div>
-
-            <div class="settings-card" style="border-color: rgba(239,68,68,0.2); height: auto;">
-                <div class="card-header" style="border-bottom-color: rgba(239,68,68,0.1);">
-                    <i class="fas fa-shield-alt" style="color: #f87171; background: rgba(239,68,68,0.1);"></i>
-                    <h3 style="color: #f87171;">Account & Security</h3>
-                </div>
-                <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 20px;">Manage your Ethrix AI data and secure your account.</p>
-                
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <button class="btn-danger" style="margin-bottom: 0;" onclick="deleteAllChats()">
-                        <i class="fas fa-trash-alt"></i> Clear Chat History
-                    </button>
-                    <a href="/logout" class="btn-logout" style="margin-top: 0;">
-                        <i class="fas fa-power-off"></i> Logout Safely
-                    </a>
-                </div>
-            </div>
         </div>
-
-        <div class="col-right">
-            <div class="settings-card">
-                <div class="card-header">
-                    <i class="fas fa-bolt" style="color: #eab308; background: rgba(234, 179, 8, 0.1);"></i>
-                    <h3>Features & Profile</h3>
-                </div>
-                
-                <div class="flex-between">
-                    <label class="form-label">🔊 Voice Reply<span class="form-desc">AI reads responses aloud</span></label>
-                    <label class="switch"><input type="checkbox" id="voice-toggle" {% if prefs.voice %}checked{% endif %}><span class="slider"></span></label>
-                </div>
-
-                <div class="flex-between">
-                    <label class="form-label">⌨️ Send on 'Enter'<span class="form-desc">Press Enter to send (Shift+Enter for newline)</span></label>
-                    <label class="switch"><input type="checkbox" id="enter-toggle" {% if prefs.send_on_enter %}checked{% endif %}><span class="slider"></span></label>
-                </div>
-
-                <div class="flex-between">
-                    <label class="form-label">🎵 UI Sound Effects<span class="form-desc">Play soft SFX on actions</span></label>
-                    <label class="switch"><input type="checkbox" id="sfx-toggle" {% if prefs.ui_sfx %}checked{% endif %}><span class="slider"></span></label>
-                </div>
-
-                <div class="flex-between">
-                    <label class="form-label">⚡ Fast Mode<span class="form-desc">Skip AI typing animations</span></label>
-                    <label class="switch"><input type="checkbox" id="fast-toggle" {% if prefs.fast_mode %}checked{% endif %}><span class="slider"></span></label>
-                </div>
-
-                <div class="flex-between">
-                    <label class="form-label">📜 Auto-Scroll<span class="form-desc">Always scroll to latest message</span></label>
-                    <label class="switch"><input type="checkbox" id="scroll-toggle" {% if prefs.auto_scroll %}checked{% endif %}><span class="slider"></span></label>
-                </div>
-
-                <div class="flex-between">
-                    <label class="form-label">🧠 Smart Memory<span class="form-desc">Remember past chat context</span></label>
-                    <label class="switch"><input type="checkbox" id="memory-toggle" {% if prefs.smart_memory != false %}checked{% endif %}><span class="slider"></span></label>
-                </div>
-
-                <div class="flex-between">
-                    <label class="form-label">🧘 Zen Mode<span class="form-desc">Hide tools & history for deep focus</span></label>
-                    <label class="switch"><input type="checkbox" id="zen-toggle" {% if prefs.zen_mode %}checked{% endif %}><span class="slider"></span></label>
-                </div>
-
-                <div class="flex-between" style="margin-bottom: 4px;">
-                    <label class="form-label">🖱️ Cursor Style<span class="form-desc">Ethrix neon cursor ya normal system cursor</span></label>
-                    <label class="switch">
-                        <input type="checkbox" id="cursor-toggle" {% if prefs.cursor_mode != 'default' %}checked{% endif %}>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div id="cursor-hint" style="font-size:0.75rem;color:#6b7280;margin: 0 0 15px 8px;display:{% if prefs.cursor_mode == 'default' %}block{% else %}none{% endif %};">
-                    ✓ Default system cursor active — no neon effect
-                </div>
-
-                <div style="margin-top: 10px;">
-                    <label class="form-label">AI Persona</label>
-                    <select id="persona-select" class="premium-select">
-                        <option value="friendly"      {% if prefs.ai_persona == 'friendly'      %}selected{% endif %}>😊 Friendly & Warm</option>
-                        <option value="professional"  {% if prefs.ai_persona == 'professional'  %}selected{% endif %}>💼 Professional</option>
-                        <option value="sarcastic"     {% if prefs.ai_persona == 'sarcastic'     %}selected{% endif %}>😏 Witty & Sarcastic</option>
-                        <option value="motivator"     {% if prefs.ai_persona == 'motivator'     %}selected{% endif %}>🔥 Motivator</option>
-                        <option value="tutor"         {% if prefs.ai_persona == 'tutor'         %}selected{% endif %}>📚 Patient Tutor</option>
-                        <option value="bestfriend"    {% if prefs.ai_persona == 'bestfriend'    %}selected{% endif %}>🤝 Best Friend</option>
-                        <option value="strict"        {% if prefs.ai_persona == 'strict'        %}selected{% endif %}>🎯 Strict & Direct</option>
-                    </select>
-
-                    <label class="form-label mt-2">Chat Text Size</label>
-                    <select id="text-size-select" class="premium-select">
-                        <option value="small"   {% if prefs.chat_text_size == 'small'   %}selected{% endif %}>Small</option>
-                        <option value="default" {% if prefs.chat_text_size == 'default' %}selected{% endif %}>Normal</option>
-                        <option value="large"   {% if prefs.chat_text_size == 'large'   %}selected{% endif %}>Large</option>
-                        <option value="xlarge"  {% if prefs.chat_text_size == 'xlarge'  %}selected{% endif %}>Extra Large</option>
-                    </select>
-                </div>
-
-                <a href="/profile-settings" class="btn-profile">
-                    <i class="fas fa-user-edit"></i> Edit Avatar & Name
-                </a>
-            </div>
-        </div>
+        
     </div> 
     
     <div style="max-width:900px;margin: 0 auto 30px;padding:0 20px;">
@@ -415,7 +404,6 @@
 </div>
 
 <script>
-    // Toggles logic for cursor hint
     document.getElementById('cursor-toggle')?.addEventListener('change', function() {
         const hint = document.getElementById('cursor-hint');
         hint.style.display = this.checked ? 'none' : 'block';
@@ -445,7 +433,6 @@
         document.body.style.fontFamily = selectedFont + ", sans-serif";
     }
 
-    // ✨ NAYA: Request Google Beta Access Function ✨
     async function requestGoogleBeta() {
         const { value: email } = await Swal.fire({
             title: 'Apply for Beta Access 🚀',
