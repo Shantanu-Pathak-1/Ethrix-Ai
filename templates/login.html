@@ -420,9 +420,17 @@
         if(!email) return Swal.fire('Oops!', 'Please enter your registered email.', 'warning');
         setLoading(btn, true);
         try {
-            const res = await fetch('/api/send_otp', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email}) });
+            // Yahan URL change kiya hai 👇
+            const res = await fetch('/api/forgot_send_otp', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({email}) 
+            });
             const data = await res.json();
-            if(data.status === 'success') { document.getElementById('forgot-step-1').classList.add('hidden'); document.getElementById('forgot-step-2').classList.remove('hidden'); } 
+            if(data.status === 'success') { 
+                document.getElementById('forgot-step-1').classList.add('hidden'); 
+                document.getElementById('forgot-step-2').classList.remove('hidden'); 
+            } 
             else { Swal.fire('Error', data.message, 'error'); }
         } catch(e) { Swal.fire('Error', 'Server error.', 'error'); }
         setLoading(btn, false, 'Send OTP');

@@ -845,3 +845,43 @@ async def reset_password(req: ResetPasswordRequest):
         return {"status": "success", "message": "Password updated successfully!"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+    
+class ForgotOTPRequest(BaseModel):
+    email: str
+
+@router.post("/api/forgot_send_otp")
+async def forgot_send_otp(req: ForgotOTPRequest):
+    try:
+        # 1. Check karo ki user exist KARTA hai ya nahi (Sign up ka ulta)
+        user = await db_module.users_collection.find_one({"email": req.email})
+        if not user:
+            return {"status": "error", "message": "Email not found. Please check your email or Sign Up."}
+
+        # 2. 6-digit OTP generate karo
+        otp_code = str(random.randint(100000, 999999))
+        
+        # 3. OTP ko database mein save/update karo
+        await db_module.otp_collection.update_one(
+            {"email": req.email},
+            {"$set": {"otp": otp_code, "created_at": datetime.utcnow()}},
+            upsert=True
+        )
+        
+        # 4. Email bhejo
+        email_body = f"""
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Password Reset Request 🔒</h2>
+            <p>Your OTP for resetting your Ethrix AI password is:</p>
+            <h1 style="color: #00E5FF; letter-spacing: 5px;">{otp_code}</h1>
+            <p>If you didn't request this, please ignore this email.</p>
+        </div>
+        """
+        success = await db_module.send_email(req.email, "Reset Your Ethrix Password", email_body)
+        
+        if success:
+            return {"status": "success", "message": "OTP sent successfully!"}
+        else:
+            return {"status": "error", "message": "Failed to send email. Check SMTP settings."}
+            
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
