@@ -9,6 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/static/images/favicon.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.fog.min.js"></script>
@@ -54,47 +55,13 @@
         .spinner { border: 3px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 3px solid #ffffff; width: 18px; height: 18px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* 📱 RESPONSIVE ADJUSTMENTS FOR MOBILE & TABLET 📱 */
-        @media (max-width: 480px) {
-            .login-card { padding: 20px 16px; border-radius: 20px; width: 100%; }
-            .brand-title { font-size: 1.7rem; margin-bottom: 15px; }
-            .login-logo-responsive { width: 70px; height: 70px; margin-bottom: 10px; }
-            input:not([type="checkbox"]), .btn, .google-btn { padding: 10px; font-size: 0.9rem; }
-            .tabs { margin-bottom: 15px; }
-            .tab { font-size: 0.9rem; padding: 4px 8px; }
-            .consent-text { font-size: 0.7rem; }
-        }
-
-        @media (min-width: 481px) and (max-width: 768px) {
-            .login-card { padding: 25px 20px; max-width: 350px; }
-            .brand-title { font-size: 1.85rem; }
-            .login-logo-responsive { width: 80px; height: 80px; }
-        }
-
         /* 🚀 CUSTOM NEON CURSOR & CLICK ANIMATION (DESKTOP ONLY) */
         @media (pointer: fine) {
-            body, a, button, input, label, .tab { cursor: none !important; }
-            .cursor-dot {
-                position: fixed; top: 0; left: 0; width: 8px; height: 8px;
-                background: #00E5FF; border-radius: 50%; transform: translate(-50%, -50%);
-                z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #00E5FF, 0 0 20px #00E5FF;
-            }
-            .cursor-outline {
-                position: fixed; top: 0; left: 0; width: 32px; height: 32px;
-                border: 2px solid rgba(0, 229, 255, 0.6); border-radius: 50%;
-                transform: translate(-50%, -50%); z-index: 99998; pointer-events: none;
-                transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
-            }
-            .click-ripple {
-                position: fixed; top: 0; left: 0; width: 40px; height: 40px; border-radius: 50%;
-                background: radial-gradient(circle, rgba(0, 229, 255, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
-                transform: translate(-50%, -50%) scale(0); z-index: 99997; pointer-events: none;
-                animation: ripple-anim 0.5s ease-out forwards;
-            }
-            @keyframes ripple-anim {
-                0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-                100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
-            }
+            body, a, button, input, label, .tab, p, span { cursor: none !important; }
+            .cursor-dot { position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: #00E5FF; border-radius: 50%; transform: translate(-50%, -50%); z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #00E5FF, 0 0 20px #00E5FF; }
+            .cursor-outline { position: fixed; top: 0; left: 0; width: 32px; height: 32px; border: 2px solid rgba(0, 229, 255, 0.6); border-radius: 50%; transform: translate(-50%, -50%); z-index: 99998; pointer-events: none; transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease; }
+            .click-ripple { position: fixed; top: 0; left: 0; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, rgba(0, 229, 255, 0.8) 0%, rgba(0, 0, 0, 0) 70%); transform: translate(-50%, -50%) scale(0); z-index: 99997; pointer-events: none; animation: ripple-anim 0.5s ease-out forwards; }
+            @keyframes ripple-anim { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(3); opacity: 0; } }
         }
     </style>
 </head>
@@ -114,6 +81,11 @@
     <div id="login-form">
         <input type="text" id="login-id" placeholder="Email or Username">
         <input type="password" id="login-pass" placeholder="Password">
+        
+        <div class="text-right w-full mb-2">
+            <span onclick="showForgotForm()" class="text-xs text-[#00E5FF] cursor-pointer hover:underline transition-all">Forgot Password?</span>
+        </div>
+
         <button class="btn" onclick="handleLogin(this)">Let's Go!</button>
         
         <div style="margin: 15px 0 5px 0; font-size: 0.8rem; color: #888; position: relative; z-index: 1;">OR</div>
@@ -121,7 +93,7 @@
         <div class="consent-wrapper">
             <input type="checkbox" id="google-consent" class="consent-checkbox">
             <label for="google-consent" class="consent-text">
-                I agree to the <a href="/legal" target="_blank">Terms</a> and <a href="/privacy" target="_blank">Privacy Policy</a>, and I authorize Ethrix AI to act as my agent for connected Google services.
+                I agree to the <a href="/legal" target="_blank">Terms</a> and <a href="/privacy" target="_blank">Privacy Policy</a>, and I authorize Ethrix AI to act as my agent for Google services.
             </label>
         </div>
 
@@ -158,30 +130,49 @@
             </div>
 
             <div id="password-reqs" class="text-left text-[0.75rem] text-gray-500 mt-2 mb-3 px-2 hidden transition-all duration-300">
-                <div id="req-length" class="flex items-center gap-2 mb-1">
-                    <span class="icon">❌</span> <span class="text">8 to 20 characters</span>
-                </div>
-                <div id="req-case" class="flex items-center gap-2 mb-1">
-                    <span class="icon">❌</span> <span class="text">Uppercase & lowercase letters</span>
-                </div>
-                <div id="req-number" class="flex items-center gap-2 mb-1">
-                    <span class="icon">❌</span> <span class="text">At least 1 number</span>
-                </div>
-                <div id="req-special" class="flex items-center gap-2">
-                    <span class="icon">❌</span> <span class="text">At least 1 special character (@$!%*?&)</span>
-                </div>
+                <div id="req-length" class="flex items-center gap-2 mb-1"><span class="icon">❌</span> <span class="text">8 to 20 characters</span></div>
+                <div id="req-case" class="flex items-center gap-2 mb-1"><span class="icon">❌</span> <span class="text">Uppercase & lowercase</span></div>
+                <div id="req-number" class="flex items-center gap-2 mb-1"><span class="icon">❌</span> <span class="text">At least 1 number</span></div>
+                <div id="req-special" class="flex items-center gap-2"><span class="icon">❌</span> <span class="text">Special character (@$!%*?&)</span></div>
             </div>
 
             <div class="consent-wrapper">
                 <input type="checkbox" id="signup-consent" class="consent-checkbox">
                 <label for="signup-consent" class="consent-text">
-                    I agree to the <a href="/legal" target="_blank">Terms of Service</a> and <a href="/privacy" target="_blank">Privacy Policy</a>. I am at least 13 years old.
+                    I agree to the <a href="/legal" target="_blank">Terms</a> and <a href="/privacy" target="_blank">Privacy Policy</a>. I am at least 13.
                 </label>
             </div>
             
             <button class="btn" onclick="completeSignup(this)">Create Account 🚀</button>
         </div>
     </div>
+
+    <div id="forgot-form" class="hidden">
+        <h3 class="text-[#00E5FF] text-lg font-bold mb-4">Reset Password 🔒</h3>
+        
+        <div id="forgot-step-1">
+            <input type="email" id="forgot-email" placeholder="Registered Email">
+            <button class="btn" onclick="sendForgotOTP(this)">Send OTP</button>
+            <p onclick="switchTab('login')" class="text-xs text-gray-400 cursor-pointer mt-4 hover:text-white transition-all">← Back to Login</p>
+        </div>
+        
+        <div id="forgot-step-2" class="hidden">
+            <input type="text" id="forgot-otp" placeholder="Enter 6-digit Code">
+            <button class="btn" onclick="verifyForgotOTP(this)">Verify Code</button>
+            <p onclick="switchTab('login')" class="text-xs text-gray-400 cursor-pointer mt-4 hover:text-white transition-all">Cancel</p>
+        </div>
+        
+        <div id="forgot-step-3" class="hidden">
+            <div class="magic-input-wrapper">
+                <input type="password" id="forgot-pass-new" placeholder="Enter New Password" style="padding-right: 40px;">
+                <div style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; gap: 8px; align-items: center;">
+                    <button type="button" id="toggle-forgot-eye" onclick="toggleForgotVisibility()" title="Show/Hide Password" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0; outline: none; transition: transform 0.2s;">👁️</button>
+                </div>
+            </div>
+            <button class="btn" onclick="resetMyPassword(this)">Update Password 🚀</button>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -207,7 +198,7 @@
             });
 
             const addHoverEffect = () => {
-                document.querySelectorAll("a, button, input, label, .tab").forEach(el => {
+                document.querySelectorAll("a, button, input, label, .tab, span, p").forEach(el => {
                     el.addEventListener("mouseenter", () => {
                         outline.style.width = "50px"; outline.style.height = "50px";
                         outline.style.backgroundColor = "rgba(0, 229, 255, 0.1)"; 
@@ -244,13 +235,17 @@
         }
     }
 
+    // 🔄 TABS AND VIEW SWITCHING 🔄
     function switchTab(tab) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
+        document.getElementById('forgot-form').classList.add('hidden'); // Hide forgot form
+        
         if(tab === 'login') {
+            document.querySelector('.tabs').children[0].classList.add('active');
             document.getElementById('login-form').classList.remove('hidden');
             document.getElementById('signup-form').classList.add('hidden');
-        } else {
+        } else if(tab === 'signup') {
+            document.querySelector('.tabs').children[1].classList.add('active');
             document.getElementById('login-form').classList.add('hidden');
             document.getElementById('signup-form').classList.remove('hidden');
             document.getElementById('step-1').classList.remove('hidden');
@@ -259,55 +254,58 @@
         }
     }
 
-    // 🔥 NEW: Password Show/Hide Toggle Logic 🔥
+    function showForgotForm() {
+        document.getElementById('login-form').classList.add('hidden');
+        document.getElementById('signup-form').classList.add('hidden');
+        document.getElementById('forgot-form').classList.remove('hidden');
+        document.getElementById('forgot-step-1').classList.remove('hidden');
+        document.getElementById('forgot-step-2').classList.add('hidden');
+        document.getElementById('forgot-step-3').classList.add('hidden');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    }
+
+    // 👀 PASSWORD VISIBILITY 👀
     function togglePasswordVisibility() {
         const passInput = document.getElementById('reg-pass');
         const eyeIcon = document.getElementById('toggle-eye');
-        
         if (passInput.type === "password") {
-            passInput.type = "text";
-            eyeIcon.innerText = "🙈"; 
-            eyeIcon.style.transform = "scale(1.1)";
+            passInput.type = "text"; eyeIcon.innerText = "🙈"; eyeIcon.style.transform = "scale(1.1)";
         } else {
-            passInput.type = "password";
-            eyeIcon.innerText = "👁️"; 
-            eyeIcon.style.transform = "scale(1)";
+            passInput.type = "password"; eyeIcon.innerText = "👁️"; eyeIcon.style.transform = "scale(1)";
         }
     }
 
-    // 🔥 UPDATED: Magic Password Logic (Based on Email) 🔥
+    function toggleForgotVisibility() {
+        const passInput = document.getElementById('forgot-pass-new');
+        const eyeIcon = document.getElementById('toggle-forgot-eye');
+        if (passInput.type === "password") {
+            passInput.type = "text"; eyeIcon.innerText = "🙈"; 
+        } else {
+            passInput.type = "password"; eyeIcon.innerText = "👁️"; 
+        }
+    }
+
+    // 🪄 MAGIC PASSWORD 🪄
     function generateMagicPass() {
         const email = document.getElementById('reg-email').value;
         const passInput = document.getElementById('reg-pass');
         const eyeIcon = document.getElementById('toggle-eye');
         
-        if (!email) { 
-            return Swal.fire('Oops!', 'Email is required to generate a personalized magic password!', 'warning'); 
-        }
-        
+        if (!email) { return Swal.fire('Oops!', 'Email is required to generate a personalized magic password!', 'warning'); }
         let namePart = email.split('@')[0].replace(/[^a-zA-Z]/g, '');
         if(namePart.length < 3) namePart = "Ethrix"; 
         
         const randomNum = Math.floor(1000 + Math.random() * 9000);
         const magicPass = namePart.charAt(0).toUpperCase() + namePart.slice(1).toLowerCase() + '@' + randomNum;
         
-        passInput.value = magicPass; 
-        passInput.type = "text";
-        eyeIcon.innerText = "🙈"; 
-        
+        passInput.value = magicPass; passInput.type = "text"; eyeIcon.innerText = "🙈"; 
         passInput.dispatchEvent(new Event('input'));
         
-        const btn = document.querySelector('.magic-btn'); 
-        btn.innerHTML = "✨"; 
-        setTimeout(() => btn.innerHTML = "🪄", 1000);
-        
-        Swal.fire({ 
-            toast: true, position: 'top-end', showConfirmButton: false, 
-            timer: 3000, background: '#1e1e1e', color: '#fff', 
-            icon: 'success', title: 'Personalized Password Generated!' 
-        });
+        const btn = document.querySelector('.magic-btn'); btn.innerHTML = "✨"; setTimeout(() => btn.innerHTML = "🪄", 1000);
+        Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: '#1e1e1e', color: '#fff', icon: 'success', title: 'Personalized Password Generated!' });
     }
 
+    // 🚀 SIGNUP LOGIC & LIVE VALIDATION 🚀
     async function sendOTP(btn) {
         const email = document.getElementById('reg-email').value;
         if(!email) return Swal.fire('Oops!', 'Please enter your email.', 'warning');
@@ -335,103 +333,11 @@
         setLoading(btn, false, 'Verify & Continue');
     }
 
-    async function handleLogin(btn) {
-        const identifier = document.getElementById('login-id').value;
-        const password = document.getElementById('login-pass').value;
-        if(!identifier || !password) return Swal.fire('Oops!', 'Enter your credentials.', 'warning');
-        setLoading(btn, true);
-        try {
-            const res = await fetch('/api/login_manual', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({identifier, password}) });
-            const data = await res.json();
-            if(data.status === 'success') window.location.href = '/';
-            else Swal.fire('Error', data.message, 'error');
-        } catch(e) { Swal.fire('Error', 'Login failed.', 'error'); }
-        setLoading(btn, false, "Let's Go!");
-    }
-
-    // 🔥 HANDLE GOOGLE LOGIN CONSENT 🔥
-    function handleGoogleLogin() {
-        const consentChecked = document.getElementById('google-consent').checked;
-        if (!consentChecked) {
-            Swal.fire({
-                title: 'Consent Required',
-                text: 'Please check the box to agree to our Terms, Privacy Policy, and authorize Ethrix AI for Google services.',
-                icon: 'warning',
-                background: '#1e1e1e',
-                color: '#fff',
-                confirmButtonColor: '#00E5FF'
-            });
-            return;
-        }
-        window.location.href = '/auth/login';
-    }
-
-    // 🔥 HANDLE SIGNUP CONSENT & CREATION 🔥
-    async function completeSignup(btn) {
-        const consentChecked = document.getElementById('signup-consent')?.checked;
-        
-        if (!consentChecked) {
-            return Swal.fire({
-                title: 'Action Required',
-                html: 'Please agree to our <a href="/legal" target="_blank" style="color:#00E5FF">Terms & Privacy Policy</a> to create your account.',
-                icon: 'warning', 
-                background: '#1e1e1e', 
-                color: '#fff', 
-                confirmButtonColor: '#00E5FF'
-            });
-        }
-
-        const payload = {
-            email: document.getElementById('reg-email').value,
-            full_name: document.getElementById('reg-name').value,
-            username: document.getElementById('reg-user').value,
-            dob: document.getElementById('reg-dob').value,
-            password: document.getElementById('reg-pass').value
-        };
-
-        if(!payload.full_name || !payload.username || !payload.dob || !payload.password) {
-            return Swal.fire('Hold up!', 'Please fill in all fields.', 'warning');
-        }
-
-        setLoading(btn, true);
-        try {
-            const res = await fetch('/api/complete_signup', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify(payload) 
-            });
-            const data = await res.json();
-            
-            if(data.status === 'success') { 
-                Swal.fire({ 
-                    title: 'Welcome Aboard! 🚀', 
-                    text: 'Your account has been created successfully.', 
-                    icon: 'success', 
-                    background: '#1e1e1e', 
-                    color: '#fff', 
-                    confirmButtonColor: '#00E5FF' 
-                }).then(() => window.location.href = '/'); 
-            } else { 
-                Swal.fire('Error', data.message || 'Signup failed', 'error'); 
-            }
-        } catch(e) { 
-            Swal.fire('Error', 'Connection failed.', 'error'); 
-        }
-        setLoading(btn, false, 'Create Account 🚀');
-    }
-
-    // 🔥 NEW: PASSWORD LIVE VALIDATION 🔥
     document.addEventListener("DOMContentLoaded", () => {
         const passInput = document.getElementById('reg-pass');
         const reqBox = document.getElementById('password-reqs');
         const btnCreate = document.querySelector('#step-3 .btn'); 
-
-        // Initial state: Disable the button
-        if(btnCreate) {
-            btnCreate.disabled = true;
-            btnCreate.style.opacity = '0.5';
-            btnCreate.style.cursor = 'not-allowed';
-        }
+        if(btnCreate) { btnCreate.disabled = true; btnCreate.style.opacity = '0.5'; btnCreate.style.cursor = 'not-allowed'; }
 
         const rules = {
             length: (val) => val.length >= 8 && val.length <= 20,
@@ -441,52 +347,119 @@
         };
 
         function updateRequirementUI(elementId, isValid) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            const icon = el.querySelector('.icon');
-            const text = el.querySelector('.text');
-            
-            if (isValid) {
-                icon.textContent = '✅';
-                text.style.color = '#4ade80'; 
-            } else {
-                icon.textContent = '❌';
-                text.style.color = '#ef4444'; 
-            }
+            const el = document.getElementById(elementId); if (!el) return;
+            const icon = el.querySelector('.icon'); const text = el.querySelector('.text');
+            if (isValid) { icon.textContent = '✅'; text.style.color = '#4ade80'; } else { icon.textContent = '❌'; text.style.color = '#ef4444'; }
         }
 
         if(passInput) {
             passInput.addEventListener('input', (e) => {
                 const val = e.target.value;
-                
-                if (val.length > 0) {
-                    reqBox.classList.remove('hidden');
-                } else {
-                    reqBox.classList.add('hidden');
-                }
+                if (val.length > 0) { reqBox.classList.remove('hidden'); } else { reqBox.classList.add('hidden'); }
 
-                const isLengthValid = rules.length(val);
-                const isCaseValid = rules.case(val);
-                const isNumberValid = rules.number(val);
-                const isSpecialValid = rules.special(val);
+                const isLengthValid = rules.length(val); const isCaseValid = rules.case(val);
+                const isNumberValid = rules.number(val); const isSpecialValid = rules.special(val);
 
-                updateRequirementUI('req-length', isLengthValid);
-                updateRequirementUI('req-case', isCaseValid);
-                updateRequirementUI('req-number', isNumberValid);
-                updateRequirementUI('req-special', isSpecialValid);
+                updateRequirementUI('req-length', isLengthValid); updateRequirementUI('req-case', isCaseValid);
+                updateRequirementUI('req-number', isNumberValid); updateRequirementUI('req-special', isSpecialValid);
 
                 if (isLengthValid && isCaseValid && isNumberValid && isSpecialValid) {
-                    btnCreate.disabled = false;
-                    btnCreate.style.opacity = '1';
-                    btnCreate.style.cursor = 'pointer';
+                    btnCreate.disabled = false; btnCreate.style.opacity = '1'; btnCreate.style.cursor = 'pointer';
                 } else {
-                    btnCreate.disabled = true;
-                    btnCreate.style.opacity = '0.5';
-                    btnCreate.style.cursor = 'not-allowed';
+                    btnCreate.disabled = true; btnCreate.style.opacity = '0.5'; btnCreate.style.cursor = 'not-allowed';
                 }
             });
         }
     });
+
+    async function completeSignup(btn) {
+        const consentChecked = document.getElementById('signup-consent')?.checked;
+        if (!consentChecked) { return Swal.fire({ title: 'Action Required', html: 'Please agree to our <a href="/legal" target="_blank" style="color:#00E5FF">Terms & Privacy Policy</a>', icon: 'warning', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00E5FF' }); }
+
+        const payload = {
+            email: document.getElementById('reg-email').value, full_name: document.getElementById('reg-name').value,
+            username: document.getElementById('reg-user').value, dob: document.getElementById('reg-dob').value,
+            password: document.getElementById('reg-pass').value
+        };
+
+        if(!payload.full_name || !payload.username || !payload.dob || !payload.password) { return Swal.fire('Hold up!', 'Please fill in all fields.', 'warning'); }
+
+        setLoading(btn, true);
+        try {
+            const res = await fetch('/api/complete_signup', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            const data = await res.json();
+            if(data.status === 'success') { Swal.fire({ title: 'Welcome Aboard! 🚀', text: 'Account created successfully.', icon: 'success', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00E5FF' }).then(() => window.location.href = '/'); } 
+            else { Swal.fire('Error', data.message || 'Signup failed', 'error'); }
+        } catch(e) { Swal.fire('Error', 'Connection failed.', 'error'); }
+        setLoading(btn, false, 'Create Account 🚀');
+    }
+
+    // 🔑 LOGIN & GOOGLE OAUTH 🔑
+    async function handleLogin(btn) {
+        const identifier = document.getElementById('login-id').value;
+        const password = document.getElementById('login-pass').value;
+        if(!identifier || !password) return Swal.fire('Oops!', 'Enter your credentials.', 'warning');
+        setLoading(btn, true);
+        try {
+            const res = await fetch('/api/login_manual', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({identifier, password}) });
+            const data = await res.json();
+            if(data.status === 'success') window.location.href = '/'; else Swal.fire('Error', data.message, 'error');
+        } catch(e) { Swal.fire('Error', 'Login failed.', 'error'); }
+        setLoading(btn, false, "Let's Go!");
+    }
+
+    function handleGoogleLogin() {
+        const consentChecked = document.getElementById('google-consent').checked;
+        if (!consentChecked) { return Swal.fire({ title: 'Consent Required', text: 'Please check the box to authorize Ethrix AI.', icon: 'warning', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00E5FF' }); }
+        window.location.href = '/auth/login';
+    }
+
+    // 🔒 FORGOT PASSWORD LOGIC 🔒
+    async function sendForgotOTP(btn) {
+        const email = document.getElementById('forgot-email').value;
+        if(!email) return Swal.fire('Oops!', 'Please enter your registered email.', 'warning');
+        setLoading(btn, true);
+        try {
+            const res = await fetch('/api/send_otp', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email}) });
+            const data = await res.json();
+            if(data.status === 'success') { document.getElementById('forgot-step-1').classList.add('hidden'); document.getElementById('forgot-step-2').classList.remove('hidden'); } 
+            else { Swal.fire('Error', data.message, 'error'); }
+        } catch(e) { Swal.fire('Error', 'Server error.', 'error'); }
+        setLoading(btn, false, 'Send OTP');
+    }
+
+    async function verifyForgotOTP(btn) {
+        const email = document.getElementById('forgot-email').value;
+        const otp = document.getElementById('forgot-otp').value;
+        if(!otp) return Swal.fire('Oops!', 'Please enter the code.', 'warning');
+        setLoading(btn, true);
+        try {
+            const res = await fetch('/api/verify_otp', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email, otp}) });
+            const data = await res.json();
+            if(data.status === 'success') { document.getElementById('forgot-step-2').classList.add('hidden'); document.getElementById('forgot-step-3').classList.remove('hidden'); } 
+            else { Swal.fire('Error', 'Incorrect code.', 'error'); }
+        } catch(e) { Swal.fire('Error', 'Server connection failed.', 'error'); }
+        setLoading(btn, false, 'Verify Code');
+    }
+
+    async function resetMyPassword(btn) {
+        const email = document.getElementById('forgot-email').value;
+        const newPassword = document.getElementById('forgot-pass-new').value;
+        
+        if(!newPassword) return Swal.fire('Oops!', 'Please enter a new password.', 'warning');
+        if(newPassword.length < 8) return Swal.fire('Weak Password', 'Password must be at least 8 characters long.', 'warning');
+
+        setLoading(btn, true);
+        try {
+            const res = await fetch('/api/reset_password', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email: email, new_password: newPassword }) });
+            const data = await res.json();
+            
+            if(data.status === 'success') { 
+                Swal.fire({ title: 'Password Reset! 🎉', text: 'You can now login with your new password.', icon: 'success', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00E5FF' }).then(() => window.location.reload()); 
+            } else { Swal.fire('Error', data.message || 'Failed to reset password.', 'error'); }
+        } catch(e) { Swal.fire('Error', 'Connection failed.', 'error'); }
+        setLoading(btn, false, 'Update Password 🚀');
+    }
 </script>
 </body>
 </html>

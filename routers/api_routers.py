@@ -819,3 +819,29 @@ async def handle_tool(tool_name: str, request: Request):
     except Exception as e:
         print(f"Tool Error ({tool_name}): {str(e)}")
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+    
+class ResetPasswordRequest(BaseModel):
+    email: str
+    new_password: str
+
+@router.post("/api/reset_password")
+async def reset_password(req: ResetPasswordRequest):
+    try:
+        # 1. db_module ka use karke user ko database mein dhundo
+        user = await db_module.users_collection.find_one({"email": req.email}) 
+        
+        if not user:
+            return {"status": "error", "message": "User not found with this email."}
+        
+        # 2. db_module se password hash function call karo
+        hashed_password = db_module.get_password_hash(req.new_password)
+        
+        # 3. Database mein naya password update karo
+        await db_module.users_collection.update_one(
+            {"email": req.email}, 
+            {"$set": {"password_hash": hashed_password}}
+        )
+        
+        return {"status": "success", "message": "Password updated successfully!"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
