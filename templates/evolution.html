@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethrix AI • Evolution Gallery</title>
+    
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { cursor: url('/static/cursors/landing-cursor.png'), auto !important; }
+        a, button, img { cursor: url('/static/cursors/landing-pointer.png'), pointer !important; }
+
+        :root {
+            --bg-color: #0B0F19; --text-main: #ffffff;
+            --glass-bg: rgba(18, 24, 38, 0.7); --glass-border: rgba(0, 229, 255, 0.2);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; background-color: var(--bg-color); 
+            color: var(--text-main); overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% -20%, #1e3a5f, #0B0F19 60%);
+        }
+
+        .glass { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
+        .text-gradient { background: linear-gradient(to right, #1E90FF, #00E5FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Masonry Grid Layout */
+        .masonry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            padding: 20px 0;
+            align-items: start;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 229, 255, 0.1);
+            transition: all 0.3s ease;
+            background: #121826;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+
+        .gallery-item:hover {
+            border-color: rgba(0, 229, 255, 0.6);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+            transform: translateY(-5px);
+            z-index: 10;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .item-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 60%, transparent 100%);
+            padding: 30px 20px 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gallery-item:hover .item-overlay {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <nav class="w-full p-4 md:p-5 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center glass px-6 py-3 rounded-full">
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-[#00E5FF]/20 transition">
+                    <i class="fas fa-arrow-left text-[#00E5FF] group-hover:text-white transition"></i>
+                </div>
+                <span class="font-bold tracking-wide text-sm md:text-base">Back to Workspace</span>
+            </a>
+            <div class="font-bold text-lg md:text-xl text-gradient tracking-wider uppercase">Evolution</div>
+        </div>
+    </nav>
+
+    <main class="flex-grow px-4 py-12 max-w-7xl mx-auto w-full">
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">The <span class="text-gradient">Evolution</span> of Ethrix</h1>
+            <p class="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed">
+                A visual journey from our very first lines of code to the ultimate digital workspace. Witness how Ethrix has grown smarter, faster, and more beautiful over time.
+            </p>
+        </div>
+
+        <div class="masonry-grid">
+            
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=80" alt="Ethrix v1.0">
+                <div class="item-overlay">
+                    <h3 class="font-bold text-[#00E5FF] text-xl mb-1">Ethrix v1.0</h3>
+                    <p class="text-sm text-gray-300">The humble beginnings. A look back at our initial chat interface and base design.</p>
+                </div>
+            </div>
+
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&q=80" alt="Code Mode Addition">
+                <div class="item-overlay">
+                    <h3 class="font-bold text-[#00E5FF] text-xl mb-1">Developer Mode Introduced</h3>
+                    <p class="text-sm text-gray-300">The defining moment when we integrated the secure Python execution sandbox.</p>
+                </div>
+            </div>
+
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=600&q=80" alt="Workspace Integration">
+                <div class="item-overlay">
+                    <h3 class="font-bold text-[#00E5FF] text-xl mb-1">Google Workspace Integration</h3>
+                    <p class="text-sm text-gray-300">Ethrix became an autonomous agent, managing Gmail, Drive, and Calendar seamlessly.</p>
+                </div>
+            </div>
+
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80" alt="Agent Mode V3">
+                <div class="item-overlay">
+                    <h3 class="font-bold text-[#00E5FF] text-xl mb-1">The V3.0 Dashboard</h3>
+                    <p class="text-sm text-gray-300">The modern, highly responsive interface unifying all 4 modes and extensive toolsets.</p>
+                </div>
+            </div>
+
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&q=80" alt="Arcade Zone">
+                <div class="item-overlay">
+                    <h3 class="font-bold text-[#00E5FF] text-xl mb-1">The Arcade Expansion</h3>
+                    <p class="text-sm text-gray-300">Adding fun to functionality with built-in games like Flappy Bug and Tic-Tac-Toe.</p>
+                </div>
+            </div>
+
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80" alt="Memory Dashboard">
+                <div class="item-overlay">
+                    <h3 class="font-bold text-[#00E5FF] text-xl mb-1">Visualizing Memory</h3>
+                    <p class="text-sm text-gray-300">Giving users full control over what the AI remembers with a dedicated control panel.</p>
+                </div>
+            </div>
+            
+            </div>
+    </main>
+
+    <footer class="py-8 border-t border-white/10 text-center text-gray-500 text-sm mt-auto bg-[#070A11]">
+        <p>&copy; 2026 Ethrix AI. Curated and developed by <span class="text-[#00E5FF] font-bold hover:text-white transition cursor-pointer">Shan</span>.</p>
+    </footer>
+
+</body>
+</html>

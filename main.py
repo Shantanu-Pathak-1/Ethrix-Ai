@@ -10,6 +10,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 import routers.profile_routers as profile_routers
 import routers.settings_routers as settings_routers
 from routers.api_routers import router as api_router
@@ -21,11 +23,16 @@ from arcade_zone.arcade_backend import arcade_app
 # Main app instance
 app = FastAPI(title="Ethrix AI")
 
+# Proxy Headers Middleware — HTTPS ke liye zaroori hai (Railway/Render/etc.)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+
 # Session Middleware
 app.add_middleware(
     SessionMiddleware,
     secret_key=db_module.SECRET_KEY,
-    max_age=3600 * 24 * 7  # 7 days
+    max_age=3600 * 24 * 7,  # 7 days
+    https_only=True,         # Production mein session secure rahega
+    same_site="lax"
 )
 
 # Static files

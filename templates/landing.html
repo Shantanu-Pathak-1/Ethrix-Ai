@@ -3,39 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="description" content="Ethrix AI - Your highly intelligent and futuristic personal AI companion.">
-    <meta name="keywords" content="Ethrix AI, AI Assistant, Artificial Intelligence, Tech Startup, Ethrix AI">
-    <meta name="robots" content="index, follow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="MwrbfdlLx3xF8CILvK16Glar7CAECETS50_zOaXseyg" />
-    <meta name="description" content="Ethrix AI is an advanced cloud-based code editor with built-in AI agents, developer tools, and a seamless coding environment.">
-    <meta name="keywords" content="Ethrix AI, Cloud Code Editor, AI Agent, AI Coding, Web IDE">
-    <title>Ethrix AI • Your Intelligent Companion</title>
+    <title>Ethrix AI • The Ultimate Workspace</title>
     
     <link rel="icon" type="image/png" href="/static/images/favicon.png">
-    <meta property="og:image" content="https://shantanupathak94-ethrix-ai.hf.space/static/images/logo.png">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.59/build/spline-viewer.js"></script>
     
     <style>
-        /* ── CUSTOM CURSORS ─────────────────────────────── */
-        *, *::before, *::after {
-            cursor: url('/static/cursors/landing-cursor.png'), auto !important;
-        }
-        a, button, [role="button"], input, select, textarea,
-        label, .glass, .badge, .clickable {
+        /* Custom Cursors */
+        *, *::before, *::after { cursor: url('/static/cursors/landing-cursor.png'), auto !important; }
+        a, button, [role="button"], input, select, textarea, label, .glass, .badge, .clickable {
             cursor: url('/static/cursors/landing-pointer.png'), pointer !important;
         }
 
-        /* 👇👇👇 LOGO SIZE SETTINGS 👇👇👇 */
-        .logo-responsive {
-            width: 38px; height: 38px; border-radius: 50%; object-fit: cover;
-            border: 2px solid rgba(0, 229, 255, 0.3); transition: all 0.3s ease;
-        }
-        @media (min-width: 768px) { .logo-responsive { width: 42px; height: 42px; } }
-
-        /* CORE VARIABLES - UPDATED TO CYAN & DARK BLUE THEME */
+        /* Core Variables */
         :root {
             --bg-color: #0B0F19; --text-main: #ffffff; --text-sub: #9ca3af;
             --glass-bg: rgba(18, 24, 38, 0.6); --glass-border: rgba(0, 229, 255, 0.15);
@@ -46,37 +29,47 @@
         body.light-mode {
             --bg-color: #f8fafc; --text-main: #111827; --text-sub: #4b5563;
             --glass-bg: rgba(255, 255, 255, 0.75); --glass-border: rgba(0, 229, 255, 0.2);
-            --glass-shadow: rgba(0, 0, 0, 0.05); --badge-bg: rgba(0, 229, 255, 0.1);
-            --badge-border: rgba(0, 229, 255, 0.4); --badge-text: #00bfff;
+            --badge-bg: rgba(0, 229, 255, 0.1); --badge-border: rgba(0, 229, 255, 0.4); --badge-text: #00bfff;
         }
 
         body { 
             font-family: 'Inter', sans-serif; background-color: var(--bg-color); 
-            color: var(--text-main); overflow-x: hidden; transition: background-color 0.3s ease, color 0.3s ease;
+            color: var(--text-main); overflow-x: hidden; transition: background-color 0.3s ease;
         }
 
-        /* SCROLLBAR */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: rgba(11, 15, 25, 0.5); }
         ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1E90FF, #00E5FF); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #00C6DD, #00E5FF); }
         
-        /* 3D Background */
         spline-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; filter: brightness(0.7) contrast(1.1); transition: opacity 0.3s; }
-        @media (max-width: 768px) { spline-viewer { display: none !important; } body { background-color: var(--bg-color); } }
+        @media (max-width: 768px) { spline-viewer { display: none !important; } }
         body.light-mode spline-viewer { opacity: 0.1; filter: grayscale(1); }
 
-        /* Glass Cards */
-        .glass { background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 4px 30px var(--glass-shadow); transition: all 0.3s ease; }
+        .glass { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 4px 30px var(--glass-shadow); transition: all 0.3s ease; }
         .glass:hover { border-color: rgba(0, 229, 255, 0.5); box-shadow: 0 0 20px rgba(0, 229, 255, 0.2); }
         .badge { background: var(--badge-bg); border: 1px solid var(--badge-border); color: var(--badge-text); }
         
-        /* Animation */
         .fade-in-up { animation: fadeInUp 1s ease-out forwards; opacity: 0; transform: translateY(30px); }
-        .delay-100 { animation-delay: 0.1s; } .delay-200 { animation-delay: 0.3s; } .delay-300 { animation-delay: 0.5s; }
+        .delay-100 { animation-delay: 0.1s; } .delay-200 { animation-delay: 0.2s; } .delay-300 { animation-delay: 0.3s; }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
         .text-gradient { background: linear-gradient(to right, #1E90FF, #00E5FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         html { scroll-behavior: smooth; }
+        
+        .media-container {
+            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 16px;
+            border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .media-container img, .media-container video, .media-container iframe {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;
+        }
+
+        /* Marquee Animation for Tools */
+        .marquee-wrapper { overflow: hidden; white-space: nowrap; width: 100%; position: relative; padding: 10px 0; mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent); }
+        .marquee-content { display: inline-block; animation: marquee 30s linear infinite; }
+        .marquee-content:hover { animation-play-state: paused; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .tool-pill { display: inline-flex; items-center; gap: 8px; padding: 10px 20px; background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2); border-radius: 99px; margin-right: 15px; font-size: 0.9rem; font-weight: 500; transition: 0.3s; color: #e5e7eb; }
+        .tool-pill:hover { background: rgba(0,229,255,0.15); border-color: #00E5FF; transform: translateY(-2px); color: white; }
     </style>
 </head>
 <body>
@@ -84,20 +77,23 @@
     <spline-viewer url="https://prod.spline.design/yszqHxvXsSsuMZq5/scene.splinecode"></spline-viewer>
 
     <nav class="fixed w-full z-50 p-4 md:p-5">
-        <div class="max-w-6xl mx-auto flex justify-between items-center glass px-5 py-2 md:px-6 md:py-2.5 rounded-full">
+        <div class="max-w-7xl mx-auto flex justify-between items-center glass px-5 py-2 md:px-6 md:py-2.5 rounded-full">
             <div class="flex items-center gap-3">
-                <img src="/static/images/logo.png" class="logo-responsive shadow-lg">
-                <span class="landing-nav-brand font-bold text-lg md:text-xl tracking-wide truncate">Ethrix</span>
+                <img src="/static/images/logo.png" class="w-10 h-10 rounded-full border-2 border-cyan-400/30 object-cover">
+                <span class="font-bold text-lg md:text-xl tracking-wide">Ethrix</span>
             </div>
             
             <div class="flex items-center gap-4 md:gap-6">
-                <a href="/about" class="text-sm font-semibold hover:text-[#00E5FF] transition hidden sm:block">About</a>
-                <a href="/pricing" class="text-sm font-semibold hover:text-[#00E5FF] transition hidden sm:block">Pricing</a>
+                <a href="/about" class="text-sm font-semibold hover:text-[#00E5FF] transition hidden md:block">About</a>
+                <a href="/pricing" class="text-sm font-semibold hover:text-[#00E5FF] transition hidden md:block">Pricing</a>
+                <a href="/evolution" class="text-sm font-semibold text-[#00E5FF] hover:text-white transition hidden md:block">
+    <i class="fas fa-images"></i> Gallery
+</a>
                 
                 <button onclick="toggleTheme()" class="w-8 h-8 rounded-full glass flex items-center justify-center hover:scale-110 transition text-yellow-400">
                     <i id="theme-icon" class="fas fa-sun text-sm"></i>
                 </button>
-                <a href="/login" class="bg-white text-black hover:bg-gray-200 px-4 py-1.5 md:px-5 md:py-2 rounded-full font-bold text-xs md:text-sm transition transform hover:scale-105 shadow-[0_0_15px_rgba(0,229,255,0.3)] whitespace-nowrap">
+                <a href="/login" class="bg-white text-black hover:bg-gray-200 px-5 py-2 rounded-full font-bold text-xs md:text-sm transition transform hover:scale-105 shadow-[0_0_15px_rgba(0,229,255,0.3)]">
                     Login / Signup
                 </a>
             </div>
@@ -105,98 +101,205 @@
     </nav>
 
     <section class="min-h-screen flex items-center justify-center px-4 pt-16 relative">
-        <div class="text-center max-w-4xl mx-auto">
-            <div class="inline-block px-3 py-1 rounded-full badge text-[10px] md:text-xs font-bold uppercase tracking-widest mb-5 fade-in-up backdrop-blur-md hover:bg-cyan-500/20 transition">
-                Beta v3.4 • Tri-Model AI Engine
+        <div class="text-center max-w-5xl mx-auto">
+            <div class="inline-block px-4 py-1.5 rounded-full badge text-xs font-bold uppercase tracking-widest mb-6 fade-in-up">
+                Ethrix AI v3.0 • The Ultimate Ecosystem
             </div>
             
-            <h1 class="landing-hero-h1 text-3xl md:text-6xl font-bold mb-5 fade-in-up delay-100 leading-tight drop-shadow-2xl">
-                Your Personal AI <br>
-                <span class="text-gradient">That Truly Understands</span>
+            <h1 class="text-4xl md:text-7xl font-bold mb-6 fade-in-up delay-100 leading-tight">
+                Beyond Chat. <br>
+                <span class="text-gradient">A True Digital Workspace.</span>
             </h1>
             
-            <p class="landing-hero-sub text-gray-300 text-base md:text-lg mb-8 max-w-xl mx-auto fade-in-up delay-200 drop-shadow-md">
-                Experience the next generation of conversational AI. Ethrix listens, remembers, creates art, and codes alongside you.
+            <p class="text-gray-300 text-base md:text-xl mb-10 max-w-3xl mx-auto fade-in-up delay-200 leading-relaxed">
+                Experience an AI that remembers your preferences, executes Python code, writes emails, manages your Google Calendar, summarizes YouTube videos, and offers an entire suite of developer and lifestyle tools in one place.
             </p>
             
-            <div class="landing-cta-row flex flex-col md:flex-row gap-4 justify-center fade-in-up delay-300">
-                <a href="/login" class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] hover:from-[#00bfff] hover:to-[#00e6e6] text-white px-6 py-3 rounded-full font-bold text-sm md:text-base shadow-lg shadow-cyan-500/30 transition transform hover:scale-105 flex items-center justify-center gap-2">
-                    <span>Talk to Ethrix</span> <i class="fas fa-arrow-right"></i>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center fade-in-up delay-300">
+                <a href="/login" class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] text-white px-8 py-4 rounded-full font-bold text-lg shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] transition transform hover:scale-105 flex items-center justify-center gap-2">
+                    Enter Workspace <i class="fas fa-arrow-right"></i>
                 </a>
-                <a href="#features" class="glass px-6 py-3 rounded-full font-bold text-sm md:text-base hover:bg-white/10 transition backdrop-blur-md text-white">
+                <a href="#features" class="glass px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition text-white">
                     Explore Capabilities
                 </a>
-                <a href="/about" class="sm:hidden glass px-6 py-3 rounded-full font-bold text-sm hover:bg-white/10 transition backdrop-blur-md text-[#00E5FF] flex items-center justify-center gap-2">
-                    <i class="fas fa-user-astronaut"></i> About Creator
-                </a>
             </div>
         </div>
-        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 animate-bounce opacity-50 text-[#00E5FF]">
-            <i class="fas fa-chevron-down text-xl"></i>
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce text-[#00E5FF] cursor-pointer">
+            <a href="#features"><i class="fas fa-chevron-down text-2xl"></i></a>
         </div>
     </section>
 
-    <section id="features" class="py-16 md:py-20 px-4">
+    <section id="features" class="py-20 px-4 bg-[#0B0F19]/90 backdrop-blur-md border-t border-cyan-500/10 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <div class="text-[#00E5FF] font-semibold tracking-wider uppercase text-sm mb-2">The Foundation</div>
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">Four Dynamic Modes</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">Switch instantly between highly specialized environments tailored to your immediate needs.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                <div class="glass p-8 md:p-10 rounded-3xl hover:-translate-y-2 transition duration-300">
+                    <div class="w-14 h-14 rounded-2xl bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF] text-2xl mb-6 shadow-[0_0_15px_rgba(0,229,255,0.2)]"><i class="fas fa-comments"></i></div>
+                    <h3 class="text-2xl font-bold mb-3">Conversational AI</h3>
+                    <p class="text-gray-400 leading-relaxed">Your intelligent companion. It features long-term memory, emotional context awareness, and natural dialogue formatting to help you brainstorm and converse seamlessly.</p>
+                </div>
+                <div class="glass p-8 md:p-10 rounded-3xl hover:-translate-y-2 transition duration-300 border border-[#1E90FF]/30">
+                    <div class="w-14 h-14 rounded-2xl bg-[#1E90FF]/10 flex items-center justify-center text-[#1E90FF] text-2xl mb-6 shadow-[0_0_15px_rgba(30,144,255,0.2)]"><i class="fas fa-code"></i></div>
+                    <h3 class="text-2xl font-bold mb-3">Developer Mode</h3>
+                    <p class="text-gray-400 leading-relaxed">A specialized environment for software engineering. Execute Python code in a safe sandbox, debug errors, analyze GitHub repositories, and get precise syntax highlighting.</p>
+                </div>
+                <div class="glass p-8 md:p-10 rounded-3xl hover:-translate-y-2 transition duration-300">
+                    <div class="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 text-2xl mb-6 shadow-[0_0_15px_rgba(168,85,247,0.2)]"><i class="fas fa-microscope"></i></div>
+                    <h3 class="text-2xl font-bold mb-3">Deep Research</h3>
+                    <p class="text-gray-400 leading-relaxed">Bypass blocks with Jina AI web reading, query Wikipedia, solve complex math, and analyze uploaded PDFs, Word documents, and images with absolute precision.</p>
+                </div>
+                <div class="glass p-8 md:p-10 rounded-3xl hover:-translate-y-2 transition duration-300 bg-gradient-to-br from-[#00E5FF]/10 to-transparent border border-[#00E5FF]/50 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fas fa-robot text-8xl"></i></div>
+                    <div class="w-14 h-14 rounded-2xl bg-yellow-500/20 flex items-center justify-center text-yellow-400 text-2xl mb-6 shadow-[0_0_15px_rgba(234,179,8,0.2)]"><i class="fas fa-bolt"></i></div>
+                    <h3 class="text-2xl font-bold mb-3 text-white">Ethrix Autonomous Agent</h3>
+                    <p class="text-gray-300 leading-relaxed">
+                        Connect your Google Workspace. The Agent can automatically read and send Gmails, manage your Google Calendar events, create Drive files, and check live weather, stocks, and news—acting entirely on your behalf.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 px-4 border-t border-white/5 relative z-10 overflow-hidden">
+        <div class="max-w-7xl mx-auto text-center mb-12">
+            <h2 class="text-3xl md:text-5xl font-bold mb-4">An Arsenal of Built-In Tools</h2>
+            <p class="text-gray-400 max-w-2xl mx-auto text-lg">We didn't just build a chatbot. Ethrix comes packed with specialized applications to handle every aspect of your professional and personal life.</p>
+        </div>
+
+        <div class="marquee-wrapper">
+            <div class="marquee-content">
+                <span class="tool-pill"><i class="fab fa-youtube text-red-500"></i> YouTube Summarizer</span>
+                <span class="tool-pill"><i class="fas fa-palette text-pink-400"></i> AI Image Generation</span>
+                <span class="tool-pill"><i class="fas fa-file-pdf text-orange-400"></i> Document Analysis (PDF/DOCX)</span>
+                <span class="tool-pill"><i class="fas fa-briefcase text-blue-400"></i> Smart Resume Builder</span>
+                <span class="tool-pill"><i class="fas fa-search-dollar text-green-400"></i> Resume Analyzer</span>
+                <span class="tool-pill"><i class="fas fa-user-tie text-purple-400"></i> Mock Interviewer</span>
+                <span class="tool-pill"><i class="fas fa-code-branch text-gray-300"></i> GitHub Reviewer</span>
+                <span class="tool-pill"><i class="fas fa-bug text-red-400"></i> Code Debugger</span>
+                
+                <span class="tool-pill"><i class="fab fa-youtube text-red-500"></i> YouTube Summarizer</span>
+                <span class="tool-pill"><i class="fas fa-palette text-pink-400"></i> AI Image Generation</span>
+                <span class="tool-pill"><i class="fas fa-file-pdf text-orange-400"></i> Document Analysis (PDF/DOCX)</span>
+                <span class="tool-pill"><i class="fas fa-briefcase text-blue-400"></i> Smart Resume Builder</span>
+                <span class="tool-pill"><i class="fas fa-search-dollar text-green-400"></i> Resume Analyzer</span>
+                <span class="tool-pill"><i class="fas fa-user-tie text-purple-400"></i> Mock Interviewer</span>
+                <span class="tool-pill"><i class="fas fa-code-branch text-gray-300"></i> GitHub Reviewer</span>
+                <span class="tool-pill"><i class="fas fa-bug text-red-400"></i> Code Debugger</span>
+            </div>
+        </div>
+
+        <div class="marquee-wrapper mt-4">
+            <div class="marquee-content" style="animation-direction: reverse; animation-duration: 35s;">
+                <span class="tool-pill"><i class="fas fa-brain text-yellow-400"></i> Feynman Explainer</span>
+                <span class="tool-pill"><i class="fas fa-layer-group text-blue-300"></i> Flashcards Maker</span>
+                <span class="tool-pill"><i class="fas fa-envelope-open-text text-teal-400"></i> Cold Email Generator</span>
+                <span class="tool-pill"><i class="fas fa-dumbbell text-orange-500"></i> Fitness Coach</span>
+                <span class="tool-pill"><i class="fas fa-gamepad text-[#00E5FF]"></i> Arcade Zone (Games)</span>
+                <span class="tool-pill"><i class="fas fa-book text-pink-300"></i> Personal Diary</span>
+                <span class="tool-pill"><i class="fas fa-film text-purple-300"></i> Anime & Movie Talker</span>
+                <span class="tool-pill"><i class="fas fa-qrcode text-white"></i> QR Code Generator</span>
+
+                <span class="tool-pill"><i class="fas fa-brain text-yellow-400"></i> Feynman Explainer</span>
+                <span class="tool-pill"><i class="fas fa-layer-group text-blue-300"></i> Flashcards Maker</span>
+                <span class="tool-pill"><i class="fas fa-envelope-open-text text-teal-400"></i> Cold Email Generator</span>
+                <span class="tool-pill"><i class="fas fa-dumbbell text-orange-500"></i> Fitness Coach</span>
+                <span class="tool-pill"><i class="fas fa-gamepad text-[#00E5FF]"></i> Arcade Zone (Games)</span>
+                <span class="tool-pill"><i class="fas fa-book text-pink-300"></i> Personal Diary</span>
+                <span class="tool-pill"><i class="fas fa-film text-purple-300"></i> Anime & Movie Talker</span>
+                <span class="tool-pill"><i class="fas fa-qrcode text-white"></i> QR Code Generator</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 px-4 bg-[#0B0F19]/80 backdrop-blur-sm border-t border-cyan-500/10 relative z-10">
         <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-2xl md:text-4xl font-bold mb-3">Beyond Simple Chat</h2>
-                <p class="text-gray-300 text-base md:text-lg">Everything you need in one intelligent workspace.</p>
-            </div>
-            <div class="landing-features-grid grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-                <div class="glass p-6 md:p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#00E5FF]/20">
-                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-[#00E5FF]/20 text-[#00E5FF] flex items-center justify-center text-2xl mb-5 shadow-[0_0_15px_rgba(0,229,255,0.2)]"><i class="fas fa-microphone-alt"></i></div>
-                    <h3 class="text-lg md:text-xl font-bold mb-2">Voice Interaction</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Don't just type. Talk to Ethrix naturally.</p>
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <div class="w-full lg:w-1/2">
+                    <div class="inline-block px-3 py-1 rounded-full badge text-xs font-bold mb-4">See It In Action</div>
+                    <h2 class="text-3xl md:text-5xl font-bold mb-6 leading-tight">Your Data, <br><span class="text-gradient">Fully Visualized.</span></h2>
+                    <p class="text-gray-400 mb-8 text-lg leading-relaxed">
+                        Track your interactions through the dedicated Memory Dashboard, write your thoughts in the secure Digital Diary, and watch as Ethrix executes real-world tasks flawlessly.
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <div class="mt-1 w-8 h-8 rounded-full bg-[#00E5FF]/20 flex items-center justify-center text-[#00E5FF]"><i class="fas fa-database"></i></div>
+                            <div>
+                                <h4 class="font-bold text-white text-lg">Dedicated Memory Dashboard</h4>
+                                <p class="text-gray-400 text-sm">View, edit, or delete exactly what the AI remembers about you.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="mt-1 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400"><i class="fas fa-shield-alt"></i></div>
+                            <div>
+                                <h4 class="font-bold text-white text-lg">Secure & Private</h4>
+                                <p class="text-gray-400 text-sm">Your Google OAuth tokens and personal diary entries are heavily encrypted.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="glass p-6 md:p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#1E90FF]/20">
-                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-[#1E90FF]/20 text-[#1E90FF] flex items-center justify-center text-2xl mb-5 shadow-[0_0_15px_rgba(30,144,255,0.2)]"><i class="fas fa-brain"></i></div>
-                    <h3 class="text-lg md:text-xl font-bold mb-2">Long-Term Memory</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Ethrix remembers details about you.</p>
-                </div>
-                <div class="glass p-6 md:p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#00E5FF]/20">
-                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl mb-5 shadow-[0_0_15px_rgba(0,255,255,0.2)]"><i class="fas fa-magic"></i></div>
-                    <h3 class="text-lg md:text-xl font-bold mb-2">Creative Studio</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Generate high-quality images and art.</p>
+                
+                <div class="w-full lg:w-1/2">
+                    <div class="media-container group cursor-pointer">
+                        <img src="/static/images/logo.png" alt="Ethrix Dashboard Demo" class="opacity-80 group-hover:opacity-100 transition duration-500 transform group-hover:scale-105">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div class="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl group-hover:scale-110 transition shadow-[0_0_20px_rgba(0,229,255,0.5)]">
+                                <i class="fas fa-play ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="py-8 border-t border-white/10 text-center text-gray-500 text-xs md:text-sm">
-        <div class="flex items-center justify-center gap-5 mb-3 flex-wrap">
-            <a href="/about"   class="hover:text-[#00E5FF] transition">About</a>
-            <a href="/pricing" class="hover:text-[#00E5FF] transition">Pricing</a>
-            <a href="/legal"   class="hover:text-[#00E5FF] transition">Terms & Privacy</a>
-            <a href="/login"   class="hover:text-[#00E5FF] transition">Login</a>
+    <footer class="py-10 border-t border-white/10 text-center text-gray-400 bg-[#070A11] relative z-10">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+                <div class="flex items-center gap-3">
+                    <img src="/static/images/logo.png" class="w-8 h-8 rounded-full opacity-80">
+                    <span class="font-bold text-lg text-white">Ethrix AI</span>
+                </div>
+                
+                <div class="flex flex-wrap items-center justify-center gap-6 text-sm font-medium">
+                    <a href="/about" class="hover:text-[#00E5FF] transition">About the Creator</a>
+                    <a href="/evolution" class="hover:text-[#00E5FF] transition">Evolution Gallery</a>
+                    <a href="/pricing" class="hover:text-[#00E5FF] transition">Pricing & Plans</a>
+                    <a href="/legal" class="hover:text-[#00E5FF] transition">Privacy Policy</a>
+                </div>
+            </div>
+            
+            <div class="pt-6 border-t border-white/5 text-xs md:text-sm">
+                <p>&copy; 2026 Ethrix AI Ecosystem. Engineered with ❤️ by <a href="/about" class="text-[#00E5FF] hover:underline hover:text-white transition font-bold">Shan 🍀</a>.</p>
+            </div>
         </div>
-        <p>&copy; 2025 Ethrix AI. Created with ❤️ by <a href="/about" class="text-[#00E5FF] hover:underline hover:text-white transition">Shan 🍀</a>.</p>
     </footer>
 
     <script>
-        // Theme Logic — preference saved in localStorage
+        // Theme Toggle Logic
         function toggleTheme() {
             const isLight = document.body.classList.toggle('light-mode');
             localStorage.setItem('landing-theme', isLight ? 'light' : 'dark');
             const icon = document.getElementById('theme-icon');
             if (isLight) {
-                icon.classList.remove('fa-sun'); icon.classList.add('fa-moon');
+                icon.classList.replace('fa-sun', 'fa-moon');
                 icon.parentElement.classList.replace('text-yellow-400', 'text-gray-600');
             } else {
-                icon.classList.remove('fa-moon'); icon.classList.add('fa-sun');
+                icon.classList.replace('fa-moon', 'fa-sun');
                 icon.parentElement.classList.replace('text-gray-600', 'text-yellow-400');
             }
         }
-        // Apply saved theme on page load
+        
         (function() {
-            const saved = localStorage.getItem('landing-theme');
-            if (saved === 'light') {
-                document.body.classList.add('light-mode');
-                const icon = document.getElementById('theme-icon');
-                if (icon) { icon.classList.remove('fa-sun'); icon.classList.add('fa-moon'); icon.parentElement.classList.replace('text-yellow-400','text-gray-600'); }
-            }
+            if (localStorage.getItem('landing-theme') === 'light') toggleTheme();
         })();
         
-        // Remove Spline Logo
+        // Exact Logic to completely remove Spline Watermark / Logo
         const killLogo = setInterval(() => {
             const viewer = document.querySelector('spline-viewer');
             if (viewer && viewer.shadowRoot) {
@@ -213,4 +316,4 @@
         setTimeout(() => clearInterval(killLogo), 5000);
     </script>
 </body>
-</html>f
+</html>

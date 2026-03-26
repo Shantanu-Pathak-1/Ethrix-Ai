@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from pydantic import BaseModel
 import uuid
 import random
+import os
 from routers.profile_routers import get_random_manual_profile
 # Import database, config and helpers from core
 from core.database import (
@@ -21,7 +22,10 @@ class LoginRequest(BaseModel): identifier: str; password: str
 
 @router.get("/auth/login")
 async def login(request: Request):
-    redirect_uri = str(request.url_for('auth_callback')).replace("http://", "https://")
+    # Pehle env variable check karo, nahi to auto-generate karo
+    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI") or str(request.url_for('auth_callback'))
+    # Ensure HTTPS (proxy ke peeche url_for http return kar sakta hai)
+    redirect_uri = redirect_uri.replace("http://", "https://")
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 @router.get("/auth/callback")

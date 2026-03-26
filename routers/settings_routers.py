@@ -57,11 +57,32 @@ async def settings_page(request: Request):
     }
     prefs = db_user.get("preferences", default_prefs) if db_user else default_prefs
 
-    # 🔥 FIX: Properly Indented Inside the Function 🔥
+    # ✅ FIX 1: ethrix_db + shanvika_db (HF Agent) dono check karo
     google_connected = False
-    # Checking both direct tokens and db_user token field based on your logic
-    if user.get("google_access_token") or user.get("google_refresh_token") or (db_user and db_user.get("google_token")):
+
+    # Step 1: Pehle local ethrix_db check karo (fast path)
+    if user.get("google_access_token") or user.get("google_refresh_token") or \
+       (db_user and (db_user.get("google_token") or db_user.get("google_connected"))):
         google_connected = True
+
+    # Step 2: Agar local mein nahi mila, toh HF Agent (shanvika_db) se check karo
+    if not google_connected and HF_BASE_URL:
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.get(
+                    f"{HF_BASE_URL}/google/status",
+                    params={"email": user["email"]}
+                )
+                hf_data = resp.json()
+                if hf_data.get("connected"):
+                    google_connected = True
+                    # Auto-sync: ethrix_db mein bhi marker save karo taaki agle baar fast ho
+                    await db_module.users_collection.update_one(
+                        {"email": user["email"]},
+                        {"$set": {"google_connected": True}}
+                    )
+        except Exception:
+            pass  # HF down hai toh silently skip karo
     
     return templates.TemplateResponse(
         request=request,
@@ -175,9 +196,9 @@ async def google_status(request: Request):
         return {"connected": False}
 
     if not HF_BASE_URL:
-        # Fallback: check MongoDB directly
+        # Fallback: check MongoDB directly — connected flag OR token dono check karo
         db_user = await db_module.users_collection.find_one({"email": user["email"]})
-        connected = bool(db_user and db_user.get("google_connected") and db_user.get("google_token"))
+        connected = bool(db_user and (db_user.get("google_connected") or db_user.get("google_token")))
         return {"connected": connected}
 
     try:
@@ -186,11 +207,18 @@ async def google_status(request: Request):
                 f"{HF_BASE_URL}/google/status",
                 params={"email": user["email"]}
             )
-            return resp.json()
+            hf_data = resp.json()
+            # HF (shanvika_db) connected hai toh ethrix_db mein bhi sync karo
+            if hf_data.get("connected"):
+                await db_module.users_collection.update_one(
+                    {"email": user["email"]},
+                    {"$set": {"google_connected": True}}
+                )
+            return hf_data
     except Exception:
         # Fallback to MongoDB check
         db_user = await db_module.users_collection.find_one({"email": user["email"]})
-        connected = bool(db_user and db_user.get("google_connected") and db_user.get("google_token"))
+        connected = bool(db_user and (db_user.get("google_connected") or db_user.get("google_token")))
         return {"connected": connected}
 
 
