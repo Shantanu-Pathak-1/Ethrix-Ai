@@ -669,14 +669,15 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
                 reply = research_data
 
         # MODE 4: AGENT MODE
-        # ✅ FIX: Timeout 40s → 90s (HF cold start ke liye kaafi time chahiye)
-        # ✅ FIX: Local fallback hataya — fallback basic search karta tha, Gmail/email kaam nahi karta tha
-        #         Ab proper error message deta hai taaki user samjhe kya hua
+        # ✅ FIX: Pehle FINAL_SYSTEM_PROMPT bheja jaata tha user_context mein — us wajah se
+        # HF Space ka model answer ke end mein malformed <function=search_web{...}> append
+        # kar deta tha, jo 400 tool_use_failed error deta tha.
+        # Ab sirf user ka naam bhejte hain — agent ka apna system prompt hai HF Space par.
         elif mode == "ethrix_agent":
             try:
                 async with httpx.AsyncClient() as http_client:
                     agent_headers = {
-                        "x-api-key":    os.getenv("AGENT_API_KEY", "ethrix_agent_key"),
+                        "x-api-key":    os.getenv("AGENT_API_KEY", "shantanu_super_secret_key"),
                         "Content-Type": "application/json"
                     }
                     clean_history = [
@@ -690,18 +691,22 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
                     if resp.status_code == 200:
                         hf_reply = resp.json().get("response", "")
                         # HF Space 200 deta hai lekin response mein error string bhejta hai
-                        # (tool_use_failed) — agar aisa ho toh user ko batao, local fallback mat chalao
+                        # (tool_use_failed) — matlab HF ka model fail hua, local fallback chalao
                         HF_ERROR_SIGNALS = ["Processing Error", "tool_use_failed", "failed_generation", "Failed to call a function", "<function="]
                         if any(s in hf_reply for s in HF_ERROR_SIGNALS) or not hf_reply.strip():
-                            reply = "⚠️ Agent ne task process karne mein dikkat aayi. Please ek baar aur try karo — HF Space abhi warm ho raha hai."
+                            from tools_lab import run_agent_task
+                            reply = await run_agent_task(msg)
                         else:
                             reply = hf_reply
                     else:
-                        reply = f"⚠️ Agent server ne {resp.status_code} error diya. Thodi der mein retry karo."
-            except httpx.TimeoutException:
-                reply = "⏳ Agent server ne respond nahi kiya (90s timeout). HF Space cold start ho raha hoga — 1 minute baad dobara try karo."
+                        from tools_lab import run_agent_task
+                        reply = await run_agent_task(msg)
             except Exception as agent_error:
-                reply = f"⚠️ Ethrix Agent is offline or unreachable: {str(agent_error)}"
+                try:
+                    from tools_lab import run_agent_task
+                    reply = await run_agent_task(msg)
+                except Exception:
+                    reply = f"⚠️ Ethrix Agent is offline or unreachable: {str(agent_error)}"
 
         # CUSTOM USER TOOLS
         elif mode.startswith("custom_"):
