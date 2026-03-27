@@ -12,12 +12,15 @@ from fastapi.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
-import features.profile.profile_routers as profile_routers
-import features.profile.settings_routers as settings_routers
+
+# ✨ NAYE FEATURE-BASED IMPORTS ✨
+import features.profile_settings.profile_routers as profile_routers
+import features.profile_settings.settings_routers as settings_routers
 from features.ai_tools.api_routers import router as api_router
 import core.database as db_module
 from features.public_pages.pages import router as pages_router
 from features.auth.auth_routers import router as auth_router
+
 from arcade_zone.arcade_backend import arcade_app
 
 # Main app instance
@@ -51,7 +54,8 @@ app.include_router(settings_routers.router)
 # ==========================================
 # CUSTOM ERROR PAGES
 # ==========================================
-_templates = Jinja2Templates(directory="templates")
+# ✨ NAYA TEMPLATE PATH ✨
+_templates = Jinja2Templates(directory="features/public_pages/templates")
 
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc: HTTPException):

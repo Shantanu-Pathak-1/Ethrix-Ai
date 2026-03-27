@@ -12,7 +12,7 @@ import random
 import core.database as db_module
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="features/profile_settings/templates")
 
 class ProfileUpdateRequest(BaseModel):
     new_name: str

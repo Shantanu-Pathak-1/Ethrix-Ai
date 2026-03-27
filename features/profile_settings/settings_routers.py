@@ -12,7 +12,7 @@ import httpx
 import core.database as db_module
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="features/profile_settings/templates")
 
 # ── HF Agent base URL (derive from HF_AGENT_URL env var) ─────────────────────
 _HF_AGENT_URL = os.getenv("HF_AGENT_URL", "")

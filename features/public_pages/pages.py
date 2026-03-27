@@ -6,7 +6,14 @@ from fastapi.responses import JSONResponse
 from core.geo_pricing import get_pricing_for_user
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+# Isse pages.py kisi bhi folder se HTML dhoondh legi bina error ke!
+templates = Jinja2Templates(directory=[
+    "features/public_pages/templates",
+    "features/auth/templates",
+    "features/profile_settings/templates",
+    "features/ai_tools/templates",
+    "arcade_zone/templates"
+])
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
