@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import uuid
 import random
 import os
-from routers.profile_routers import get_random_manual_profile
+from features.profile.profile_routers import get_random_manual_profile
 # Import database, config and helpers from core
 from core.database import (
     oauth, users_collection, otp_collection, ADMIN_EMAIL, 

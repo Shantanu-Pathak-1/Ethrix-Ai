@@ -260,7 +260,7 @@ async def generate_image_hf(prompt):
     Default: pro tier + realistic style for best quality.
     """
     try:
-        from image_generation import generate_image_pro
+        from features.ai_tools.image_generation import generate_image_pro
         image_url = await generate_image_pro(prompt, style_mode="realistic")
         return f"""
             <div class="glass p-2 rounded-xl">

@@ -12,12 +12,12 @@ from fastapi.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
-import routers.profile_routers as profile_routers
-import routers.settings_routers as settings_routers
-from routers.api_routers import router as api_router
+import features.profile.profile_routers as profile_routers
+import features.profile.settings_routers as settings_routers
+from features.ai_tools.api_routers import router as api_router
 import core.database as db_module
-from routers.pages import router as pages_router
-from routers.auth_routers import router as auth_router
+from features.public_pages.pages import router as pages_router
+from features.auth.auth_routers import router as auth_router
 from arcade_zone.arcade_backend import arcade_app
 
 # Main app instance

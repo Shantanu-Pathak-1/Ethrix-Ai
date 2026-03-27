@@ -30,11 +30,11 @@ from groq import Groq
 from duckduckgo_search import DDGS
 import edge_tts
 
-import tools_lab
+import features.ai_tools.tools_lab as tools_lab
 import core.database as db_module
 from core.rate_limiter import check_and_increment, get_usage_info
 from core.geo_pricing import get_pricing_for_user
-from image_generation import generate_image_free, generate_image_pro
+from features.ai_tools.image_generation import generate_image_free, generate_image_pro
 
 router = APIRouter()
 
@@ -694,16 +694,16 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
                         # (tool_use_failed) — matlab HF ka model fail hua, local fallback chalao
                         HF_ERROR_SIGNALS = ["Processing Error", "tool_use_failed", "failed_generation", "Failed to call a function", "<function="]
                         if any(s in hf_reply for s in HF_ERROR_SIGNALS) or not hf_reply.strip():
-                            from tools_lab import run_agent_task
+                            from features.ai_tools.tools_lab import run_agent_task
                             reply = await run_agent_task(msg)
                         else:
                             reply = hf_reply
                     else:
-                        from tools_lab import run_agent_task
+                        from features.ai_tools.tools_lab import run_agent_task
                         reply = await run_agent_task(msg)
             except Exception as agent_error:
                 try:
-                    from tools_lab import run_agent_task
+                    from features.ai_tools.tools_lab import run_agent_task
                     reply = await run_agent_task(msg)
                 except Exception:
                     reply = f"⚠️ Ethrix Agent is offline or unreachable: {str(agent_error)}"
