@@ -11,6 +11,20 @@
 # ==================================================================================
 
 # ==========================================
+# [SECTION 0] PATH FIX
+# api_routers.py ab features/ai_tools/ mein hai
+# tools_lab.py aur core/ abhi bhi project root pe hain
+# sys.path mein root add karo taaki imports kaam karein
+# ==========================================
+import sys
+import os
+# __file__ = /code/features/ai_tools/api_routers.py
+# 2 levels up = /code/
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
+# ==========================================
 # [SECTION 1] IMPORTS
 # ==========================================
 from fastapi import APIRouter, Request, BackgroundTasks, UploadFile, File, Form
@@ -573,7 +587,7 @@ async def screen_new_session(request: Request):
         "HF_SCREEN_URL",
         "https://shantanupathak94-ethrix-screen.hf.space"
     )
-    screen_headers = {"x-api-key": os.getenv("AGENT_API_KEY", "shantanu_super_secret_key")}
+    screen_headers = {"x-api-key": os.getenv("SCREEN_API_KEY", "ethrix_screen_key")}
 
     try:
         async with httpx.AsyncClient(timeout=15.0) as http_client:
@@ -593,6 +607,50 @@ async def screen_new_session(request: Request):
         return JSONResponse({"error": "Screen Space unreachable."}, status_code=503)
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@router.post("/api/docs/upload")
+async def docs_upload(
+    request: Request,
+    file: UploadFile = File(...),
+    session_id: str  = Form(...),
+):
+    """
+    PDF/DOCX/TXT → Docs Space pe upload karo.
+    session_id = chat session ID taaki context linked rahe.
+    Response: { success, name, pages, size_chars }
+    """
+    user = await db_module.get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required."}, status_code=401)
+
+    DOCS_URL = os.getenv("HF_DOCS_URL", "https://shantanupathak94-ethrix-docs.hf.space")
+    docs_key = os.getenv("DOCS_API_KEY", "ethrix_docs_key")
+
+    try:
+        file_bytes = await file.read()
+        if len(file_bytes) > 50 * 1024 * 1024:
+            return JSONResponse({"error": "File 50MB se bada hai."}, status_code=413)
+
+        async with httpx.AsyncClient(timeout=120.0) as http_client:
+            resp = await http_client.post(
+                f"{DOCS_URL}/upload",
+                headers={"x-api-key": docs_key},
+                files={"file": (file.filename, file_bytes, file.content_type)},
+                data={"session_id": session_id},
+            )
+
+        if resp.status_code == 200:
+            return resp.json()
+        return JSONResponse(
+            {"error": f"Docs Space error: {resp.status_code}"},
+            status_code=resp.status_code
+        )
+    except httpx.TimeoutException:
+        return JSONResponse({"error": "Docs Space timeout. Thodi der mein retry karo."}, status_code=504)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
 # ==========================================
 @router.post("/api/tools/flashcards")
 async def api_generate_flashcards(req: ToolRequest, request: Request):
@@ -668,7 +726,7 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
         # Tool modes counted separately from AI chat modes
         is_tool_mode = mode not in (
             "chat", "research", "code_debugger", "ethrix_agent",
-            "data_analyst", "vision", "screen_share"   # ✅ 3 naye HF Space modes
+            "data_analyst", "vision", "screen_share", "docs"   # ✅ 4 HF Space modes
         )
         call_type    = "tool_calls" if is_tool_mode else "ai_calls"
 
@@ -963,7 +1021,7 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
                     "https://shantanupathak94-ethrix-screen.hf.space"
                 )
                 screen_headers = {
-                    "x-api-key":    os.getenv("AGENT_API_KEY", "shantanu_super_secret_key"),
+                    "x-api-key":    os.getenv("SCREEN_API_KEY", "ethrix_screen_key"),
                     "Content-Type": "application/json"
                 }
                 file_b64 = req.file_data or ""
@@ -1004,6 +1062,53 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
                 reply = "⏳ Screen Space timeout. Retry karo."
             except Exception as scr_err:
                 reply = f"⚠️ Screen Space offline: {str(scr_err)}"
+
+        # MODE 8: DOCS MODE
+        # PDF/DOCX/TXT upload → Gemini 1M context → Q&A, summary, compare
+        elif mode == "docs":
+            try:
+                DOCS_URL = os.getenv(
+                    "HF_DOCS_URL",
+                    "https://shantanupathak94-ethrix-docs.hf.space"
+                )
+                docs_headers = {
+                    "x-api-key":    os.getenv("DOCS_API_KEY", "ethrix_docs_key"),
+                    "Content-Type": "application/json"
+                }
+                if not msg.strip():
+                    reply = (
+                        "📄 **Docs Mode**\n\n"
+                        "Document upload karo (PDF/DOCX/TXT) — phir koi bhi sawaal poocho:\n"
+                        "- *\"Is document ka summary do\"*\n"
+                        "- *\"Chapter 3 mein kya hai?\"*\n"
+                        "- *\"Risky clauses dhundo\"*\n"
+                        "- *\"Dono documents compare karo\"*"
+                    )
+                else:
+                    payload = {
+                        "session_id": sid,
+                        "question":   msg,
+                        "mode":       "qa",
+                    }
+                    async with httpx.AsyncClient() as http_client:
+                        resp = await http_client.post(
+                            f"{DOCS_URL}/ask",
+                            headers=docs_headers,
+                            json=payload,
+                            timeout=90.0
+                        )
+                    if resp.status_code == 200:
+                        docs_data = resp.json()
+                        if docs_data.get("error"):
+                            reply = f"⚠️ {docs_data['error']}"
+                        else:
+                            reply = docs_data.get("answer", "⚠️ No answer returned.")
+                    else:
+                        reply = f"⚠️ Docs Space ne {resp.status_code} diya. Retry karo."
+            except httpx.TimeoutException:
+                reply = "⏳ Docs Space timeout (90s). Dobara try karo."
+            except Exception as docs_err:
+                reply = f"⚠️ Docs Space offline: {str(docs_err)}"
 
         # CUSTOM USER TOOLS
         elif mode.startswith("custom_"):

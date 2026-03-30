@@ -135,6 +135,11 @@ async function sendMessage() {
             await sendVisionMessage(msg, thinkingId);
             return;
         }
+        // ── DOCS MODE — dedicated file upload flow ───────────────────────────
+        if (currentMode === 'docs' && currentFile) {
+            await sendDocsUpload(thinkingId);
+            return;
+        }
 
         const payload = {
             message: msg, session_id: currentSessionId, mode: currentMode,
@@ -373,6 +378,9 @@ async function setMode(mode, btn) {
             .fire({ icon: 'info', title: '👁️ Vision Mode Ready', html: '<span style="font-size:0.85rem;color:#aaa">Image ya PDF upload karo</span>' });
     } else if (mode === 'screen_share') {
         openScreenSharePanel();
+    } else if (mode === 'docs') {
+        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2500, background: '#020205', color: '#0ff' })
+            .fire({ icon: 'info', title: '📄 Docs Mode Ready', html: '<span style="font-size:0.85rem;color:#aaa">PDF / DOCX / TXT upload karo</span>' });
     } else {
         Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 1000 }).fire({ icon: 'info', title: `Mode: ${mode}` });
     }
@@ -1177,4 +1185,45 @@ function addScreenComment(text, role) {
 function showToast(icon, title) {
     Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, background: '#1e1e1e', color: '#fff' })
         .fire({ icon, title });
+}
+
+// ==================================================================================
+// 📄 DOCS MODE
+// ==================================================================================
+
+async function sendDocsUpload(thinkingId) {
+    const chatBox = document.getElementById('chat-box');
+
+    try {
+        const formData = new FormData();
+        const byteStr  = atob(currentFile.data);
+        const arr      = new Uint8Array(byteStr.length);
+        for (let i = 0; i < byteStr.length; i++) arr[i] = byteStr.charCodeAt(i);
+        const blob     = new Blob([arr], { type: currentFile.type });
+        formData.append('file', blob, currentFile.name);
+        formData.append('session_id', currentSessionId || 'default');
+
+        const res  = await fetch('/api/docs/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        document.getElementById(thinkingId)?.remove();
+        currentFile = null;
+        removeFile();
+
+        if (!res.ok || data.error) {
+            appendMessage('assistant', `⚠️ ${data.error || 'Upload failed.'}`, null);
+            return;
+        }
+
+        appendMessage('assistant',
+            `✅ **Document uploaded: \`${data.name}\`**\n\n` +
+            `📄 Pages: **${data.pages || '?'}** | Size: **${data.size_kb || '?'} KB**\n\n` +
+            `Ab koi bhi sawaal poocho — main is document ko padh ke jawab dunga!\n\n` +
+            `*Examples: "Summary do", "Key points kya hain?", "Risky clauses dhundo"*`,
+            null
+        );
+    } catch (e) {
+        document.getElementById(thinkingId)?.remove();
+        appendMessage('assistant', `⚠️ Upload error: ${e.message}`, null);
+    }
 }
