@@ -13,7 +13,7 @@
 # ==========================================
 # [SECTION 1] IMPORTS
 # ==========================================
-from fastapi import APIRouter, Request, BackgroundTasks
+from fastapi import APIRouter, Request, BackgroundTasks, UploadFile, File, Form
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from datetime import datetime
@@ -25,16 +25,17 @@ import hashlib
 import traceback
 import uuid
 import re
+import base64
 import google.generativeai as genai
 from groq import Groq
 from duckduckgo_search import DDGS
 import edge_tts
 
-import features.ai_tools.tools_lab as tools_lab
+import tools_lab
 import core.database as db_module
 from core.rate_limiter import check_and_increment, get_usage_info
 from core.geo_pricing import get_pricing_for_user
-from features.ai_tools.image_generation import generate_image_free, generate_image_pro
+from image_generation import generate_image_free, generate_image_pro
 
 router = APIRouter()
 
@@ -438,7 +439,160 @@ async def text_to_speech_endpoint(request: Request):
 
 
 # ==========================================
-# [SECTION 13] TOOLS-SPECIFIC ENDPOINTS
+# [SECTION 12.5] HF SPACE PROXY ENDPOINTS
+# Main site → HF Spaces ke liye dedicated file-upload endpoints
+# Frontend inhe directly call karta hai (chat endpoint se alag)
+# ==========================================
+
+@router.post("/api/data-analyst/analyze")
+async def data_analyst_analyze(
+    request: Request,
+    file: UploadFile = File(...),
+):
+    """
+    CSV/Excel/JSON file upload → Data Analyst Space pe bhejo → full analysis return karo.
+    Response: { success, filename, summary, insights, charts }
+    Frontend charts ko Chart.js se render karega.
+    """
+    user = await db_module.get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required."}, status_code=401)
+
+    DA_URL = os.getenv(
+        "HF_DATA_ANALYST_URL",
+        "https://shantanupathak94-ethrix-data-analyst.hf.space"
+    )
+    da_headers = {"x-api-key": os.getenv("AGENT_API_KEY", "shantanu_super_secret_key")}
+
+    try:
+        file_bytes = await file.read()
+
+        # Size check — 10MB
+        if len(file_bytes) > 10 * 1024 * 1024:
+            return JSONResponse({"error": "File too large. Max 10MB."}, status_code=413)
+
+        # HF Space pe multipart forward karo
+        async with httpx.AsyncClient(timeout=90.0) as http_client:
+            resp = await http_client.post(
+                f"{DA_URL}/analyze",
+                headers=da_headers,
+                files={"file": (file.filename, file_bytes, file.content_type)},
+                data={"user_email": user["email"]},
+            )
+
+        if resp.status_code == 200:
+            return resp.json()
+        else:
+            return JSONResponse(
+                {"error": f"Data Analyst Space error: {resp.status_code}"},
+                status_code=resp.status_code
+            )
+    except httpx.TimeoutException:
+        return JSONResponse({"error": "Data Analyst Space timeout (90s). Dobara try karo."}, status_code=504)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@router.post("/api/vision/analyze")
+async def vision_analyze(
+    request: Request,
+    file: UploadFile = File(...),
+    question: str    = Form(""),
+    mode: str        = Form("describe"),
+):
+    """
+    Image/PDF file upload → Vision Space pe bhejo → analysis return karo.
+    mode: "describe" | "ocr" | "qa" | "detail"
+    Response: { success, description/answer/ocr, size }
+    """
+    user = await db_module.get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required."}, status_code=401)
+
+    VISION_URL = os.getenv(
+        "HF_VISION_URL",
+        "https://shantanupathak94-ethrix-vision.hf.space"
+    )
+    vision_headers = {"x-api-key": os.getenv("AGENT_API_KEY", "shantanu_super_secret_key")}
+
+    try:
+        file_bytes  = await file.read()
+        file_b64    = base64.b64encode(file_bytes).decode()
+        content_type = file.content_type or ""
+
+        # PDF ke liye alag endpoint
+        if "pdf" in content_type.lower() or (file.filename or "").lower().endswith(".pdf"):
+            payload  = {
+                "pdf_data":   file_b64,
+                "question":   question,
+                "max_pages":  5,
+                "user_email": user["email"],
+            }
+            endpoint = f"{VISION_URL}/analyze-pdf"
+        else:
+            payload  = {
+                "image_data": file_b64,
+                "question":   question,
+                "mode":       mode,
+                "user_email": user["email"],
+                "filename":   file.filename or "image.jpg",
+            }
+            endpoint = f"{VISION_URL}/analyze-image"
+
+        async with httpx.AsyncClient(timeout=60.0) as http_client:
+            resp = await http_client.post(
+                endpoint,
+                headers={**vision_headers, "Content-Type": "application/json"},
+                json=payload,
+            )
+
+        if resp.status_code == 200:
+            return resp.json()
+        else:
+            return JSONResponse(
+                {"error": f"Vision Space error: {resp.status_code}"},
+                status_code=resp.status_code
+            )
+    except httpx.TimeoutException:
+        return JSONResponse({"error": "Vision Space timeout (60s). Retry karo."}, status_code=504)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@router.get("/api/screen/session")
+async def screen_new_session(request: Request):
+    """
+    Screen Space se ek naya session ID lo.
+    Frontend WebSocket connect karne se pehle ye call karta hai.
+    """
+    user = await db_module.get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required."}, status_code=401)
+
+    SCREEN_URL = os.getenv(
+        "HF_SCREEN_URL",
+        "https://shantanupathak94-ethrix-screen.hf.space"
+    )
+    screen_headers = {"x-api-key": os.getenv("AGENT_API_KEY", "shantanu_super_secret_key")}
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as http_client:
+            resp = await http_client.get(
+                f"{SCREEN_URL}/session/new",
+                headers=screen_headers
+            )
+        if resp.status_code == 200:
+            data = resp.json()
+            # Screen Space ka WebSocket URL bhi bhejo
+            ws_url = SCREEN_URL.replace("https://", "wss://").replace("http://", "ws://")
+            return {
+                "session_id": data.get("session_id"),
+                "ws_url":     f"{ws_url}/ws/{data.get('session_id')}",
+                "space_url":  SCREEN_URL,
+            }
+        return JSONResponse({"error": "Screen Space unreachable."}, status_code=503)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
 # ==========================================
 @router.post("/api/tools/flashcards")
 async def api_generate_flashcards(req: ToolRequest, request: Request):
@@ -512,7 +666,10 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
 
         # ── RATE LIMIT CHECK ──────────────────────────────────────────────────
         # Tool modes counted separately from AI chat modes
-        is_tool_mode = mode not in ("chat", "research", "code_debugger", "ethrix_agent")
+        is_tool_mode = mode not in (
+            "chat", "research", "code_debugger", "ethrix_agent",
+            "data_analyst", "vision", "screen_share"   # ✅ 3 naye HF Space modes
+        )
         call_type    = "tool_calls" if is_tool_mode else "ai_calls"
 
         rate_result = await check_and_increment(user['email'], call_type)
@@ -669,10 +826,6 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
                 reply = research_data
 
         # MODE 4: AGENT MODE
-        # ✅ FIX: Pehle FINAL_SYSTEM_PROMPT bheja jaata tha user_context mein — us wajah se
-        # HF Space ka model answer ke end mein malformed <function=search_web{...}> append
-        # kar deta tha, jo 400 tool_use_failed error deta tha.
-        # Ab sirf user ka naam bhejte hain — agent ka apna system prompt hai HF Space par.
         elif mode == "ethrix_agent":
             try:
                 async with httpx.AsyncClient() as http_client:
@@ -690,23 +843,167 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
                     resp      = await http_client.post(AGENT_URL, headers=agent_headers, json=payload, timeout=90.0)
                     if resp.status_code == 200:
                         hf_reply = resp.json().get("response", "")
-                        # HF Space 200 deta hai lekin response mein error string bhejta hai
-                        # (tool_use_failed) — matlab HF ka model fail hua, local fallback chalao
                         HF_ERROR_SIGNALS = ["Processing Error", "tool_use_failed", "failed_generation", "Failed to call a function", "<function="]
                         if any(s in hf_reply for s in HF_ERROR_SIGNALS) or not hf_reply.strip():
-                            from features.ai_tools.tools_lab import run_agent_task
-                            reply = await run_agent_task(msg)
+                            reply = "⚠️ Agent ne task process karne mein dikkat aayi. Please ek baar aur try karo."
                         else:
                             reply = hf_reply
                     else:
-                        from features.ai_tools.tools_lab import run_agent_task
-                        reply = await run_agent_task(msg)
+                        reply = f"⚠️ Agent server ne {resp.status_code} error diya. Thodi der mein retry karo."
+            except httpx.TimeoutException:
+                reply = "⏳ Agent server ne respond nahi kiya (90s timeout). HF Space cold start ho raha hoga — 1 minute baad dobara try karo."
             except Exception as agent_error:
-                try:
-                    from features.ai_tools.tools_lab import run_agent_task
-                    reply = await run_agent_task(msg)
-                except Exception:
-                    reply = f"⚠️ Ethrix Agent is offline or unreachable: {str(agent_error)}"
+                reply = f"⚠️ Ethrix Agent is offline or unreachable: {str(agent_error)}"
+
+        # MODE 5: DATA ANALYST MODE
+        # CSV/Excel/JSON upload → AI insights + chart data
+        # File upload /api/data-analyst/analyze endpoint se hota hai
+        # Yeh mode tab aata hai jab user text question poochhe already uploaded data ke baare mein
+        elif mode == "data_analyst":
+            try:
+                DA_URL = os.getenv(
+                    "HF_DATA_ANALYST_URL",
+                    "https://shantanupathak94-ethrix-data-analyst.hf.space"
+                )
+                da_headers = {
+                    "x-api-key":    os.getenv("AGENT_API_KEY", "shantanu_super_secret_key"),
+                    "Content-Type": "application/json"
+                }
+                file_b64 = req.file_data or ""
+                if not file_b64:
+                    reply = "📊 Koi file upload nahi ki! CSV, Excel, ya JSON file upload karo — phir apna sawaal poocho."
+                else:
+                    payload = {
+                        "question":   msg,
+                        "file_data":  file_b64,
+                        "filename":   "data.csv",
+                        "user_email": user["email"],
+                    }
+                    async with httpx.AsyncClient() as http_client:
+                        resp = await http_client.post(
+                            f"{DA_URL}/ask", headers=da_headers,
+                            json=payload, timeout=60.0
+                        )
+                    if resp.status_code == 200:
+                        da_data = resp.json()
+                        reply = da_data.get("answer", "⚠️ No answer returned.")
+                    else:
+                        reply = f"⚠️ Data Analyst Space ne {resp.status_code} error diya. Retry karo."
+            except httpx.TimeoutException:
+                reply = "⏳ Data Analyst Space timeout (60s). Dobara try karo."
+            except Exception as da_err:
+                reply = f"⚠️ Data Analyst offline: {str(da_err)}"
+
+        # MODE 6: VISION MODE
+        # Image upload → AI description, OCR, QA
+        # File upload /api/vision/analyze endpoint se hota hai
+        # Yeh mode tab aata hai jab user already uploaded image ke baare mein question kare
+        elif mode == "vision":
+            try:
+                VISION_URL = os.getenv(
+                    "HF_VISION_URL",
+                    "https://shantanupathak94-ethrix-vision.hf.space"
+                )
+                vision_headers = {
+                    "x-api-key":    os.getenv("AGENT_API_KEY", "shantanu_super_secret_key"),
+                    "Content-Type": "application/json"
+                }
+                file_b64  = req.file_data or ""
+                file_type = req.file_type or ""
+                if not file_b64:
+                    reply = "🖼️ Koi image upload nahi ki! Image upload karo — phir main usse analyze kar sakta hun."
+                else:
+                    # PDF ke liye alag endpoint
+                    if "pdf" in file_type.lower():
+                        payload = {
+                            "pdf_data":   file_b64,
+                            "question":   msg,
+                            "max_pages":  5,
+                            "user_email": user["email"],
+                        }
+                        endpoint = f"{VISION_URL}/analyze-pdf"
+                    else:
+                        payload = {
+                            "image_data":  file_b64,
+                            "question":    msg,
+                            "mode":        "qa" if msg.strip() else "describe",
+                            "user_email":  user["email"],
+                            "filename":    "image.jpg",
+                        }
+                        endpoint = f"{VISION_URL}/analyze-image"
+
+                    async with httpx.AsyncClient() as http_client:
+                        resp = await http_client.post(
+                            endpoint, headers=vision_headers,
+                            json=payload, timeout=60.0
+                        )
+                    if resp.status_code == 200:
+                        vis_data = resp.json()
+                        reply = (
+                            vis_data.get("answer") or
+                            vis_data.get("description") or
+                            vis_data.get("analysis") or
+                            "⚠️ No analysis returned."
+                        )
+                    else:
+                        reply = f"⚠️ Vision Space ne {resp.status_code} error diya. Retry karo."
+            except httpx.TimeoutException:
+                reply = "⏳ Vision Space timeout (60s). Dobara try karo."
+            except Exception as vis_err:
+                reply = f"⚠️ Vision Space offline: {str(vis_err)}"
+
+        # MODE 7: SCREEN SHARE MODE
+        # Real-time screen/webcam analysis
+        # Actual WebSocket connection frontend directly Screen Space se karta hai
+        # Yeh mode sirf HTTP fallback / text questions ke liye hai
+        elif mode == "screen_share":
+            try:
+                SCREEN_URL = os.getenv(
+                    "HF_SCREEN_URL",
+                    "https://shantanupathak94-ethrix-screen.hf.space"
+                )
+                screen_headers = {
+                    "x-api-key":    os.getenv("AGENT_API_KEY", "shantanu_super_secret_key"),
+                    "Content-Type": "application/json"
+                }
+                file_b64 = req.file_data or ""
+                if not file_b64:
+                    # No frame — just give instructions
+                    reply = (
+                        "🖥️ **Screen Share mode ready!**\n\n"
+                        "Is mode mein Ethrix tumhari screen ya webcam dekh ke real-time commentary deta hai.\n\n"
+                        "**Kaise use karein:**\n"
+                        "1. Niche **Screen Share** button click karo\n"
+                        "2. Ya **Camera** button se webcam on karo\n"
+                        "3. Ethrix automatically har 3 seconds mein analyze karega\n"
+                        "4. Tum directly sawaal bhi poochh sakte ho!\n\n"
+                        "Screen Space ko open karne ke liye [yahan click karo]"
+                        f"({SCREEN_URL}/screen)"
+                    )
+                else:
+                    # Frame bheja — HTTP endpoint pe analyze karo
+                    payload = {
+                        "frame_data":  file_b64,
+                        "mode":        "screen",
+                        "question":    msg,
+                        "user_email":  user["email"],
+                        "session_id":  sid,
+                        "voice":       False,
+                    }
+                    async with httpx.AsyncClient() as http_client:
+                        resp = await http_client.post(
+                            f"{SCREEN_URL}/analyze",
+                            headers=screen_headers,
+                            json=payload, timeout=30.0
+                        )
+                    if resp.status_code == 200:
+                        reply = resp.json().get("text", "⚠️ No analysis returned.")
+                    else:
+                        reply = f"⚠️ Screen Space ne {resp.status_code} error diya."
+            except httpx.TimeoutException:
+                reply = "⏳ Screen Space timeout. Retry karo."
+            except Exception as scr_err:
+                reply = f"⚠️ Screen Space offline: {str(scr_err)}"
 
         # CUSTOM USER TOOLS
         elif mode.startswith("custom_"):

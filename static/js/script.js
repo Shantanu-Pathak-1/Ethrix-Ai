@@ -125,6 +125,17 @@ async function sendMessage() {
     chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
+        // ── DATA ANALYST MODE — dedicated file upload flow ───────────────────
+        if (currentMode === 'data_analyst') {
+            await sendDataAnalystMessage(msg, thinkingId);
+            return;
+        }
+        // ── VISION MODE — dedicated file upload flow ─────────────────────────
+        if (currentMode === 'vision') {
+            await sendVisionMessage(msg, thinkingId);
+            return;
+        }
+
         const payload = {
             message: msg, session_id: currentSessionId, mode: currentMode,
             file_data: currentFile ? currentFile.data : null,
@@ -354,6 +365,14 @@ async function setMode(mode, btn) {
         }
     } else if (mode === 'ethrix_agent') {
         Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#020205', color: '#0ff' }).fire({ icon: 'success', title: '🌌 Ethrix Agent Online' });
+    } else if (mode === 'data_analyst') {
+        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2500, background: '#020205', color: '#0ff' })
+            .fire({ icon: 'info', title: '📊 Data Analyst Ready', html: '<span style="font-size:0.85rem;color:#aaa">CSV / Excel / JSON file upload karo</span>' });
+    } else if (mode === 'vision') {
+        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2500, background: '#020205', color: '#0ff' })
+            .fire({ icon: 'info', title: '👁️ Vision Mode Ready', html: '<span style="font-size:0.85rem;color:#aaa">Image ya PDF upload karo</span>' });
+    } else if (mode === 'screen_share') {
+        openScreenSharePanel();
     } else {
         Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 1000 }).fire({ icon: 'info', title: `Mode: ${mode}` });
     }
@@ -722,3 +741,440 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+// ==================================================================================
+// 📊 DATA ANALYST MODE
+// ==================================================================================
+
+async function sendDataAnalystMessage(msg, thinkingId) {
+    const chatBox = document.getElementById('chat-box');
+
+    if (!currentFile) {
+        document.getElementById(thinkingId).remove();
+        appendMessage('assistant',
+            '📊 **Data Analyst Mode**\n\nPehle ek file upload karo:\n- **.csv** — Comma-separated data\n- **.xlsx / .xls** — Excel spreadsheet\n- **.json** — JSON data\n\nFile upload ke baad apna sawaal poocho!', null);
+        return;
+    }
+
+    try {
+        // File + question dono bhejo
+        const formData = new FormData();
+        // base64 → Blob
+        const byteStr   = atob(currentFile.data);
+        const arr       = new Uint8Array(byteStr.length);
+        for (let i = 0; i < byteStr.length; i++) arr[i] = byteStr.charCodeAt(i);
+        const blob      = new Blob([arr], { type: currentFile.type });
+        formData.append('file', blob, currentFile.name);
+
+        const res  = await fetch('/api/data-analyst/analyze', {
+            method: 'POST',
+            body:   formData,
+        });
+        const data = await res.json();
+        document.getElementById(thinkingId)?.remove();
+        currentFile = null;
+        removeFile();
+
+        if (!res.ok || data.error) {
+            appendMessage('assistant', `⚠️ ${data.error || 'Analysis failed. Retry karo.'}`, null);
+            return;
+        }
+
+        // AI insights text dikhao
+        appendMessage('assistant', data.insights || '⚠️ No insights returned.', null);
+
+        // Charts render karo (agar Chart.js available hai)
+        if (data.charts && data.charts.length > 0) {
+            renderDataAnalystCharts(data.charts, data.filename);
+        }
+
+        // Agar user ne question bhi likha tha — follow-up automatically bhejo
+        if (msg && msg.trim()) {
+            await sendFollowUpDataQuestion(msg, currentFile);
+        }
+
+    } catch (e) {
+        document.getElementById(thinkingId)?.remove();
+        appendMessage('assistant', `⚠️ Connection error: ${e.message}`, null);
+    }
+}
+
+function renderDataAnalystCharts(charts, filename) {
+    const chatBox = document.getElementById('chat-box');
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'msg-ai';
+    wrapper.style.cssText = 'padding: 16px; display: flex; flex-direction: column; gap: 20px;';
+
+    const title = document.createElement('div');
+    title.style.cssText = 'font-weight: 700; color: #00E5FF; font-size: 0.9rem; margin-bottom: 4px;';
+    title.textContent = `📊 Charts — ${filename || 'Dataset'}`;
+    wrapper.appendChild(title);
+
+    charts.forEach(chart => {
+        const container = document.createElement('div');
+        container.style.cssText = 'background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px;';
+
+        const chartTitle = document.createElement('div');
+        chartTitle.style.cssText = 'font-size: 0.8rem; color: #9ca3af; margin-bottom: 8px; font-weight: 600;';
+        chartTitle.textContent = chart.title;
+        container.appendChild(chartTitle);
+
+        const canvas = document.createElement('canvas');
+        canvas.style.cssText = 'max-height: 200px;';
+        container.appendChild(canvas);
+        wrapper.appendChild(container);
+
+        // Chart.js render
+        if (window.Chart) {
+            const ctx = canvas.getContext('2d');
+            const commonOpts = {
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: '#9ca3af', font: { size: 11 } } }
+                },
+                scales: {
+                    x: { ticks: { color: '#6b7280', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { ticks: { color: '#6b7280', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+            };
+
+            if (chart.type === 'bar') {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: chart.x, datasets: [{ label: chart.ylabel || 'Count', data: chart.y, backgroundColor: chart.color + '99', borderColor: chart.color, borderWidth: 1, borderRadius: 6 }] },
+                    options: { ...commonOpts }
+                });
+            } else if (chart.type === 'line') {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: chart.x, datasets: [{ label: chart.ylabel || 'Value', data: chart.y, borderColor: chart.color, backgroundColor: chart.color + '22', tension: 0.4, pointRadius: 2, fill: true }] },
+                    options: { ...commonOpts }
+                });
+            } else if (chart.type === 'pie') {
+                const pieColors = ['#00E5FF', '#A855F7', '#F59E0B', '#10B981', '#EF4444', '#F97316', '#3B82F6', '#EC4899'];
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: { labels: chart.labels, datasets: [{ data: chart.values, backgroundColor: pieColors.slice(0, chart.labels.length) }] },
+                    options: { responsive: true, plugins: { legend: { labels: { color: '#9ca3af', font: { size: 11 } } } } }
+                });
+            } else if (chart.type === 'scatter') {
+                const points = chart.x.map((x, i) => ({ x, y: chart.y[i] }));
+                new Chart(ctx, {
+                    type: 'scatter',
+                    data: { datasets: [{ label: chart.title, data: points, backgroundColor: chart.color + '88', borderColor: chart.color, pointRadius: 4 }] },
+                    options: { ...commonOpts }
+                });
+            }
+        } else {
+            // Chart.js nahi mila — fallback text
+            canvas.style.display = 'none';
+            const fallback = document.createElement('div');
+            fallback.style.cssText = 'font-size: 0.75rem; color: #6b7280; text-align: center; padding: 20px;';
+            fallback.textContent = `[Chart: ${chart.type} — Chart.js load nahi hua]`;
+            container.appendChild(fallback);
+        }
+    });
+
+    chatBox.appendChild(wrapper);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// ==================================================================================
+// 👁️ VISION MODE
+// ==================================================================================
+
+async function sendVisionMessage(msg, thinkingId) {
+    const chatBox = document.getElementById('chat-box');
+
+    if (!currentFile) {
+        document.getElementById(thinkingId)?.remove();
+        appendMessage('assistant',
+            '👁️ **Vision Mode**\n\nPehle ek file upload karo:\n- **Image** — JPG, PNG, WEBP, GIF\n- **PDF** — Document pages analyze\n\nFir koi bhi sawaal poocho — main image mein dekh ke jawab dunga!', null);
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        // base64 → Blob
+        const byteStr = atob(currentFile.data);
+        const arr     = new Uint8Array(byteStr.length);
+        for (let i = 0; i < byteStr.length; i++) arr[i] = byteStr.charCodeAt(i);
+        const blob    = new Blob([arr], { type: currentFile.type });
+        formData.append('file', blob, currentFile.name);
+        formData.append('question', msg || '');
+
+        // Mode decide karo
+        let visionMode = 'describe';
+        if (msg && msg.trim())          visionMode = 'qa';
+        if (!msg && /text|ocr|read|extract/i.test(currentFile.name)) visionMode = 'ocr';
+        formData.append('mode', visionMode);
+
+        const res  = await fetch('/api/vision/analyze', {
+            method: 'POST',
+            body:   formData,
+        });
+        const data = await res.json();
+        document.getElementById(thinkingId)?.remove();
+
+        const savedFileName = currentFile.name;
+        currentFile = null;
+        removeFile();
+
+        if (!res.ok || data.error) {
+            appendMessage('assistant', `⚠️ ${data.error || 'Vision analysis failed. Retry karo.'}`, null);
+            return;
+        }
+
+        // Result dikhao — different modes ka alag response
+        let reply = '';
+        if (data.answer)      reply = data.answer;
+        else if (data.description) reply = data.description;
+        else if (data.analysis)    reply = data.analysis;
+        else if (data.ocr)         reply = `**📝 Extracted Text:**\n\n${data.ocr.text || 'No text found.'}\n\n*Method: ${data.ocr.method || 'auto'} | Characters: ${data.ocr.char_count || 0}*`;
+        else if (data.results) {
+            // PDF multi-page
+            reply = data.results.map(r => `**Page ${r.page}:**\n${r.analysis}`).join('\n\n---\n\n');
+        }
+
+        if (!reply) reply = '⚠️ No analysis returned. Try again.';
+
+        // Image preview bhi dikhao (agar image tha)
+        if (!currentFile && savedFileName && /\.(jpg|jpeg|png|webp|gif)$/i.test(savedFileName)) {
+            // preview already visible tha file-preview-container mein, ab remove ho gaya
+        }
+
+        appendMessage('assistant', reply, null);
+
+    } catch (e) {
+        document.getElementById(thinkingId)?.remove();
+        appendMessage('assistant', `⚠️ Vision error: ${e.message}`, null);
+    }
+}
+
+// ==================================================================================
+// 🖥️ SCREEN SHARE MODE
+// ==================================================================================
+
+let screenState = {
+    ws:           null,
+    stream:       null,
+    sessionId:    null,
+    wsUrl:        null,
+    captureMode:  '',    // 'screen' | 'webcam'
+    autoTimer:    null,
+    isThinking:   false,
+    voiceEnabled: false,
+    panelOpen:    false,
+};
+
+async function openScreenSharePanel() {
+    if (screenState.panelOpen) {
+        document.getElementById('screen-panel')?.remove();
+        screenState.panelOpen = false;
+        stopScreenCapture();
+        return;
+    }
+
+    // Session ID lo server se
+    try {
+        const res  = await fetch('/api/screen/session');
+        const data = await res.json();
+        if (data.error) { showToast('error', '⚠️ Screen Space unreachable'); return; }
+        screenState.sessionId = data.session_id;
+        screenState.wsUrl     = data.ws_url;
+    } catch (e) {
+        showToast('error', '⚠️ Screen Space offline');
+        return;
+    }
+
+    // Panel HTML inject karo
+    const panel = document.createElement('div');
+    panel.id = 'screen-panel';
+    panel.style.cssText = `
+        position: fixed; bottom: 80px; right: 20px; z-index: 9999;
+        width: 340px; background: rgba(10,14,26,0.97);
+        border: 1px solid rgba(0,229,255,0.2); border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.05);
+        overflow: hidden; font-family: inherit;
+    `;
+    panel.innerHTML = `
+        <div style="padding:12px 16px; border-bottom:1px solid rgba(0,229,255,0.1); display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-weight:700; color:#00E5FF; font-size:0.9rem;">🖥️ Screen Share AI</span>
+            <button onclick="closeScreenPanel()" style="background:none;border:none;color:#6b7280;cursor:pointer;font-size:1.1rem;">✕</button>
+        </div>
+        <div id="screen-preview-area" style="width:100%; height:160px; background:#000; position:relative; display:flex; align-items:center; justify-content:center;">
+            <video id="screen-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:contain;display:none;"></video>
+            <div id="screen-placeholder" style="text-align:center; color:rgba(255,255,255,0.3); font-size:0.8rem;">
+                <div style="font-size:2rem; margin-bottom:8px;">🖥️</div>
+                Share karo ya Camera on karo
+            </div>
+        </div>
+        <div id="screen-commentary" style="max-height:120px; overflow-y:auto; padding:10px 14px; font-size:0.8rem; color:#9ca3af; line-height:1.5;">
+            <div style="text-align:center; color:rgba(255,255,255,0.2);">AI commentary yahan dikhega...</div>
+        </div>
+        <div style="padding:10px 12px; border-top:1px solid rgba(255,255,255,0.06); display:flex; gap:8px; flex-wrap:wrap;">
+            <button onclick="startScreenShare()" style="flex:1; padding:8px; border-radius:8px; border:1px solid rgba(0,229,255,0.3); background:rgba(0,229,255,0.1); color:#00E5FF; cursor:pointer; font-size:0.78rem; font-weight:600;">🖥️ Screen</button>
+            <button onclick="startScreenCam()" style="flex:1; padding:8px; border-radius:8px; border:1px solid rgba(0,255,135,0.3); background:rgba(0,255,135,0.1); color:#00ff87; cursor:pointer; font-size:0.78rem; font-weight:600;">📷 Camera</button>
+            <button id="screen-stop-btn" onclick="stopScreenCapture()" style="flex:1; padding:8px; border-radius:8px; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.1); color:#ef4444; cursor:pointer; font-size:0.78rem; font-weight:600; display:none;">⏹ Stop</button>
+        </div>
+        <div style="padding:0 12px 10px; display:flex; gap:8px;">
+            <input id="screen-question-input" type="text" placeholder="Sawaal poocho..." style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(0,229,255,0.15); border-radius:8px; padding:7px 10px; color:white; font-size:0.8rem; outline:none;" onkeydown="if(event.key==='Enter') sendScreenQuestion()">
+            <button onclick="sendScreenQuestion()" style="padding:7px 12px; border-radius:8px; background:#00E5FF; color:#000; border:none; cursor:pointer; font-weight:700; font-size:0.8rem;">↑</button>
+        </div>
+    `;
+    document.body.appendChild(panel);
+    screenState.panelOpen = true;
+
+    // WebSocket connect
+    connectScreenWS();
+}
+
+function closeScreenPanel() {
+    stopScreenCapture();
+    if (screenState.ws) { screenState.ws.close(); screenState.ws = null; }
+    document.getElementById('screen-panel')?.remove();
+    screenState.panelOpen = false;
+}
+
+function connectScreenWS() {
+    if (!screenState.wsUrl) return;
+    if (screenState.ws && screenState.ws.readyState === WebSocket.OPEN) return;
+
+    screenState.ws = new WebSocket(screenState.wsUrl);
+
+    screenState.ws.onopen = () => {
+        addScreenComment('✅ AI Connected — screen ya camera share karo', 'system');
+    };
+    screenState.ws.onclose = () => {
+        addScreenComment('🔄 Reconnecting...', 'system');
+        setTimeout(connectScreenWS, 3000);
+    };
+    screenState.ws.onmessage = (evt) => {
+        const msg = JSON.parse(evt.data);
+        if (msg.type === 'analysis') {
+            screenState.isThinking = false;
+            addScreenComment(msg.text, 'ai');
+            // Chat box mein bhi dikhao
+            appendMessage('assistant', `🖥️ *[Screen AI]:* ${msg.text}`, null);
+        }
+        if (msg.type === 'audio' && screenState.voiceEnabled) {
+            const audio = new Audio('data:audio/mp3;base64,' + msg.data);
+            audio.play().catch(() => {});
+        }
+        if (msg.type === 'thinking') {
+            screenState.isThinking = true;
+        }
+    };
+}
+
+async function startScreenShare() {
+    try {
+        screenState.stream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always' }, audio: false });
+        screenState.captureMode = 'screen';
+        _startScreenPreview();
+    } catch (e) {
+        if (e.name !== 'NotAllowedError') addScreenComment('⚠️ Screen share failed: ' + e.message, 'system');
+    }
+}
+
+async function startScreenCam() {
+    try {
+        screenState.stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false });
+        screenState.captureMode = 'webcam';
+        _startScreenPreview();
+    } catch (e) {
+        addScreenComment('⚠️ Camera failed: ' + e.message, 'system');
+    }
+}
+
+function _startScreenPreview() {
+    const video = document.getElementById('screen-video');
+    if (!video) return;
+    video.srcObject = screenState.stream;
+    video.style.display = 'block';
+    document.getElementById('screen-placeholder').style.display = 'none';
+    document.getElementById('screen-stop-btn').style.display = 'flex';
+
+    // Auto capture — har 5 sec (conservative for free Gemini tier)
+    screenState.autoTimer = setInterval(() => {
+        if (screenState.stream && !screenState.isThinking) {
+            _sendScreenFrame('');
+        }
+    }, 5000);
+
+    addScreenComment(`${screenState.captureMode === 'screen' ? '🖥️ Screen' : '📷 Camera'} share started — AI har 5 sec mein analyze karega`, 'system');
+}
+
+function stopScreenCapture() {
+    if (screenState.stream) {
+        screenState.stream.getTracks().forEach(t => t.stop());
+        screenState.stream = null;
+    }
+    if (screenState.autoTimer) { clearInterval(screenState.autoTimer); screenState.autoTimer = null; }
+    const video = document.getElementById('screen-video');
+    if (video) { video.srcObject = null; video.style.display = 'none'; }
+    const ph = document.getElementById('screen-placeholder');
+    if (ph) ph.style.display = 'flex';
+    const stopBtn = document.getElementById('screen-stop-btn');
+    if (stopBtn) stopBtn.style.display = 'none';
+    screenState.captureMode = '';
+}
+
+function sendScreenQuestion() {
+    const inp = document.getElementById('screen-question-input');
+    if (!inp) return;
+    const text = inp.value.trim();
+    if (!text) return;
+    inp.value = '';
+
+    if (screenState.stream) {
+        _sendScreenFrame(text);
+    } else if (screenState.ws && screenState.ws.readyState === WebSocket.OPEN) {
+        screenState.ws.send(JSON.stringify({ type: 'question', text }));
+    }
+    addScreenComment(`You: ${text}`, 'user');
+}
+
+function _sendScreenFrame(question) {
+    if (!screenState.stream || !screenState.ws || screenState.ws.readyState !== WebSocket.OPEN) return;
+
+    const video = document.getElementById('screen-video');
+    if (!video || !video.videoWidth) return;
+
+    // Canvas pe draw karo
+    const canvas = document.createElement('canvas');
+    let w = video.videoWidth, h = video.videoHeight;
+    if (w > 1280) { h = Math.round(h * 1280 / w); w = 1280; }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+    const frameData = canvas.toDataURL('image/jpeg', 0.8);
+
+    screenState.ws.send(JSON.stringify({
+        type:     'frame',
+        data:     frameData,
+        mode:     screenState.captureMode,
+        question: question,
+    }));
+}
+
+function addScreenComment(text, role) {
+    const box = document.getElementById('screen-commentary');
+    if (!box) return;
+    const div = document.createElement('div');
+    div.style.cssText = role === 'ai'
+        ? 'color:#e2e8f0; margin-bottom:6px; padding:6px 8px; background:rgba(0,229,255,0.06); border-radius:8px;'
+        : role === 'user'
+        ? 'color:#00E5FF; margin-bottom:4px; text-align:right; font-size:0.75rem;'
+        : 'color:rgba(255,255,255,0.3); margin-bottom:4px; text-align:center; font-size:0.72rem;';
+    div.textContent = text;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+// ==================================================================================
+// 🔧 SHARED UTILITY
+// ==================================================================================
+function showToast(icon, title) {
+    Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, background: '#1e1e1e', color: '#fff' })
+        .fire({ icon, title });
+}
