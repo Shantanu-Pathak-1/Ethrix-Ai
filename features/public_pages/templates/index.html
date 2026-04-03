@@ -89,7 +89,7 @@
                 <!-- Plan badge -->
                 <div class="flex items-center justify-between mb-2">
                     <span id="plan-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#00E5FF]/15 text-[#00E5FF]">Free Plan ✦</span>
-                    <span id="usage-text" class="text-[10px] text-gray-500">0 / 20 msgs</span>
+                    <span id="usage-text" class="mode-drop-sub">0 / 20 msgs</span>
                 </div>
                 <!-- AI calls bar -->
                 <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
@@ -162,75 +162,75 @@
 
                 <!-- Dropdown Menu -->
                 <div id="mode-dropdown-menu"
-                    class="hidden absolute bottom-full left-0 mb-2 w-64 bg-[#0d1220]/98 border border-[#00E5FF]/20 rounded-2xl shadow-2xl overflow-hidden z-50 backdrop-blur-xl"
-                    style="box-shadow: 0 -8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,255,0.05);">
+                    class="hidden absolute bottom-full left-0 mb-2 w-64 mode-glass-menu rounded-2xl shadow-2xl overflow-hidden z-50"
+                    style="box-shadow: 0 -8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.08);">
 
                     <!-- Core Modes -->
                     <div class="px-3 pt-3 pb-1">
-                        <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">Core</div>
+                        <div class="mode-section-label">Core</div>
                         <div class="space-y-0.5">
                             <button type="button" onclick="selectMode('smart_chat','✨','Smart','smart')" class="mode-drop-item group" data-mode="smart_chat">
                                 <span class="mode-drop-icon bg-cyan-500/10 text-cyan-400">✨</span>
                                 <div class="flex-1 text-left">
-                                    <div class="text-sm font-semibold text-gray-200 group-hover:text-white">Smart Chat</div>
-                                    <div class="text-[10px] text-gray-500">Auto-detects research, code & chat</div>
+                                    <div class="mode-drop-title">Smart Chat</div>
+                                    <div class="mode-drop-sub">Auto-detects research, code & chat</div>
                                 </div>
                                 <span class="active-dot hidden" id="dot-smart_chat"></span>
                             </button>
                             <button type="button" onclick="selectMode('ethrix_agent','🌌','Agent','agent')" class="mode-drop-item group" data-mode="ethrix_agent">
                                 <span class="mode-drop-icon bg-purple-500/10 text-purple-400">🌌</span>
                                 <div class="flex-1 text-left">
-                                    <div class="text-sm font-semibold text-gray-200 group-hover:text-white">Ethrix Agent</div>
-                                    <div class="text-[10px] text-gray-500">Gmail, Calendar, Drive, web tools</div>
+                                    <div class="mode-drop-title">Ethrix Agent</div>
+                                    <div class="mode-drop-sub">Gmail, Calendar, Drive, web tools</div>
                                 </div>
                                 <span class="active-dot hidden" id="dot-ethrix_agent"></span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="mx-3 my-1 border-t border-white/5"></div>
+                    <div class="mode-divider border-t"></div>
 
                     <!-- Advanced HF Spaces -->
                     <div class="px-3 pb-1">
-                        <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">Advanced</div>
+                        <div class="mode-section-label">Advanced</div>
                         <div class="space-y-0.5">
                             <button type="button" onclick="selectMode('data_analyst','📊','Data Analyst','da')" class="mode-drop-item group" data-mode="data_analyst">
                                 <span class="mode-drop-icon bg-cyan-500/10 text-cyan-400">📊</span>
                                 <div class="flex-1 text-left">
-                                    <div class="text-sm font-semibold text-gray-200 group-hover:text-white">Data Analyst</div>
-                                    <div class="text-[10px] text-gray-500">CSV / Excel / JSON → charts & insights</div>
+                                    <div class="mode-drop-title">Data Analyst</div>
+                                    <div class="mode-drop-sub">CSV / Excel / JSON → charts & insights</div>
                                 </div>
                                 <span class="active-dot hidden" id="dot-data_analyst"></span>
                             </button>
                             <button type="button" onclick="selectMode('vision','👁️','Vision','vision')" class="mode-drop-item group" data-mode="vision">
                                 <span class="mode-drop-icon bg-violet-500/10 text-violet-400">👁️</span>
                                 <div class="flex-1 text-left">
-                                    <div class="text-sm font-semibold text-gray-200 group-hover:text-white">Vision / OCR</div>
-                                    <div class="text-[10px] text-gray-500">Image & PDF analysis, text extract</div>
+                                    <div class="mode-drop-title">Vision / OCR</div>
+                                    <div class="mode-drop-sub">Image & PDF analysis, text extract</div>
                                 </div>
                                 <span class="active-dot hidden" id="dot-vision"></span>
                             </button>
                             <button type="button" onclick="selectMode('docs','📄','Docs Brain','docs')" class="mode-drop-item group" data-mode="docs">
                                 <span class="mode-drop-icon bg-orange-500/10 text-orange-400">📄</span>
                                 <div class="flex-1 text-left">
-                                    <div class="text-sm font-semibold text-gray-200 group-hover:text-white">Docs Brain</div>
-                                    <div class="text-[10px] text-gray-500">PDF / DOCX Q&A with 1M context</div>
+                                    <div class="mode-drop-title">Docs Brain</div>
+                                    <div class="mode-drop-sub">PDF / DOCX Q&A with 1M context</div>
                                 </div>
                                 <span class="active-dot hidden" id="dot-docs"></span>
                             </button>
                             <button type="button" onclick="selectMode('screen_share','🖥️','Screen AI','screen')" class="mode-drop-item group" data-mode="screen_share">
                                 <span class="mode-drop-icon bg-green-500/10 text-green-400">🖥️</span>
                                 <div class="flex-1 text-left">
-                                    <div class="text-sm font-semibold text-gray-200 group-hover:text-white">Screen Share AI</div>
-                                    <div class="text-[10px] text-gray-500">Live screen & webcam analysis</div>
+                                    <div class="mode-drop-title">Screen Share AI</div>
+                                    <div class="mode-drop-sub">Live screen & webcam analysis</div>
                                 </div>
                                 <span class="active-dot hidden" id="dot-screen_share"></span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="px-4 py-2.5 bg-black/30 border-t border-white/5">
-                        <div class="text-[10px] text-gray-600 text-center">✨ Smart Chat auto-detects your intent</div>
+                    <div class="mode-footer-bg">
+                        <div class="mode-footer-hint">✨ Smart Chat auto-detects your intent</div>
                     </div>
                 </div>
             </div>
@@ -269,33 +269,166 @@
 </div>
 
 <style>
+/* ── DROPDOWN GLASS BACKGROUND ────────────────────────────────────────────
+   Dark mode: semi-dark blur glass
+   Light mode: semi-white blur glass
+   Both: backdrop-filter blur so content behind shows through softly
+──────────────────────────────────────────────────────────────────────── */
+.mode-glass-menu {
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    /* Dark mode default */
+    background: rgba(10, 14, 26, 0.82);
+    border: 1px solid rgba(0, 229, 255, 0.14);
+}
+body.light-mode .mode-glass-menu {
+    background: rgba(245, 248, 255, 0.88);
+    border: 1px solid rgba(37, 99, 235, 0.18);
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(37,99,235,0.08) !important;
+}
+
+/* ── SECTION LABEL ──────────────────────────────────────────────────────── */
+.mode-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(156, 163, 175, 0.7);  /* dark mode */
+    padding: 0 4px;
+    margin-bottom: 6px;
+}
+body.light-mode .mode-section-label {
+    color: rgba(100, 116, 139, 0.9);
+}
+
+/* ── DIVIDER ────────────────────────────────────────────────────────────── */
+.mode-divider {
+    border-color: rgba(255,255,255,0.06);
+    margin: 4px 12px;
+}
+body.light-mode .mode-divider {
+    border-color: rgba(0,0,0,0.08);
+}
+
+/* ── DROPDOWN ITEM ──────────────────────────────────────────────────────── */
 .mode-drop-item {
     display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
-    padding: 8px 10px;
+    padding: 9px 10px;
     border-radius: 12px;
     border: none;
     background: transparent;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background 0.15s, transform 0.1s;
 }
-.mode-drop-item:hover { background: rgba(255,255,255,0.05); }
-.mode-drop-item.active-mode { background: rgba(0,229,255,0.08); }
+.mode-drop-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateX(2px);
+}
+.mode-drop-item.active-mode {
+    background: rgba(0, 229, 255, 0.1);
+}
+body.light-mode .mode-drop-item:hover {
+    background: rgba(37, 99, 235, 0.07);
+}
+body.light-mode .mode-drop-item.active-mode {
+    background: rgba(37, 99, 235, 0.1);
+}
+
+/* ── ITEM TITLE TEXT ────────────────────────────────────────────────────── */
+.mode-drop-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #e2e8f0;  /* dark mode */
+    transition: color 0.15s;
+}
+.mode-drop-item:hover .mode-drop-title { color: #ffffff; }
+body.light-mode .mode-drop-title {
+    color: #1e293b;
+}
+body.light-mode .mode-drop-item:hover .mode-drop-title {
+    color: #0f172a;
+}
+
+/* ── ITEM SUBTITLE TEXT ─────────────────────────────────────────────────── */
+.mode-drop-sub {
+    font-size: 10px;
+    color: rgba(156, 163, 175, 0.8);  /* dark */
+}
+body.light-mode .mode-drop-sub {
+    color: rgba(71, 85, 105, 0.9);
+}
+
+/* ── ICON CHIP ──────────────────────────────────────────────────────────── */
 .mode-drop-icon {
-    width: 30px; height: 30px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
 }
+
+/* ── ACTIVE DOT ─────────────────────────────────────────────────────────── */
 .active-dot {
-    width: 6px; height: 6px; border-radius: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
     background: #00E5FF;
     box-shadow: 0 0 6px #00E5FF;
     flex-shrink: 0;
 }
+body.light-mode .active-dot {
+    background: #2563eb;
+    box-shadow: 0 0 6px #2563eb;
+}
 
-/* Mobile: dropdown opens full width */
+/* ── FOOTER HINT ────────────────────────────────────────────────────────── */
+.mode-footer-hint {
+    font-size: 10px;
+    text-align: center;
+    color: rgba(156, 163, 175, 0.5);
+}
+body.light-mode .mode-footer-hint {
+    color: rgba(71, 85, 105, 0.6);
+}
+.mode-footer-bg {
+    background: rgba(0, 0, 0, 0.18);
+    border-top: 1px solid rgba(255,255,255,0.04);
+    padding: 10px 16px;
+}
+body.light-mode .mode-footer-bg {
+    background: rgba(241, 245, 249, 0.6);
+    border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+/* ── DROPDOWN BUTTON ────────────────────────────────────────────────────── */
+#mode-dropdown-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #d1d5db;
+}
+#mode-dropdown-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(0,229,255,0.4);
+    color: white;
+}
+body.light-mode #mode-dropdown-btn {
+    background: rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.12);
+    color: #374151;
+}
+body.light-mode #mode-dropdown-btn:hover {
+    background: rgba(37,99,235,0.08);
+    border-color: rgba(37,99,235,0.4);
+    color: #1e293b;
+}
+
+/* ── MOBILE ─────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
     #mode-dropdown-menu {
         left: 0 !important;
@@ -332,7 +465,7 @@
                     <div class="text-center">
                         <div class="text-xs font-bold text-[#00E5FF] mb-1">⚡ Pro</div>
                         <div id="pro-price-display" class="text-xl font-bold text-white">--</div>
-                        <div class="text-[10px] text-gray-500">/ month</div>
+                        <div class="mode-drop-sub">/ month</div>
                     </div>
                     <div class="text-[10px] text-gray-400 space-y-1">
                         <div>✓ 80 AI messages/day</div>
@@ -350,7 +483,7 @@
                     <div class="text-center">
                         <div class="text-xs font-bold text-purple-400 mb-1">👑 Elite</div>
                         <div id="elite-price-display" class="text-xl font-bold text-white">--</div>
-                        <div class="text-[10px] text-gray-500">/ month</div>
+                        <div class="mode-drop-sub">/ month</div>
                     </div>
                     <div class="text-[10px] text-gray-400 space-y-1">
                         <div>✓ 200 AI messages/day</div>
