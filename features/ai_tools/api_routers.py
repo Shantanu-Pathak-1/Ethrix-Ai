@@ -11,18 +11,63 @@
 # ==================================================================================
 
 # ==========================================
-# [SECTION 0] PATH FIX
-# api_routers.py ab features/ai_tools/ mein hai
-# tools_lab.py aur core/ abhi bhi project root pe hain
-# sys.path mein root add karo taaki imports kaam karein
+# [SECTION 0] BULLETPROOF PATH + IMPORT FIX
+# api_routers.py is at: /code/features/ai_tools/api_routers.py
+# tools_lab.py + core/ are at project root: /code/
+#
+# sys.path approach sometimes fails due to import caching.
+# Using importlib to SEARCH and LOAD tools_lab from anywhere.
 # ==========================================
 import sys
 import os
-# __file__ = /code/features/ai_tools/api_routers.py
-# 2 levels up = /code/
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, _PROJECT_ROOT)
+import importlib.util
+import glob
+
+def _load_module_from_search(module_name: str) -> object:
+    """
+    Search entire project for a .py file and load it as a module.
+    Fallback jab sys.path se module nahi milta.
+    """
+    # Priority 1: Standard import (agar already path mein hai)
+    try:
+        return __import__(module_name)
+    except ModuleNotFoundError:
+        pass
+
+    # Priority 2: Multiple sys.path candidates add karo
+    _candidates = [
+        "/code",                                                                          # HF Space hardcoded root
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),   # 3 levels up
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),                    # 2 levels up
+        os.path.dirname(os.path.abspath(__file__)),                                     # same dir
+    ]
+    for _p in _candidates:
+        if os.path.isdir(_p) and _p not in sys.path:
+            sys.path.insert(0, _p)
+    try:
+        return __import__(module_name)
+    except ModuleNotFoundError:
+        pass
+
+    # Priority 3: glob search — find it anywhere under /code or project root
+    _search_roots = ["/code", os.path.dirname(os.path.abspath(__file__))]
+    for _root in _search_roots:
+        _matches = glob.glob(os.path.join(_root, "**", f"{module_name}.py"), recursive=True)
+        if _matches:
+            _spec = importlib.util.spec_from_file_location(module_name, _matches[0])
+            _mod  = importlib.util.module_from_spec(_spec)
+            sys.modules[module_name] = _mod
+            _spec.loader.exec_module(_mod)
+            print(f"[PATH FIX] Loaded '{module_name}' from: {_matches[0]}")
+            return _mod
+
+    raise ImportError(
+        f"'{module_name}.py' not found anywhere under /code. "
+        f"Searched: {_search_roots}"
+    )
+
+# Load tools_lab using bulletproof loader
+tools_lab = _load_module_from_search("tools_lab")
 
 # ==========================================
 # [SECTION 1] IMPORTS
@@ -45,7 +90,6 @@ from groq import Groq
 from duckduckgo_search import DDGS
 import edge_tts
 
-import tools_lab
 import core.database as db_module
 from core.rate_limiter import check_and_increment, get_usage_info
 from core.geo_pricing import get_pricing_for_user
@@ -726,7 +770,8 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
         # Tool modes counted separately from AI chat modes
         is_tool_mode = mode not in (
             "chat", "research", "code_debugger", "ethrix_agent",
-            "data_analyst", "vision", "screen_share", "docs"   # ✅ 4 HF Space modes
+            "data_analyst", "vision", "screen_share", "docs",
+            "smart_chat"   # ✅ Unified mode — chat+research+coding merged
         )
         call_type    = "tool_calls" if is_tool_mode else "ai_calls"
 
@@ -823,7 +868,59 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
         # ── MODE ROUTING ──────────────────────────────────────────────────────
         reply = ""
 
-        if mode == "image_gen":
+        # ══════════════════════════════════════════════════════════════════════
+        # SMART CHAT — Unified mode: auto-detects intent and routes accordingly
+        # Replaces separate chat / research / code_debugger modes
+        # ══════════════════════════════════════════════════════════════════════
+        if mode in ("chat", "smart_chat"):
+            groq_client = get_groq()
+
+            # ── Step 1: Intent Detection — kya research ya code chahiye? ─────
+            CODE_SIGNALS    = ["code", "debug", "error", "fix", "function", "class", "script",
+                               "program", "bug", "syntax", "python", "javascript", "java", "sql",
+                               "html", "css", "api", "loop", "array", "algorithm", "compile",
+                               "exception", "traceback", "regex", "bash", "shell", "git"]
+            RESEARCH_SIGNALS = ["latest", "news", "current", "today", "recent", "2024", "2025",
+                                 "2026", "stock price", "weather", "who is", "what happened",
+                                 "search", "find out", "look up", "tell me about", "update",
+                                 "breaking", "live", "real-time"]
+            msg_lower = msg.lower()
+
+            needs_code     = any(s in msg_lower for s in CODE_SIGNALS)
+            needs_research = any(s in msg_lower for s in RESEARCH_SIGNALS)
+
+            # ── Step 2: Route based on detected intent ───────────────────────
+            if needs_code:
+                # Code path — use coding-specialized model
+                reply = await tools_lab.code_debugger_tool(msg)
+
+            elif needs_research:
+                # Research path — web search + AI synthesis
+                research_data = await perform_research_task(msg)
+                if groq_client:
+                    reply = groq_client.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=[
+                            {"role": "system", "content": FINAL_SYSTEM_PROMPT},
+                            {"role": "user",   "content": f"Latest info from web:\n{research_data}\n\nUser's question: {msg}"}
+                        ]
+                    ).choices[0].message.content
+                else:
+                    reply = research_data
+
+            else:
+                # Normal chat path
+                if groq_client:
+                    clean_history = [
+                        {"role": m["role"], "content": m["content"]}
+                        for m in (chat_doc.get("messages", []) + [{"role": "user", "content": msg}])[-15:]
+                    ]
+                    reply = groq_client.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=[{"role": "system", "content": FINAL_SYSTEM_PROMPT}, *clean_history]
+                    ).choices[0].message.content
+                else:
+                    reply = "⚠️ AI API Error. Please try again."
             reply = await tools_lab.generate_image_hf(msg)
         elif mode == "prompt_writer":
             reply = await tools_lab.generate_prompt_only(msg)
@@ -1126,7 +1223,7 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
             else:
                 reply = "⚠️ This custom tool was deleted or could not be found."
 
-        # MODE 1: NORMAL CHAT (default)
+        # DEFAULT — koi aur mode match nahi hua (smart_chat fallback)
         else:
             groq_client = get_groq()
             if groq_client:

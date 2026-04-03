@@ -4,7 +4,7 @@
 // ==================================================================================
 
 let currentSessionId = localStorage.getItem('session_id') || null;
-let currentMode = 'chat';
+let currentMode = 'smart_chat';  // ✅ Default: unified smart mode
 let isRecording = false;
 let recognition = null;
 let currentFile = null;
@@ -33,6 +33,17 @@ document.addEventListener('DOMContentLoaded', () => {
         createNewChat();
     } else {
         loadChat(currentSessionId);
+    }
+
+    // ✅ Tools dashboard se autoMode set hua ho toh activate karo
+    const autoMode = localStorage.getItem('autoMode');
+    if (autoMode) {
+        localStorage.removeItem('autoMode');
+        // Thodi der baad activate karo taaki page load ho jaye
+        setTimeout(() => {
+            const btn = document.querySelector(`.mode-btn[onclick*="${autoMode}"]`);
+            setMode(autoMode, btn || null);
+        }, 600);
     }
 });
 
@@ -351,41 +362,72 @@ function removeFile() {
     if (previewContainer) { previewContainer.classList.add('hidden'); previewContainer.classList.remove('flex'); }
 }
 
-// --- MODE SELECTION ---
-async function setMode(mode, btn) {
-    currentMode = mode;
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-
-    if (mode === 'image_gen') {
-        const { value: formValues } = await Swal.fire({
-            title: '🎨 Image Studio Settings',
-            html: `<div class="text-left mb-2 text-gray-400 text-sm">Select Quality Mode:</div><div class="flex gap-2 mb-4"><input type="radio" name="quality" value="fast" id="q_fast" class="hidden peer/fast" checked><label for="q_fast" class="flex-1 text-center p-2 rounded-lg border border-gray-600 cursor-pointer peer-checked/fast:bg-pink-600 peer-checked/fast:border-pink-500 hover:bg-white/5 transition">⚡ Fast (CPU)</label><input type="radio" name="quality" value="pro" id="q_pro" class="hidden peer/pro"><label for="q_pro" class="flex-1 text-center p-2 rounded-lg border border-gray-600 cursor-pointer peer-checked/pro:bg-purple-600 peer-checked/pro:border-purple-500 hover:bg-white/5 transition">💎 Pro (HQ)</label></div><div class="text-left mb-2 text-gray-400 text-sm">Select Art Style:</div><div class="flex gap-2"><input type="radio" name="style" value="painting" id="s_paint" class="hidden peer/paint" checked><label for="s_paint" class="flex-1 text-center p-2 rounded-lg border border-gray-600 cursor-pointer peer-checked/paint:bg-orange-600 peer-checked/paint:border-orange-500 hover:bg-white/5 transition">🖌️ Painting</label><input type="radio" name="style" value="realistic" id="s_real" class="hidden peer/real"><label for="s_real" class="flex-1 text-center p-2 rounded-lg border border-gray-600 cursor-pointer peer-checked/real:bg-blue-600 peer-checked/real:border-blue-500 hover:bg-white/5 transition">📸 Realistic</label></div>`,
-            background: '#111', color: '#fff', confirmButtonText: 'Set Preferences', confirmButtonColor: '#ec4899',
-            preConfirm: () => ({ quality: document.querySelector('input[name="quality"]:checked').value, style: document.querySelector('input[name="style"]:checked').value })
-        });
-        if (formValues) {
-            imageSettings = formValues;
-            Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#1e1e1e', color: '#fff' }).fire({ icon: 'success', title: `Mode Set: ${imageSettings.quality.toUpperCase()} + ${imageSettings.style.toUpperCase()}` });
-        }
-    } else if (mode === 'ethrix_agent') {
-        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#020205', color: '#0ff' }).fire({ icon: 'success', title: '🌌 Ethrix Agent Online' });
-    } else if (mode === 'data_analyst') {
-        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2500, background: '#020205', color: '#0ff' })
-            .fire({ icon: 'info', title: '📊 Data Analyst Ready', html: '<span style="font-size:0.85rem;color:#aaa">CSV / Excel / JSON file upload karo</span>' });
-    } else if (mode === 'vision') {
-        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2500, background: '#020205', color: '#0ff' })
-            .fire({ icon: 'info', title: '👁️ Vision Mode Ready', html: '<span style="font-size:0.85rem;color:#aaa">Image ya PDF upload karo</span>' });
-    } else if (mode === 'screen_share') {
-        openScreenSharePanel();
-    } else if (mode === 'docs') {
-        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2500, background: '#020205', color: '#0ff' })
-            .fire({ icon: 'info', title: '📄 Docs Mode Ready', html: '<span style="font-size:0.85rem;color:#aaa">PDF / DOCX / TXT upload karo</span>' });
+// --- MODE SELECTION (NEW DROPDOWN SYSTEM) ---
+function toggleModeDropdown() {
+    const menu    = document.getElementById('mode-dropdown-menu');
+    const chevron = document.getElementById('mode-chevron');
+    if (!menu) return;
+    const isOpen = !menu.classList.contains('hidden');
+    if (isOpen) {
+        menu.classList.add('hidden');
+        chevron.style.transform = '';
     } else {
-        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 1000 }).fire({ icon: 'info', title: `Mode: ${mode}` });
+        menu.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
     }
 }
 
+document.addEventListener('click', (e) => {
+    const wrapper = document.getElementById('mode-dropdown-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('mode-dropdown-menu')?.classList.add('hidden');
+        const chevron = document.getElementById('mode-chevron');
+        if (chevron) chevron.style.transform = '';
+    }
+});
+
+function selectMode(mode, icon, label, shortLabel) {
+    currentMode = mode;
+    const btnIcon  = document.getElementById('mode-icon');
+    const btnLabel = document.getElementById('mode-label');
+    if (btnIcon)  btnIcon.textContent  = icon;
+    if (btnLabel) btnLabel.textContent = window.innerWidth < 400 ? shortLabel : label;
+    document.querySelectorAll('.mode-drop-item').forEach(el => el.classList.remove('active-mode'));
+    document.querySelectorAll('.active-dot').forEach(el => el.classList.add('hidden'));
+    const activeItem = document.querySelector('[data-mode="' + mode + '"]');
+    if (activeItem) activeItem.classList.add('active-mode');
+    const dot = document.getElementById('dot-' + mode);
+    if (dot) dot.classList.remove('hidden');
+    document.getElementById('mode-dropdown-menu')?.classList.add('hidden');
+    const chevron = document.getElementById('mode-chevron');
+    if (chevron) chevron.style.transform = '';
+    if (mode === 'screen_share') { openScreenSharePanel(); return; }
+    const uploadModes = {
+        data_analyst: { icon: '📊', text: 'CSV / Excel / JSON file upload karo' },
+        vision:       { icon: '👁️', text: 'Image ya PDF upload karo' },
+        docs:         { icon: '📄', text: 'PDF / DOCX / TXT upload karo' },
+    };
+    if (uploadModes[mode]) {
+        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2500, background: '#0d1220', color: '#fff' })
+            .fire({ icon: 'info', title: uploadModes[mode].icon + ' ' + label + ' Mode', html: '<span style="font-size:0.82rem;color:#9ca3af">' + uploadModes[mode].text + '</span>' });
+    } else if (mode === 'ethrix_agent') {
+        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 1800, background: '#020205', color: '#0ff' })
+            .fire({ icon: 'success', title: '🌌 Ethrix Agent Online' });
+    }
+    const input = document.getElementById('user-input');
+    if (input) {
+        const placeholders = { smart_chat: 'Message Ethrix...', ethrix_agent: 'Ask Agent to send email, check calendar...', data_analyst: 'Upload a CSV/Excel file, then ask anything...', vision: 'Upload an image or PDF, then ask...', docs: 'Upload a document, then ask questions...', screen_share: 'Ask about your screen...' };
+        input.placeholder = placeholders[mode] || 'Message Ethrix...';
+    }
+}
+
+function setMode(mode, btn) {
+    const modeMap = { chat: ['✨','Smart Chat','smart_chat'], coding: ['✨','Smart Chat','smart_chat'], research: ['✨','Smart Chat','smart_chat'], smart_chat: ['✨','Smart Chat','smart_chat'], ethrix_agent: ['🌌','Agent','ethrix_agent'], data_analyst: ['📊','Data Analyst','data_analyst'], vision: ['👁️','Vision','vision'], docs: ['📄','Docs Brain','docs'], screen_share: ['🖥️','Screen AI','screen_share'] };
+    const mapped = modeMap[mode] || ['✨','Smart Chat','smart_chat'];
+    selectMode(mapped[2], mapped[0], mapped[1], mapped[1]);
+}
+
+// OLD setMode shell (keeps DOMContentLoaded autoMode working)
 // --- VOICE FUNCTIONS ---
 function toggleRecording() {
     if (!('webkitSpeechRecognition' in window)) { alert("Voice not supported"); return; }
