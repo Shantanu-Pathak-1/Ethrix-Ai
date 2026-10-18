@@ -484,6 +484,10 @@ async function loadProfile() {
         if (sidebarImg) sidebarImg.src = data.avatar || "/static/images/logo.png";
         const sidebarPlan = document.getElementById('profile-plan-sidebar');
         if (sidebarPlan) sidebarPlan.innerText = data.plan;
+        if (data && (data.email === 'shantanupathak94@gmail.com' || data.is_admin)) {
+            const godLink = document.getElementById('god-mode-link');
+            if (godLink) godLink.classList.remove('hidden');
+        }
     } catch (e) { console.log("Profile could not be fetched."); }
 }
 

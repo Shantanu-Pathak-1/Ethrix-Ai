@@ -74,12 +74,12 @@
                 <span class="text-sm font-bold nav-label">Secret Diary</span>
             </a>
 
-            {% if user.email == 'shantanupathak94@gmail.com' %}
-            <a href="/admin" onclick="closeMobileSidebar()" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-red-900/20 transition text-gray-300 hover:text-red-400">
-                <div class="w-6 text-center"><i class="fas fa-shield-alt text-red-500 text-sm md:text-base"></i></div>
-                <span class="text-sm font-bold nav-label">God Mode</span>
-            </a>
-            {% endif %}
+            <div id="god-mode-link" class="{% if user and user.email == 'shantanupathak94@gmail.com' %}{% else %}hidden{% endif %}">
+                <a href="/admin" onclick="closeMobileSidebar()" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-red-900/20 transition text-gray-300 hover:text-red-400">
+                    <div class="w-6 text-center"><i class="fas fa-shield-alt text-red-500 text-sm md:text-base"></i></div>
+                    <span class="text-sm font-bold nav-label">God Mode</span>
+                </a>
+            </div>
         </div>
 
         <div class="px-3 mb-2 mt-2">
@@ -121,7 +121,9 @@
             </div>
 
             <div class="flex items-center gap-2 md:gap-3 p-2 rounded-xl transition group/profile">
-                <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gray-700 overflow-hidden shrink-0 border border-gray-500 mx-auto"><img id="profile-img-sidebar" src="" class="w-full h-full object-cover"></div>
+                <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gray-700 overflow-hidden shrink-0 border border-gray-500 mx-auto">
+                    <img id="profile-img-sidebar" src="/static/images/logo.png" onerror="this.onerror=null;this.src='/static/images/logo.png';" alt="Profile" class="w-full h-full object-cover">
+                </div>
                 <div class="flex-1 overflow-hidden nav-label">
                     <div id="profile-name-sidebar" class="text-xs md:text-sm font-bold truncate text-white">User</div>
                     <div id="profile-plan-sidebar" class="text-[10px] md:text-xs text-gray-400">Free Plan</div>
