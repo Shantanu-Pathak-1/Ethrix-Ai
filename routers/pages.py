@@ -1,3 +1,4 @@
+import uuid
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -27,6 +28,18 @@ async def onboarding_page(request: Request):
 @router.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     user = await db_module.get_current_user(request)
+    if not user and request.query_params.get("guest") == "1":
+        guest_email = f"guest_{uuid.uuid4().hex[:8]}@ethrix.ai"
+        user = {
+            "email": guest_email,
+            "name": "Guest",
+            "username": "guest",
+            "picture": "/static/images/logo.png",
+            "is_guest": True,
+            "plan": "free"
+        }
+        request.session['user'] = user
+
     if user:
         return templates.TemplateResponse(request=request, name="index.html", context={"user": user})
     return templates.TemplateResponse(request=request, name="landing.html")

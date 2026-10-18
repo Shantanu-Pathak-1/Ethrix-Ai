@@ -1,6 +1,5 @@
-const CACHE_NAME = 'ethrix-v2';
+const CACHE_NAME = 'ethrix-v3';
 const STATIC_ASSETS = [
-  '/',
   '/static/css/style.css',
   '/static/js/script.js',
   '/static/manifest.json',
@@ -8,7 +7,7 @@ const STATIC_ASSETS = [
   '/static/images/favicon.png'
 ];
 
-// Install — cache static assets
+// Install — cache only pure static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
@@ -16,7 +15,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate — clean old caches
+// Activate — clean old caches immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -26,14 +25,23 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch — network first for API, cache first for static
+// Fetch — network first for HTML navigations & APIs, cache only for static assets
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  // API calls — always network, never cache
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
+
+  // Dynamic routes, APIs, and HTML navigations — always network
+  if (
+    event.request.mode === 'navigate' ||
+    url.pathname === '/' ||
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/auth/') ||
+    url.pathname.startsWith('/guest') ||
+    url.pathname.startsWith('/bypass')
+  ) {
     return;
   }
-  // Static files — cache first
+
+  // Static assets only — cache first
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request))
   );

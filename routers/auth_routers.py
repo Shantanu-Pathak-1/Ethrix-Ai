@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from pydantic import BaseModel
 import uuid
@@ -65,10 +65,27 @@ async def logout(request: Request):
     request.session.pop('user', None)
     return RedirectResponse("/")
 
+async def _persist_guest_user(guest_email: str):
+    try:
+        await db_module.get_new_db().users.update_one(
+            {"email": guest_email},
+            {"$set": {
+                "name": "Guest",
+                "email": guest_email,
+                "username": "guest",
+                "is_guest": True,
+                "plan": "free",
+                "picture": "/static/images/logo.png"
+            }},
+            upsert=True
+        )
+    except Exception as e:
+        print(f"[Guest Save Info]: {e}")
+
 @router.get("/auth/bypass")
 @router.get("/guest_login")
 @router.get("/bypass")
-async def bypass_login(request: Request):
+async def bypass_login(request: Request, background_tasks: BackgroundTasks):
     guest_email = f"guest_{uuid.uuid4().hex[:8]}@ethrix.ai"
     guest_user = {
         "email": guest_email,
@@ -79,34 +96,11 @@ async def bypass_login(request: Request):
         "plan": "free"
     }
     request.session['user'] = guest_user
-    try:
-        await users_collection.update_one(
-            {"email": guest_email},
-            {"$set": {
-                "name": "Guest",
-                "email": guest_email,
-                "username": "guest",
-                "is_guest": True,
-                "plan": "free",
-                "picture": "/static/images/logo.png"
-            }},
-            upsert=True
-        )
-    except Exception:
-        pass
-    return RedirectResponse(url="/", status_code=303)
+    background_tasks.add_task(_persist_guest_user, guest_email)
+    return RedirectResponse(url="/?guest=1", status_code=303)
 
 @router.post("/api/guest_login")
-async def guest_login(request: Request):
-    # 💖 Database se Maintenance Check (Fail-Safe)
-    try:
-        setting = await db_module.settings_collection.find_one({"_id": "system_settings"})
-        is_maintenance = setting.get("maintenance_mode", False) if setting else False
-        if is_maintenance:
-            return JSONResponse({"status": "error", "message": "Site is under maintenance! Guest login disabled."}, 503)
-    except Exception as e:
-        print(f"[Guest Login Info]: Maintenance check skipped ({e})")
-        
+async def guest_login(request: Request, background_tasks: BackgroundTasks):
     guest_email = f"guest_{uuid.uuid4().hex[:8]}@ethrix.ai"
     guest_user = {
         "email": guest_email,
@@ -117,22 +111,8 @@ async def guest_login(request: Request):
         "plan": "free"
     }
     request.session['user'] = guest_user
-    try:
-        await users_collection.update_one(
-            {"email": guest_email},
-            {"$set": {
-                "name": "Guest",
-                "email": guest_email,
-                "username": "guest",
-                "is_guest": True,
-                "plan": "free",
-                "picture": "/static/images/logo.png"
-            }},
-            upsert=True
-        )
-    except Exception:
-        pass
-    return {"status": "success", "redirect": "/"}
+    background_tasks.add_task(_persist_guest_user, guest_email)
+    return {"status": "success", "redirect": "/?guest=1"}
 
 @router.post("/api/send_otp")
 async def send_otp_endpoint(req: OTPRequest):
