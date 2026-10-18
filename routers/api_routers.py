@@ -162,7 +162,7 @@ async def extract_and_save_memory(user_email: str, user_message: str):
             return
 
         headers = {"Authorization": f"Bearer {openrouter_key}", "Content-Type": "application/json"}
-        fast_models = ["zhipu/glm-4-flash", "stepfun/step-1-flash", "meta-llama/llama-3-8b-instruct:free"]
+        fast_models = ["liquid/lfm-2.5-2.6b:free", "poolside/laguna-s-2.1:free", "cohere/north-mini-code:free"]
         data = {"model": random.choice(fast_models), "messages": [{"role": "user", "content": extraction_prompt}]}
 
         async with httpx.AsyncClient() as http_client:
@@ -362,6 +362,10 @@ async def submit_feedback(req: FeedbackRequest):
 
 @router.post("/api/delete_gallery_item")
 async def delete_gallery_item(req: GalleryDeleteRequest, request: Request):
+    user = await db_module.get_current_user(request)
+    if not user:
+        return JSONResponse({"status": "error", "message": "Login required"}, 401)
+    await db_module.gallery_collection.delete_one({"user_email": user['email'], "url": req.url})
     return {"status": "ok"}
 
 
@@ -434,6 +438,15 @@ async def advanced_image_gen_api(req: AdvancedImageGenRequest, request: Request)
         await db_module.tool_usage_collection.update_one(
             {"tool_name": f"image_gen_{req.tier}"}, {"$inc": {"count": 1}}, upsert=True
         )
+
+        await db_module.gallery_collection.insert_one({
+            "user_email": user['email'],
+            "url": image_url,
+            "prompt": req.prompt,
+            "mode": f"{req.tier.capitalize()} · {req.style.capitalize()}",
+            "created_at": datetime.utcnow()
+        })
+
         return {"status": "success", "image_url": image_url}
     except Exception as e:
         return {"status": "error", "message": f"⚠️ Server Error: {str(e)}"}
@@ -629,6 +642,15 @@ async def main_chat(req: ChatRequest, request: Request, background_tasks: Backgr
 
         if mode == "image_gen":
             reply = await tools_lab.generate_image_hf(msg)
+            match = re.search(r'src="([^"]+)"', reply)
+            if match and user and user.get('email'):
+                await db_module.gallery_collection.insert_one({
+                    "user_email": user['email'],
+                    "url": match.group(1),
+                    "prompt": msg,
+                    "mode": "Chat · Realistic",
+                    "created_at": datetime.utcnow()
+                })
         elif mode == "prompt_writer":
             reply = await tools_lab.generate_prompt_only(msg)
         elif mode == "qr_generator":

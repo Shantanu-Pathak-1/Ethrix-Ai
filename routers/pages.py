@@ -14,7 +14,15 @@ async def login_page(request: Request):
 
 @router.get("/onboarding", response_class=HTMLResponse)
 async def onboarding_page(request: Request):
-    return templates.TemplateResponse(request=request, name="onboarding.html", context={"email": "user", "name": "user"})
+    user = await db_module.get_current_user(request)
+    if not user:
+        return RedirectResponse("/login")
+    name = user.get("name") or user.get("email", "User").split("@")[0]
+    return templates.TemplateResponse(request=request, name="onboarding.html", context={
+        "email": user.get("email", ""),
+        "name": name,
+        "user": user
+    })
 
 @router.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
@@ -58,7 +66,15 @@ async def gallery_page(request: Request):
     user = await db_module.get_current_user(request)
     if not user:
         return RedirectResponse("/login")
-    return templates.TemplateResponse(request=request, name="gallery.html", context={"images": []})
+    cursor = db_module.gallery_collection.find({"user_email": user['email']}).sort("created_at", -1)
+    images = []
+    async for img in cursor:
+        images.append({
+            "url": img.get("url"),
+            "prompt": img.get("prompt", "AI Art"),
+            "mode": img.get("mode", "Studio")
+        })
+    return templates.TemplateResponse(request=request, name="gallery.html", context={"images": images, "user": user})
 
 # ==========================================
 # PRICING PAGE — /pricing

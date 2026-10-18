@@ -3,6 +3,9 @@
 #  DESCRIPTION: Backend Logic + NEW AI AGENT BRAIN
 # ==================================================================================
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import os
 import random
 import string
@@ -32,18 +35,29 @@ GENIUS_API_KEY = os.getenv("GENIUS_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
+def get_groq_client():
+    keys = os.getenv("GROQ_API_KEY_POOL", "").split(",")
+    possible = [k.strip() for k in keys if k.strip()]
+    key = random.choice(possible) if possible else os.getenv("GROQ_API_KEY")
+    return Groq(api_key=key) if key else None
+
 def get_llm_response(prompt, model="openai/gpt-oss-120b"):
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
-        chat_completion = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model=model,
-        )
-        return chat_completion.choices[0].message.content
-    except Exception as e:
-        # 🛡️ If Groq fails, OpenRouter heavy models will handle it as fallback!
-        print(f"Groq API Busy! Falling back to OpenRouter: {str(e)}")
-        return get_openrouter_response(prompt, task_type="heavy")
+    models_to_try = [model, "qwen/qwen3.8-27b", "openai/gpt-oss-20b"]
+    for m in models_to_try:
+        try:
+            client = get_groq_client()
+            if not client:
+                break
+            chat_completion = client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model=m,
+            )
+            return chat_completion.choices[0].message.content
+        except Exception as e:
+            print(f"Groq model {m} failed: {e}. Trying fallback...")
+            continue
+    print("Groq API Busy! Falling back to OpenRouter...")
+    return get_openrouter_response(prompt, task_type="heavy")
 
 # 🚀 SMART OPENROUTER HELPER (WITH TASK-BASED MODELS)
 def get_openrouter_response(prompt, task_type="fast"):
@@ -54,34 +68,32 @@ def get_openrouter_response(prompt, task_type="fast"):
     if not key:
         return "⚠️ API Key missing."
         
-    # 🧠 SMART MODEL LISTS (4-5 Models per category)
+    # 🧠 SMART MODEL LISTS (Active Free Models)
     if task_type == "coding":
         models = [
-            "qwen/qwen-2.5-coder-32b-instruct:free", 
-            "meta-llama/llama-3.1-8b-instruct:free",
-            "google/gemma-2-9b-it:free",
-            "mistralai/mistral-7b-instruct:free",
-            "deepseek/deepseek-chat:free"
+            "cohere/north-mini-code:free",
+            "liquid/lfm-2.5-2.6b:free",
+            "poolside/laguna-s-2.1:free"
         ]
     elif task_type == "vision":
-        models = ["nvidia/nemotron-mini-4b-instruct"] # Vision ke liye specific
+        models = [
+            "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+            "liquid/lfm-2.5-2.6b:free"
+        ]
     elif task_type == "heavy":
         # Smartest models for Research and Main Chat Fallback
         models = [
-            "meta-llama/llama-3.3-70b-instruct:free",
-            "nvidia/llama-3.1-nemotron-70b-instruct:free",
-            "qwen/qwen-2.5-7b-instruct:free",
-            "google/gemma-2-9b-it:free",
-            "mistralai/mistral-7b-instruct:free"
+            "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+            "liquid/lfm-2.5-2.6b:free",
+            "poolside/laguna-s-2.1:free",
+            "cohere/north-mini-code:free"
         ]
     else:
         # Fast / General Tools ke liye superfast models
         models = [
-            "zhipu/glm-4-flash", 
-            "stepfun/step-1-flash", 
-            "meta-llama/llama-3-8b-instruct:free",
-            "google/gemma-2-9b-it:free",
-            "qwen/qwen-2-7b-instruct:free"
+            "liquid/lfm-2.5-2.6b:free",
+            "poolside/laguna-s-2.1:free",
+            "cohere/north-mini-code:free"
         ]
         
     headers = {
@@ -290,7 +302,7 @@ async def analyze_resume(file_data, user_msg):
 
         prompt = f"Act as an expert HR Manager. Analyze this resume:\n{text[:3000]}...\nProvide Score, Strengths, Weaknesses, and ATS tips."
         
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         res = model.generate_content(prompt)
         return res.text
     except Exception as e: 
@@ -341,7 +353,7 @@ async def handle_mock_interview(msg):
 
 async def solve_math_problem(file_data, query):
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         if file_data:
             header, encoded = file_data.split(",", 1)
             image = PIL.Image.open(io.BytesIO(base64.b64decode(encoded)))

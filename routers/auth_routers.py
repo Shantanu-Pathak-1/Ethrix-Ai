@@ -205,3 +205,29 @@ async def login_manual(req: LoginRequest, request: Request):
         request.session['user'] = {"email": user['email'], "name": user['name']}
         return {"status": "success"}
     return JSONResponse({"status": "error"}, 400)
+
+class GoogleOnboardingRequest(BaseModel):
+    username: str
+    dob: str | None = None
+
+@router.post("/api/complete_google_onboarding")
+async def complete_google_onboarding(req: GoogleOnboardingRequest, request: Request):
+    user = await db_module.get_current_user(request)
+    if not user:
+        return JSONResponse({"status": "error", "message": "Login required"}, 401)
+    
+    existing = await users_collection.find_one({"username": req.username, "email": {"$ne": user['email']}})
+    if existing:
+        return JSONResponse({"status": "error", "message": "Username already taken"}, 400)
+    
+    update_data = {"username": req.username}
+    if req.dob:
+        update_data["dob"] = req.dob
+        
+    await users_collection.update_one({"email": user['email']}, {"$set": update_data}, upsert=True)
+    
+    session_user = request.session.get('user', {})
+    session_user['username'] = req.username
+    request.session['user'] = session_user
+    
+    return {"status": "success"}
