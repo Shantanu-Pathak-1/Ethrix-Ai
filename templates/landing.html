@@ -2,23 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="description" content="Ethrix AI - Your highly intelligent and futuristic personal AI companion.">
-    <meta name="keywords" content="Ethrix AI, AI Assistant, Artificial Intelligence, Tech Startup, Ethrix AI">
+    <meta name="description" content="Ethrix AI - Your highly intelligent and futuristic personal AI companion with multi-model intelligence, creative studio, and 20+ productivity tools.">
+    <meta name="keywords" content="Ethrix AI, AI Assistant, Artificial Intelligence, Tech Startup, Cloud Code Editor, Web IDE">
     <meta name="robots" content="index, follow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="MwrbfdlLx3xF8CILvK16Glar7CAECETS50_zOaXseyg" />
-    <meta name="description" content="Ethrix AI is an advanced cloud-based code editor with built-in AI agents, developer tools, and a seamless coding environment.">
-    <meta name="keywords" content="Ethrix AI, Cloud Code Editor, AI Agent, AI Coding, Web IDE">
     <title>Ethrix AI • Your Intelligent Companion</title>
     
     <link rel="icon" type="image/png" href="/static/images/favicon.png">
     <meta property="og:image" content="https://shantanupathak94-ethrix-ai.hf.space/static/images/logo.png">
+
+    <!-- Instant Theme Detection Script -->
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('theme') || localStorage.getItem('landing-theme');
+                if (saved === 'light') {
+                    document.documentElement.classList.add('light-mode');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.59/build/spline-viewer.js"></script>
     
     <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+        }
+
         /* ── CUSTOM CURSORS ─────────────────────────────── */
         *, *::before, *::after {
             cursor: url('/static/cursors/landing-cursor.png'), auto !important;
@@ -28,31 +48,56 @@
             cursor: url('/static/cursors/landing-pointer.png'), pointer !important;
         }
 
-        /* 👇👇👇 LOGO SIZE SETTINGS 👇👇👇 */
         .logo-responsive {
             width: 38px; height: 38px; border-radius: 50%; object-fit: cover;
-            border: 2px solid rgba(0, 229, 255, 0.3); transition: all 0.3s ease;
+            border: 2px solid rgba(0, 229, 255, 0.4); transition: all 0.3s ease;
         }
         @media (min-width: 768px) { .logo-responsive { width: 42px; height: 42px; } }
 
-        /* CORE VARIABLES - UPDATED TO CYAN & DARK BLUE THEME */
+        /* CORE VARIABLES (Deep Space Background Remains Intact in Both Themes) */
         :root {
-            --bg-color: #0B0F19; --text-main: #ffffff; --text-sub: #9ca3af;
-            --glass-bg: rgba(18, 24, 38, 0.6); --glass-border: rgba(0, 229, 255, 0.15);
-            --glass-shadow: rgba(0, 229, 255, 0.1); --badge-bg: rgba(0, 229, 255, 0.1);
-            --badge-border: rgba(0, 229, 255, 0.3); --badge-text: #00E5FF;
+            --bg-color: #0B0F19;
+            --text-hero-main: #FFFFFF;
+            --text-hero-sub: #CBD5E1;
+            --glass-bg: rgba(18, 24, 38, 0.72);
+            --glass-border: rgba(0, 229, 255, 0.2);
+            --glass-shadow: rgba(0, 0, 0, 0.4);
+            --card-title: #FFFFFF;
+            --card-desc: #94A3B8;
+            --badge-bg: rgba(0, 229, 255, 0.12);
+            --badge-border: rgba(0, 229, 255, 0.35);
+            --badge-text: #00E5FF;
+            --nav-link: #E2E8F0;
+            --nav-link-hover: #00E5FF;
+            --icon-bg: rgba(0, 229, 255, 0.15);
+            --icon-color: #00E5FF;
         }
 
-        body.light-mode {
-            --bg-color: #f8fafc; --text-main: #111827; --text-sub: #4b5563;
-            --glass-bg: rgba(255, 255, 255, 0.75); --glass-border: rgba(0, 229, 255, 0.2);
-            --glass-shadow: rgba(0, 0, 0, 0.05); --badge-bg: rgba(0, 229, 255, 0.1);
-            --badge-border: rgba(0, 229, 255, 0.4); --badge-text: #00bfff;
+        /* ☀️ LIGHT THEME: BG REMAINS DARK/COSMIC, COMPONENTS & DIVS BECOME CLEAN LIGHT FROSTED CARDS WITH HIGH-CONTRAST DARK TEXT */
+        body.light-mode,
+        html.light-mode body {
+            --bg-color: #0B0F19; /* BG stays deep space dark per user instruction */
+            --text-hero-main: #FFFFFF;
+            --text-hero-sub: #F1F5F9;
+            --glass-bg: rgba(255, 255, 255, 0.94);
+            --glass-border: rgba(255, 255, 255, 0.85);
+            --glass-shadow: rgba(0, 0, 0, 0.28);
+            --card-title: #0F172A; /* High contrast dark charcoal for titles */
+            --card-desc: #334155; /* Sharp readable dark slate for descriptions */
+            --badge-bg: #FFFFFF;
+            --badge-border: rgba(2, 132, 199, 0.4);
+            --badge-text: #0284C7;
+            --nav-link: #0F172A;
+            --nav-link-hover: #0284C7;
+            --icon-bg: rgba(2, 132, 199, 0.12);
+            --icon-color: #0284C7;
         }
 
         body { 
-            font-family: 'Inter', sans-serif; background-color: var(--bg-color); 
-            color: var(--text-main); overflow-x: hidden; transition: background-color 0.3s ease, color 0.3s ease;
+            background-color: var(--bg-color); 
+            color: #FFFFFF; 
+            overflow-x: hidden; 
+            min-height: 100vh;
         }
 
         /* SCROLLBAR */
@@ -61,146 +106,474 @@
         ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1E90FF, #00E5FF); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #00C6DD, #00E5FF); }
         
-        /* 3D Background */
-        spline-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; filter: brightness(0.7) contrast(1.1); transition: opacity 0.3s; }
-        @media (max-width: 768px) { spline-viewer { display: none !important; } body { background-color: var(--bg-color); } }
-        body.light-mode spline-viewer { opacity: 0.1; filter: grayscale(1); }
+        /* 3D Background (Vibrant Spline in Both Themes) */
+        spline-viewer { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: -1; 
+            filter: brightness(0.85) contrast(1.1); 
+            transition: opacity 0.3s; 
+            pointer-events: auto;
+        }
+        @media (max-width: 768px) { 
+            spline-viewer { display: none !important; } 
+            body { 
+                background: radial-gradient(circle at 50% 15%, rgba(0, 229, 255, 0.12), transparent 50%), #0B0F19; 
+            } 
+        }
 
         /* Glass Cards */
-        .glass { background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 4px 30px var(--glass-shadow); transition: all 0.3s ease; }
-        .glass:hover { border-color: rgba(0, 229, 255, 0.5); box-shadow: 0 0 20px rgba(0, 229, 255, 0.2); }
-        .badge { background: var(--badge-bg); border: 1px solid var(--badge-border); color: var(--badge-text); }
+        .glass { 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(18px); 
+            -webkit-backdrop-filter: blur(18px); 
+            border: 1px solid var(--glass-border); 
+            box-shadow: 0 10px 30px var(--glass-shadow); 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .glass:hover { 
+            border-color: rgba(0, 229, 255, 0.6); 
+            box-shadow: 0 12px 35px rgba(0, 229, 255, 0.25); 
+        }
+
+        .badge { 
+            background: var(--badge-bg); 
+            border: 1px solid var(--badge-border); 
+            color: var(--badge-text); 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
         
+        .card-header-title {
+            color: var(--card-title) !important;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
+        .card-desc-text {
+            color: var(--card-desc) !important;
+            line-height: 1.6;
+        }
+
+        .text-gradient { 
+            background: linear-gradient(to right, #1E90FF, #00E5FF); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+
         /* Animation */
-        .fade-in-up { animation: fadeInUp 1s ease-out forwards; opacity: 0; transform: translateY(30px); }
-        .delay-100 { animation-delay: 0.1s; } .delay-200 { animation-delay: 0.3s; } .delay-300 { animation-delay: 0.5s; }
+        .fade-in-up { animation: fadeInUp 0.9s ease-out forwards; opacity: 0; transform: translateY(24px); }
+        .delay-100 { animation-delay: 0.1s; } 
+        .delay-200 { animation-delay: 0.25s; } 
+        .delay-300 { animation-delay: 0.4s; }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-        .text-gradient { background: linear-gradient(to right, #1E90FF, #00E5FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
         html { scroll-behavior: smooth; }
+
+        /* Light mode specific classes for components */
+        body.light-mode .nav-brand-text {
+            color: #0F172A !important;
+        }
+        body.light-mode .nav-link-item {
+            color: #334155 !important;
+        }
+        body.light-mode .nav-link-item:hover {
+            color: #0284C7 !important;
+        }
+        body.light-mode .btn-explore-cap {
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+            border: 1.5px solid #CBD5E1 !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+        }
+        body.light-mode .btn-explore-cap:hover {
+            border-color: #0284C7 !important;
+            color: #0284C7 !important;
+        }
+        body.light-mode .btn-guest-try {
+            background: #FFFFFF !important;
+            color: #0284C7 !important;
+            border: 1.5px solid rgba(2, 132, 199, 0.4) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+        }
+        body.light-mode .btn-guest-try:hover {
+            background: #F0F9FF !important;
+            border-color: #0284C7 !important;
+        }
+        body.light-mode .btn-creator-about {
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+            border: 1.5px solid #CBD5E1 !important;
+        }
+        body.light-mode .hero-stat-card {
+            background: rgba(255, 255, 255, 0.92) !important;
+            border: 1px solid rgba(255, 255, 255, 0.8) !important;
+        }
+        body.light-mode .hero-stat-card .stat-val {
+            color: #0F172A !important;
+        }
+        body.light-mode .hero-stat-card .stat-lbl {
+            color: #475569 !important;
+        }
+        body.light-mode .tool-pill-badge {
+            background: #FFFFFF !important;
+            border-color: #E2E8F0 !important;
+            color: #0F172A !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+        }
+        body.light-mode .tool-pill-badge:hover {
+            border-color: #0284C7 !important;
+            color: #0284C7 !important;
+        }
+        body.light-mode .cta-banner-box {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid #E2E8F0 !important;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25) !important;
+        }
+        body.light-mode .cta-banner-box h2 {
+            color: #0F172A !important;
+        }
+        body.light-mode .cta-banner-box p {
+            color: #475569 !important;
+        }
+        body.light-mode .footer-container {
+            background: rgba(18, 24, 38, 0.8) !important;
+        }
     </style>
 </head>
 <body>
 
+    <!-- 3D SPLINE CANVAS (Background stays vivid in both themes) -->
     <spline-viewer url="https://prod.spline.design/yszqHxvXsSsuMZq5/scene.splinecode"></spline-viewer>
 
-    <nav class="fixed w-full z-50 p-4 md:p-5">
-        <div class="max-w-6xl mx-auto flex justify-between items-center glass px-5 py-2 md:px-6 md:py-2.5 rounded-full">
-            <div class="flex items-center gap-3">
-                <img src="/static/images/logo.png" class="logo-responsive shadow-lg">
-                <span class="landing-nav-brand font-bold text-lg md:text-xl tracking-wide truncate">Ethrix</span>
-            </div>
+    <!-- FIXED TOP NAVBAR -->
+    <nav class="fixed w-full z-50 p-3 md:p-5">
+        <div class="max-w-6xl mx-auto flex justify-between items-center glass px-4 py-2 md:px-6 md:py-2.5 rounded-full">
+            <a href="/" class="flex items-center gap-3 text-decoration-none group">
+                <img src="/static/images/logo.png" class="logo-responsive shadow-lg group-hover:scale-105 transition">
+                <span class="nav-brand-text font-bold text-lg md:text-xl tracking-wide truncate text-white">Ethrix AI</span>
+            </a>
             
-            <div class="flex items-center gap-4 md:gap-6">
-                <a href="/about" class="text-sm font-semibold hover:text-[#00E5FF] transition hidden sm:block">About</a>
-                <a href="/pricing" class="text-sm font-semibold hover:text-[#00E5FF] transition hidden sm:block">Pricing</a>
+            <div class="flex items-center gap-3 md:gap-6">
+                <a href="#features" class="nav-link-item text-sm font-semibold hover:text-[#00E5FF] transition hidden sm:block text-gray-200">Capabilities</a>
+                <a href="/tools" class="nav-link-item text-sm font-semibold hover:text-[#00E5FF] transition hidden md:block text-gray-200">Tools Lab</a>
+                <a href="/pricing" class="nav-link-item text-sm font-semibold hover:text-[#00E5FF] transition hidden sm:block text-gray-200">Pricing</a>
+                <a href="/about" class="nav-link-item text-sm font-semibold hover:text-[#00E5FF] transition hidden sm:block text-gray-200">About</a>
                 
-                <button onclick="toggleTheme()" class="w-8 h-8 rounded-full glass flex items-center justify-center hover:scale-110 transition text-yellow-400">
+                <!-- Quick Theme Toggle Button -->
+                <button type="button" onclick="toggleTheme()" class="w-9 h-9 rounded-full glass flex items-center justify-center hover:scale-110 transition text-yellow-400" title="Toggle Theme (Light / Dark)">
                     <i id="theme-icon" class="fas fa-sun text-sm"></i>
                 </button>
-                <a href="/login" class="bg-white text-black hover:bg-gray-200 px-4 py-1.5 md:px-5 md:py-2 rounded-full font-bold text-xs md:text-sm transition transform hover:scale-105 shadow-[0_0_15px_rgba(0,229,255,0.3)] whitespace-nowrap">
+
+                <!-- Login / Signup Action Button -->
+                <a href="/login" class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] hover:brightness-110 text-white font-bold px-4 py-2 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm transition transform hover:scale-105 shadow-[0_4px_18px_rgba(0,229,255,0.4)] whitespace-nowrap">
                     Login / Signup
                 </a>
             </div>
         </div>
     </nav>
 
-    <section class="min-h-screen flex items-center justify-center px-4 pt-16 relative">
+    <!-- =========================================================
+         HERO SECTION (High Contrast, Bold, Ultra Clean)
+         ========================================================= -->
+    <section class="min-h-screen flex items-center justify-center px-4 pt-24 pb-16 relative">
         <div class="text-center max-w-4xl mx-auto">
-            <div class="inline-block px-3 py-1 rounded-full badge text-[10px] md:text-xs font-bold uppercase tracking-widest mb-5 fade-in-up backdrop-blur-md hover:bg-cyan-500/20 transition">
-                Beta v3.4 • Tri-Model AI Engine
+            
+            <!-- Engine Pill Badge -->
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full badge text-[11px] md:text-xs font-bold uppercase tracking-widest mb-6 fade-in-up backdrop-blur-md">
+                <span class="w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse"></span>
+                <span>Beta v3.4 • Tri-Model AI Engine</span>
             </div>
             
-            <h1 class="landing-hero-h1 text-3xl md:text-6xl font-bold mb-5 fade-in-up delay-100 leading-tight drop-shadow-2xl">
+            <!-- Hero Heading -->
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-5 fade-in-up delay-100 leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)] tracking-tight text-white font-['Outfit']">
                 Your Personal AI <br>
                 <span class="text-gradient">That Truly Understands</span>
             </h1>
             
-            <p class="landing-hero-sub text-gray-300 text-base md:text-lg mb-8 max-w-xl mx-auto fade-in-up delay-200 drop-shadow-md">
-                Experience the next generation of conversational AI. Ethrix listens, remembers, creates art, and codes alongside you.
+            <!-- Hero Subtitle (Clean & High Contrast) -->
+            <p class="text-base md:text-xl mb-9 max-w-2xl mx-auto fade-in-up delay-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] text-[#F1F5F9] font-medium leading-relaxed">
+                Experience the next generation of conversational intelligence. Ethrix listens, remembers, generates studio art, and builds alongside you.
             </p>
             
-            <div class="landing-cta-row flex flex-col md:flex-row gap-4 justify-center fade-in-up delay-300">
-                <a href="/login" class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] hover:from-[#00bfff] hover:to-[#00e6e6] text-white px-6 py-3 rounded-full font-bold text-sm md:text-base shadow-lg shadow-cyan-500/30 transition transform hover:scale-105 flex items-center justify-center gap-2">
-                    <span>Talk to Ethrix</span> <i class="fas fa-arrow-right"></i>
+            <!-- CTA Buttons Row -->
+            <div class="flex flex-col sm:flex-row gap-3.5 justify-center items-center fade-in-up delay-300">
+                <a href="/login" class="w-full sm:w-auto bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] hover:brightness-110 text-white px-7 py-3.5 rounded-full font-bold text-sm md:text-base shadow-[0_8px_25px_rgba(0,229,255,0.4)] transition transform hover:scale-105 flex items-center justify-center gap-2.5">
+                    <span>Talk to Ethrix</span>
+                    <i class="fas fa-arrow-right text-xs"></i>
                 </a>
-                <a href="/guest_login" class="glass px-6 py-3 rounded-full font-bold text-sm md:text-base hover:bg-white/10 transition backdrop-blur-md text-[#00E5FF] border border-[#00E5FF]/40 flex items-center justify-center gap-2">
-                    <i class="fas fa-bolt text-yellow-400"></i>
-                    <span>Try as Guest</span>
+                
+                <a href="/guest_login" class="btn-guest-try w-full sm:w-auto glass px-6 py-3.5 rounded-full font-bold text-sm md:text-base hover:bg-white/10 transition backdrop-blur-md text-[#00E5FF] border border-[#00E5FF]/40 flex items-center justify-center gap-2">
+                    <i class="fas fa-bolt text-amber-400"></i>
+                    <span>⚡ Try as Guest</span>
                 </a>
-                <a href="#features" class="glass px-6 py-3 rounded-full font-bold text-sm md:text-base hover:bg-white/10 transition backdrop-blur-md text-white">
-                    Explore Capabilities
-                </a>
-                <a href="/about" class="sm:hidden glass px-6 py-3 rounded-full font-bold text-sm hover:bg-white/10 transition backdrop-blur-md text-[#00E5FF] flex items-center justify-center gap-2">
-                    <i class="fas fa-user-astronaut"></i> About Creator
+
+                <a href="#features" class="btn-explore-cap w-full sm:w-auto glass px-6 py-3.5 rounded-full font-bold text-sm md:text-base hover:bg-white/10 transition backdrop-blur-md text-white flex items-center justify-center gap-2">
+                    <i class="fas fa-compass text-sm"></i>
+                    <span>Explore Capabilities</span>
                 </a>
             </div>
+
+            <!-- Trust Stats Strip -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-12 max-w-3xl mx-auto fade-in-up delay-300">
+                <div class="hero-stat-card glass p-3 rounded-2xl text-center">
+                    <div class="stat-val font-bold text-lg md:text-xl text-white">3 Engines</div>
+                    <div class="stat-lbl text-[11px] md:text-xs text-gray-300">Groq, Qwen & OpenRouter</div>
+                </div>
+                <div class="hero-stat-card glass p-3 rounded-2xl text-center">
+                    <div class="stat-val font-bold text-lg md:text-xl text-white">20+ Tools</div>
+                    <div class="stat-lbl text-[11px] md:text-xs text-gray-300">Dev & Productivity Lab</div>
+                </div>
+                <div class="hero-stat-card glass p-3 rounded-2xl text-center">
+                    <div class="stat-val font-bold text-lg md:text-xl text-white">Live Voice</div>
+                    <div class="stat-lbl text-[11px] md:text-xs text-gray-300">Natural Audio Replies</div>
+                </div>
+                <div class="hero-stat-card glass p-3 rounded-2xl text-center">
+                    <div class="stat-val font-bold text-lg md:text-xl text-white">100% Free</div>
+                    <div class="stat-lbl text-[11px] md:text-xs text-gray-300">Trial Without Credit Card</div>
+                </div>
+            </div>
+
         </div>
-        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 animate-bounce opacity-50 text-[#00E5FF]">
-            <i class="fas fa-chevron-down text-xl"></i>
+
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 animate-bounce opacity-70 text-[#00E5FF]">
+            <a href="#features" aria-label="Scroll down">
+                <i class="fas fa-chevron-down text-xl"></i>
+            </a>
         </div>
     </section>
 
-    <section id="features" class="py-16 md:py-20 px-4">
+    <!-- =========================================================
+         FEATURES GRID ("Beyond Simple Chat")
+         ========================================================= -->
+    <section id="features" class="py-20 px-4 relative z-10">
         <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-2xl md:text-4xl font-bold mb-3">Beyond Simple Chat</h2>
-                <p class="text-gray-300 text-base md:text-lg">Everything you need in one intelligent workspace.</p>
+            
+            <div class="text-center mb-14">
+                <div class="inline-block px-3 py-1 rounded-full badge text-xs font-bold uppercase tracking-wider mb-3">
+                    Architected for Excellence
+                </div>
+                <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-3 font-['Outfit'] drop-shadow-lg">
+                    Beyond Simple Chat
+                </h2>
+                <p class="text-gray-300 text-base md:text-lg max-w-xl mx-auto drop-shadow-sm">
+                    Everything you need in one unified, intelligent, and blazing-fast workspace.
+                </p>
             </div>
-            <div class="landing-features-grid grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-                <div class="glass p-6 md:p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#00E5FF]/20">
-                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-[#00E5FF]/20 text-[#00E5FF] flex items-center justify-center text-2xl mb-5 shadow-[0_0_15px_rgba(0,229,255,0.2)]"><i class="fas fa-microphone-alt"></i></div>
-                    <h3 class="text-lg md:text-xl font-bold mb-2">Voice Interaction</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Don't just type. Talk to Ethrix naturally.</p>
+
+            <!-- Full 6-Card Features Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7">
+                
+                <!-- 1. Voice Interaction -->
+                <div class="glass p-7 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#00E5FF]/25">
+                    <div class="w-13 h-13 w-12 h-12 rounded-2xl bg-[var(--icon-bg)] text-[var(--icon-color)] flex items-center justify-center text-2xl mb-5 shadow-[0_0_20px_rgba(0,229,255,0.25)]">
+                        <i class="fas fa-microphone-alt"></i>
+                    </div>
+                    <h3 class="card-header-title text-xl mb-2.5">Voice Interaction</h3>
+                    <p class="card-desc-text text-sm">
+                        Don't just type. Talk to Ethrix naturally with real-time speech recognition and lifelike neural voice playback.
+                    </p>
                 </div>
-                <div class="glass p-6 md:p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#1E90FF]/20">
-                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-[#1E90FF]/20 text-[#1E90FF] flex items-center justify-center text-2xl mb-5 shadow-[0_0_15px_rgba(30,144,255,0.2)]"><i class="fas fa-brain"></i></div>
-                    <h3 class="text-lg md:text-xl font-bold mb-2">Long-Term Memory</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Ethrix remembers details about you.</p>
+
+                <!-- 2. Long-Term Memory -->
+                <div class="glass p-7 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#1E90FF]/25">
+                    <div class="w-12 h-12 rounded-2xl bg-[var(--icon-bg)] text-[var(--icon-color)] flex items-center justify-center text-2xl mb-5 shadow-[0_0_20px_rgba(30,144,255,0.25)]">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="card-header-title text-xl mb-2.5">Long-Term Memory</h3>
+                    <p class="card-desc-text text-sm">
+                        Ethrix remembers key details about your projects, preferences, and conversations to deliver tailored assistance every time.
+                    </p>
                 </div>
-                <div class="glass p-6 md:p-8 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#00E5FF]/20">
-                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl mb-5 shadow-[0_0_15px_rgba(0,255,255,0.2)]"><i class="fas fa-magic"></i></div>
-                    <h3 class="text-lg md:text-xl font-bold mb-2">Creative Studio</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Generate high-quality images and art.</p>
+
+                <!-- 3. Creative Studio -->
+                <div class="glass p-7 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#00E5FF]/25">
+                    <div class="w-12 h-12 rounded-2xl bg-[var(--icon-bg)] text-[var(--icon-color)] flex items-center justify-center text-2xl mb-5 shadow-[0_0_20px_rgba(0,255,255,0.25)]">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h3 class="card-header-title text-xl mb-2.5">Creative Studio</h3>
+                    <p class="card-desc-text text-sm">
+                        Transform text prompts into high-resolution visual art, digital illustrations, and custom avatars with high-speed rendering.
+                    </p>
                 </div>
+
+                <!-- 4. Developer Tools & Code Debugger -->
+                <div class="glass p-7 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#00E5FF]/25">
+                    <div class="w-12 h-12 rounded-2xl bg-[var(--icon-bg)] text-[var(--icon-color)] flex items-center justify-center text-2xl mb-5 shadow-[0_0_20px_rgba(0,229,255,0.25)]">
+                        <i class="fas fa-terminal"></i>
+                    </div>
+                    <h3 class="card-header-title text-xl mb-2.5">Code Intelligence</h3>
+                    <p class="card-desc-text text-sm">
+                        Syntax highlighting, automated error tracing, code refactoring, and real-time execution across Python, JS, C++, and Go.
+                    </p>
+                </div>
+
+                <!-- 5. Tri-Model Hybrid Engine -->
+                <div class="glass p-7 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#1E90FF]/25">
+                    <div class="w-12 h-12 rounded-2xl bg-[var(--icon-bg)] text-[var(--icon-color)] flex items-center justify-center text-2xl mb-5 shadow-[0_0_20px_rgba(30,144,255,0.25)]">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <h3 class="card-header-title text-xl mb-2.5">Tri-Model Fallback</h3>
+                    <p class="card-desc-text text-sm">
+                        Never suffer from server downtime. If a primary API is busy, Ethrix seamlessly reroutes requests across backup high-speed clusters.
+                    </p>
+                </div>
+
+                <!-- 6. Arcade Zone -->
+                <div class="glass p-7 rounded-3xl hover:-translate-y-2 transition duration-300 group border border-[#00E5FF]/25">
+                    <div class="w-12 h-12 rounded-2xl bg-[var(--icon-bg)] text-[var(--icon-color)] flex items-center justify-center text-2xl mb-5 shadow-[0_0_20px_rgba(0,255,255,0.25)]">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="card-header-title text-xl mb-2.5">Arcade Zone</h3>
+                    <p class="card-desc-text text-sm">
+                        Play engaging built-in AI games including Code-le, Flappy Bug, Anime Character Talker, and Multiplayer Ludo.
+                    </p>
+                </div>
+
             </div>
         </div>
     </section>
 
-    <footer class="py-8 border-t border-white/10 text-center text-gray-500 text-xs md:text-sm">
-        <div class="flex items-center justify-center gap-5 mb-3 flex-wrap">
-            <a href="/about"   class="hover:text-[#00E5FF] transition">About</a>
-            <a href="/pricing" class="hover:text-[#00E5FF] transition">Pricing</a>
-            <a href="/legal"   class="hover:text-[#00E5FF] transition">Terms & Privacy</a>
-            <a href="/login"   class="hover:text-[#00E5FF] transition">Login</a>
+    <!-- =========================================================
+         TOOLS LAB ECOSYSTEM PREVIEW
+         ========================================================= -->
+    <section class="py-16 px-4 relative z-10">
+        <div class="max-w-6xl mx-auto glass p-8 md:p-12 rounded-3xl border border-[#00E5FF]/30">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                <div>
+                    <span class="inline-block px-3 py-1 rounded-full badge text-xs font-bold uppercase mb-2">Built-in Superpowers</span>
+                    <h2 class="card-header-title text-2xl md:text-4xl">Tools Lab Ecosystem</h2>
+                    <p class="card-desc-text text-sm md:text-base mt-1">20+ specialized micro-tools for creators, students, and engineers.</p>
+                </div>
+                <a href="/tools" class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] text-white font-bold px-6 py-3 rounded-full text-sm shadow-md hover:brightness-110 transition flex items-center gap-2 whitespace-nowrap">
+                    <span>Explore All 20+ Tools</span>
+                    <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+
+            <!-- Micro Tools Badges -->
+            <div class="flex flex-wrap gap-2.5">
+                <a href="/tools" class="tool-pill-badge glass px-4 py-2.5 rounded-xl text-xs font-bold text-gray-200 flex items-center gap-2 hover:scale-105 transition">
+                    <i class="fab fa-youtube text-red-500"></i> YouTube Summarizer
+                </a>
+                <a href="/tools" class="tool-pill-badge glass px-4 py-2.5 rounded-xl text-xs font-bold text-gray-200 flex items-center gap-2 hover:scale-105 transition">
+                    <i class="fas fa-file-invoice text-blue-400"></i> Resume Analyzer & ATS
+                </a>
+                <a href="/tools" class="tool-pill-badge glass px-4 py-2.5 rounded-xl text-xs font-bold text-gray-200 flex items-center gap-2 hover:scale-105 transition">
+                    <i class="fas fa-user-tie text-emerald-400"></i> Mock Interviewer
+                </a>
+                <a href="/tools" class="tool-pill-badge glass px-4 py-2.5 rounded-xl text-xs font-bold text-gray-200 flex items-center gap-2 hover:scale-105 transition">
+                    <i class="fas fa-lightbulb text-amber-400"></i> Feynman Explainer
+                </a>
+                <a href="/tools" class="tool-pill-badge glass px-4 py-2.5 rounded-xl text-xs font-bold text-gray-200 flex items-center gap-2 hover:scale-105 transition">
+                    <i class="fas fa-envelope text-purple-400"></i> Cold Email Generator
+                </a>
+                <a href="/tools" class="tool-pill-badge glass px-4 py-2.5 rounded-xl text-xs font-bold text-gray-200 flex items-center gap-2 hover:scale-105 transition">
+                    <i class="fas fa-qrcode text-cyan-400"></i> QR Code Generator
+                </a>
+                <a href="/tools" class="tool-pill-badge glass px-4 py-2.5 rounded-xl text-xs font-bold text-gray-200 flex items-center gap-2 hover:scale-105 transition">
+                    <i class="fab fa-github text-gray-300"></i> GitHub Reviewer
+                </a>
+                <a href="/tools" class="tool-pill-badge glass px-4 py-2.5 rounded-xl text-xs font-bold text-gray-200 flex items-center gap-2 hover:scale-105 transition">
+                    <i class="fas fa-layer-group text-pink-400"></i> AI Flashcards Maker
+                </a>
+                <a href="/tools" class="tool-pill-badge glass px-4 py-2.5 rounded-xl text-xs font-bold text-gray-200 flex items-center gap-2 hover:scale-105 transition">
+                    <i class="fas fa-tasks text-teal-400"></i> Smart Todo Prioritizer
+                </a>
+                <a href="/tools" class="tool-pill-badge glass px-4 py-2.5 rounded-xl text-xs font-bold text-gray-200 flex items-center gap-2 hover:scale-105 transition">
+                    <i class="fas fa-coins text-yellow-400"></i> Currency Converter
+                </a>
+            </div>
         </div>
-        <p>&copy; 2025 Ethrix AI. Created with ❤️ by <a href="/about" class="text-[#00E5FF] hover:underline hover:text-white transition">Shan 🍀</a>.</p>
+    </section>
+
+    <!-- =========================================================
+         CALL TO ACTION BANNER (Full, Prominent)
+         ========================================================= -->
+    <section class="py-16 px-4 relative z-10">
+        <div class="cta-banner-box max-w-5xl mx-auto glass p-10 md:p-14 rounded-3xl text-center border border-[#00E5FF]/40 shadow-[0_15px_40px_rgba(0,0,0,0.5)]">
+            <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-4 font-['Outfit']">
+                Ready to Experience Next-Gen AI?
+            </h2>
+            <p class="text-gray-300 text-sm md:text-lg max-w-xl mx-auto mb-8">
+                Join users exploring Ethrix AI for development, creative generation, and daily productivity. Free 30-day access, no card needed.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/login" class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] hover:brightness-110 text-white font-bold px-8 py-4 rounded-full text-base shadow-[0_8px_30px_rgba(0,229,255,0.45)] transition transform hover:scale-105 flex items-center justify-center gap-2">
+                    <span>Create Your Free Account</span>
+                    <i class="fas fa-rocket"></i>
+                </a>
+                <a href="/guest_login" class="btn-guest-try glass px-7 py-4 rounded-full font-bold text-base text-[#00E5FF] hover:bg-white/10 transition flex items-center justify-center gap-2">
+                    <i class="fas fa-bolt text-yellow-400"></i>
+                    <span>⚡ Skip Signup (Guest Mode)</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================================
+         FOOTER
+         ========================================================= -->
+    <footer class="footer-container py-10 border-t border-white/10 text-center text-gray-400 text-xs md:text-sm relative z-10 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                <div class="flex items-center gap-2.5">
+                    <img src="/static/images/logo.png" class="w-7 h-7 rounded-full border border-cyan-500/40 object-cover">
+                    <span class="font-bold text-white text-base">Ethrix AI</span>
+                </div>
+                <div class="flex items-center justify-center gap-6 flex-wrap font-medium">
+                    <a href="#features" class="hover:text-[#00E5FF] transition">Capabilities</a>
+                    <a href="/tools" class="hover:text-[#00E5FF] transition">Tools Lab</a>
+                    <a href="/pricing" class="hover:text-[#00E5FF] transition">Pricing</a>
+                    <a href="/about" class="hover:text-[#00E5FF] transition">About Creator</a>
+                    <a href="/legal" class="hover:text-[#00E5FF] transition">Terms & Privacy</a>
+                    <a href="/login" class="hover:text-[#00E5FF] transition">Sign In</a>
+                </div>
+            </div>
+            <div class="border-t border-white/5 pt-6 text-gray-400">
+                <p>&copy; 2025–2026 Ethrix AI. Created with ❤️ by <a href="/about" class="text-[#00E5FF] hover:underline font-bold transition">Shan 🍀</a>. All rights reserved.</p>
+            </div>
+        </div>
     </footer>
 
+    <!-- =========================================================
+         SCRIPTS: THEME TOGGLING & SPLINE CLEANUP
+         ========================================================= -->
     <script>
-        // Theme Logic — preference saved in localStorage
-        function toggleTheme() {
-            const isLight = document.body.classList.toggle('light-mode');
-            localStorage.setItem('landing-theme', isLight ? 'light' : 'dark');
-            const icon = document.getElementById('theme-icon');
+        function applyTheme(theme) {
+            const isLight = (theme === 'light');
             if (isLight) {
-                icon.classList.remove('fa-sun'); icon.classList.add('fa-moon');
-                icon.parentElement.classList.replace('text-yellow-400', 'text-gray-600');
+                document.body.classList.add('light-mode');
+                document.documentElement.classList.add('light-mode');
             } else {
-                icon.classList.remove('fa-moon'); icon.classList.add('fa-sun');
-                icon.parentElement.classList.replace('text-gray-600', 'text-yellow-400');
+                document.body.classList.remove('light-mode');
+                document.documentElement.classList.remove('light-mode');
+            }
+            
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                if (isLight) {
+                    icon.className = 'fas fa-moon text-sm';
+                    icon.parentElement.classList.replace('text-yellow-400', 'text-gray-700');
+                } else {
+                    icon.className = 'fas fa-sun text-sm';
+                    icon.parentElement.classList.replace('text-gray-700', 'text-yellow-400');
+                }
             }
         }
-        // Apply saved theme on page load
+
+        function toggleTheme() {
+            const isCurrentlyLight = document.body.classList.contains('light-mode') || document.documentElement.classList.contains('light-mode');
+            const nextTheme = isCurrentlyLight ? 'dark' : 'light';
+            localStorage.setItem('theme', nextTheme);
+            localStorage.setItem('landing-theme', nextTheme);
+            applyTheme(nextTheme);
+        }
+
+        // Apply saved theme on page load (synchronized with localStorage key 'theme')
         (function() {
-            const saved = localStorage.getItem('landing-theme');
-            if (saved === 'light') {
-                document.body.classList.add('light-mode');
-                const icon = document.getElementById('theme-icon');
-                if (icon) { icon.classList.remove('fa-sun'); icon.classList.add('fa-moon'); icon.parentElement.classList.replace('text-yellow-400','text-gray-600'); }
-            }
+            const savedTheme = localStorage.getItem('theme') || localStorage.getItem('landing-theme') || 'dark';
+            applyTheme(savedTheme);
         })();
-        
-        // Remove Spline Logo
+
+        // Remove Spline Watermark Logo
         const killLogo = setInterval(() => {
             const viewer = document.querySelector('spline-viewer');
             if (viewer && viewer.shadowRoot) {
@@ -217,4 +590,4 @@
         setTimeout(() => clearInterval(killLogo), 5000);
     </script>
 </body>
-</html>f
+</html>
