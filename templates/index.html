@@ -114,7 +114,7 @@
                     <span class="text-[9px] text-gray-600">AI msgs</span>
                     <span id="tool-usage-text" class="text-[9px] text-gray-600">Tools: 0/10</span>
                 </div>
-                <!-- Upgrade button — sirf free aur pro users ke liye -->
+                <!-- Upgrade button — only for free and pro users -->
                 <button id="upgrade-btn" onclick="openUpgradeModal()" class="hidden mt-2 w-full text-[10px] text-[#00E5FF] hover:text-white border border-[#00E5FF]/30 hover:bg-[#00E5FF]/10 rounded-lg py-1.5 transition">
                     Upgrade Plan ✦
                 </button>
@@ -406,7 +406,7 @@
     }
 
     function handleUpgrade(planType) {
-        // Abhi payment modal kholo (Razorpay integration baad mein)
+        // Open payment modal (Razorpay integration)
         document.getElementById('upgrade-modal').classList.add('hidden');
         openModal('payment-modal');
         // Save plan type for post-payment upgrade
@@ -423,7 +423,7 @@
         if (!localStorage.getItem('pwa-dismissed') && !localStorage.getItem('pwa-installed')) {
             setTimeout(() => {
                 document.getElementById('pwa-banner').classList.remove('hidden');
-            }, 5000); // 5 sec baad dikhao
+            }, 5000); // Show after 5 seconds
         }
     });
     document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {

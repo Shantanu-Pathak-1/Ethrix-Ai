@@ -612,28 +612,28 @@ async function loadGlobalPreferences() {
 }
 
 // ==================================================================================
-// ✅ FIXED: applyCursorMode — neon ya bilkul system default cursor
+// applyCursorMode — toggle between neon and system default cursor
 // ==================================================================================
 function applyCursorMode(mode) {
-    // --- Step 1: Purani state saaf karo ---
+    // --- Step 1: Clear previous state ---
     document.body.classList.remove('neon-cursor-active', 'default-cursor-active');
     document.querySelector('.cursor-dot')?.remove();
     document.querySelector('.cursor-outline')?.remove();
 
-    // Purana cursor override style hata do
+    // Remove old cursor override style
     document.getElementById('cursor-override-style')?.remove();
 
     // =========================================================
-    // DEFAULT MODE — bilkul normal OS cursor, koi image nahi
+    // DEFAULT MODE — Standard OS cursor
     // =========================================================
     if (mode === 'default') {
         document.body.classList.add('default-cursor-active');
 
-        // Ek strong CSS inject karo jo style.css ke !important rules ko override kare
+        // Inject CSS rule to override style.css rules
         const s = document.createElement('style');
         s.id = 'cursor-override-style';
         s.innerHTML = `
-            /* ✅ Default system cursor — sabhi custom PNG cursors off */
+            /* Default system cursor — disable custom PNG cursors */
             body.default-cursor-active,
             body.default-cursor-active *,
             body.default-cursor-active a,
@@ -666,7 +666,7 @@ function applyCursorMode(mode) {
             }
         `;
         document.head.appendChild(s);
-        return; // Yahan se wapas, koi dot/outline nahi banana
+        return; // Return early without rendering dot/outline
     }
 
     // =========================================================
@@ -686,7 +686,7 @@ function applyCursorMode(mode) {
         document.body.appendChild(dot);
         document.body.appendChild(outline);
 
-        // Mouse follow karna
+        // Mouse follow behavior
         window.addEventListener("mousemove", (e) => {
             dot.style.left = `${e.clientX}px`;
             dot.style.top = `${e.clientY}px`;

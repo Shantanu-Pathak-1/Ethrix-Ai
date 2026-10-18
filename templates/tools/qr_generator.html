@@ -44,8 +44,8 @@
             <div class="max-w-4xl mx-auto flex flex-col gap-6" id="qr-container">
                 <div class="text-center text-gray-400 mt-16" id="welcome-msg">
                     <i class="fas fa-qrcode text-5xl text-gray-500 mb-4"></i>
-                    <h3 class="text-2xl text-gray-200">Link ya Text do!</h3>
-                    <p class="text-lg">Mic 🎙️ se bolo ya type karo. (Logo bhi laga sakte ho)</p>
+                    <h3 class="text-2xl text-gray-200">Enter Link or Text</h3>
+                    <p class="text-lg">Speak into the mic 🎙️ or type your text. (You can also attach a logo)</p>
                 </div>
                 <div id="loading" style="display: none;" class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-white mb-3"></i></div>
             </div>
@@ -154,7 +154,7 @@
                 } catch (error) {
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('generate-btn').disabled = false;
-                    alert("Kuch error aagaya code banane mein!");
+                    alert("An error occurred while generating the QR code!");
                 }
             };
 

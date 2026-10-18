@@ -112,7 +112,7 @@
             sessionId = id;
             const container = document.getElementById('flashcard-container');
             container.innerHTML = '<div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl"></i> Loading...</div>';
-            document.getElementById('more-btn-container').style.display = 'none'; // Puraana khulne par button hata do
+            document.getElementById('more-btn-container').style.display = 'none'; // Hide "More" button when loading prior session
             try {
                 const res = await fetch(`/api/chat/${id}`);
                 const data = await res.json();
@@ -129,7 +129,7 @@
             } catch(e) { container.innerHTML = `<p class="text-red-400">Failed to load</p>`; }
         }
 
-        // 🚀 FIXED: New function jo /api/chat use karega taaki history save ho, aur isMore check karega
+        // Uses /api/chat so history persists and checks isMore flag
         async function generateFlashcards(isMore = false) {
             let topicInput = document.getElementById('topic-input');
             let topic = topicInput.value.trim();
@@ -165,7 +165,7 @@
                             document.getElementById('flashcard-container').insertAdjacentHTML('beforeend', `<div class="flashcard" onclick="this.classList.toggle('flipped')"><div class="flashcard-inner"><div class="flashcard-front"><p>${card.question}</p></div><div class="flashcard-back"><p>${card.answer}</p></div></div></div>`);
                         });
                         loadToolHistory(); 
-                        document.getElementById('more-btn-container').style.display = 'block'; // Success hone par "More" button dikhao
+                        document.getElementById('more-btn-container').style.display = 'block'; // Show "More" button on success
                         document.getElementById('main-content-area').scrollTop = document.getElementById('main-content-area').scrollHeight;
                     } catch (e) {
                         alert("Sorry, the AI couldn't format the cards correctly. Please try again.");

@@ -99,7 +99,7 @@ document.addEventListener('keydown', (e) => {
 
 async function writeDiaryNow() {
     const btn = document.getElementById('writeDiaryBtn');
-    if(btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Likh rahi hu...';
+    if(btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Writing...';
     
     try {
         const res = await fetch('/api/trigger_diary', { method: 'POST' });
@@ -107,12 +107,12 @@ async function writeDiaryNow() {
         
         if(data.status === 'success') {
             alert(data.message);
-            loadDiaryEntries(); // Page refresh kiye bina nayi entry dikhayega
+            loadDiaryEntries(); // Refreshes entries without reloading the page
         } else {
             alert(data.message);
         }
     } catch (err) {
-        alert("Kuch gadbad ho gayi!");
+        alert("Something went wrong!");
     }
     
     if(btn) btn.innerHTML = '<i class="fas fa-pen-nib"></i> Write Diary Now';

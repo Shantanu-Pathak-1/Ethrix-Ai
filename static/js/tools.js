@@ -27,10 +27,10 @@ function selectTool(toolName) {
     // Configure Input & Alerts based on selected tool
     switch(toolName) {
         case 'sing_with_me':
-            input.placeholder = "🎤 Start a song (e.g., 'Tera hone laga hoon')...";
+            input.placeholder = "🎤 Start a song (e.g., 'Someone like you')...";
             input.focus();
             Swal.fire({
-                toast:true, position:'top-end', icon:'success', title:'Humsafar Mode Activated ❤️', 
+                toast:true, position:'top-end', icon:'success', title:'Duet Mode Activated ❤️', 
                 background:'#1f2937', color:'#f472b6', timer:3000, showConfirmButton:false
             });
             break;

@@ -52,7 +52,7 @@ async function loadMemories() {
         deleteBtn.className = 'delete-btn';
         deleteBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
         
-        // Exact exact string pass ho raha hai bina break hue!
+        // Pass exact string safely
         deleteBtn.onclick = () => deleteMemory(mem); 
         
         div.appendChild(textSpan);

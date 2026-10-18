@@ -196,7 +196,7 @@
 </div>
 
 <script>
-    // ✨ Yahan humne purana data save kar liya compare karne ke liye ✨
+    // Store original profile data for change comparison
     const originalName = "{{ current_name }}";
     const originalPic = "{{ current_pic }}";
     let currentSelectedPic = "{{ current_pic }}";
@@ -269,7 +269,7 @@
     async function saveProfile() {
         const newName = document.getElementById('user-name').value.trim();
 
-        // 🚀 SMART CHECK: Agar kuch change nahi hua toh ye popup aayega aur API call bachegi!
+        // Check for unchanged data to avoid redundant API requests
         if (newName === originalName && currentSelectedPic === originalPic) {
             Swal.fire({
                 icon: 'info',
@@ -281,7 +281,7 @@
                 confirmButtonColor: '#00E5FF',
                 customClass: { popup: 'border border-cyan-500/30 shadow-2xl rounded-2xl' }
             });
-            return; // Yahin se function stop ho jayega!
+            return; // No changes to save
         }
 
         const btn = document.querySelector('.btn[onclick="saveProfile()"]');
