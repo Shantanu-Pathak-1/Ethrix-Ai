@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Studio • Ethrix Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+/* cursor */
+@media (pointer: fine) {
+    body, a, button, input, textarea { cursor: none !important; }
+    .cursor-dot { position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: #ec4899; border-radius: 50%; transform: translate(-50%, -50%); z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #ec4899, 0 0 20px #ec4899; }
+    .cursor-outline { position: fixed; top: 0; left: 0; width: 32px; height: 32px; border: 2px solid rgba(236, 72, 153, 0.6); border-radius: 50%; transform: translate(-50%, -50%); z-index: 99998; pointer-events: none; transition: width 0.2s, height 0.2s, background-color 0.2s; }
+}
+
+        body { background-color: #050505; color: white; font-family: 'Segoe UI', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .masonry-grid { column-count: 1; gap: 1rem; }
+        @media (min-width: 640px) { .masonry-grid { column-count: 2; } }
+        @media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
+        .break-inside { break-inside: avoid; margin-bottom: 1rem; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500">My Studio</h1>
+            <p class="text-gray-400 text-sm">Your AI Generated Masterpieces</p>
+        </div>
+        <a href="/" class="glass px-4 py-2 rounded-full hover:bg-white/10 transition text-sm">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Chat
+        </a>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        {% if images|length == 0 %}
+            <div class="text-center py-20 opacity-50">
+                <i class="fas fa-palette text-6xl mb-4 text-gray-600"></i>
+                <h2 class="text-xl">It's empty here!</h2>
+                <p>Go to chat and ask Ethrix to "Paint a cyberpunk city"</p>
+            </div>
+        {% else %}
+            <div class="masonry-grid">
+                {% for img in images %}
+                <div class="glass rounded-xl overflow-hidden break-inside group relative">
+                    <img src="{{ img.url }}" class="w-full h-auto transform transition duration-500 group-hover:scale-105" loading="lazy">
+                    
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent sm:bg-black/60 sm:opacity-0 sm:group-hover:opacity-100 transition flex flex-col justify-end p-3 sm:p-4">
+                        <p class="text-xs sm:text-sm font-bold truncate text-white mb-2">{{ img.prompt }}</p>
+                        <div class="flex gap-2">
+                            <a href="{{ img.url }}" download="ethrix_art.jpg" target="_blank" class="bg-gradient-to-r from-blue-600 to-cyan-500 hover:opacity-90 text-white px-3 py-1.5 rounded-lg text-xs flex-1 text-center font-semibold">
+                                <i class="fas fa-download mr-1"></i> Save
+                            </a>
+                            <button onclick="deleteImage(this, '{{ img.url }}')" class="bg-red-600/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="absolute top-2 right-2 bg-black/50 px-2 py-1 rounded text-[10px] uppercase font-bold border border-white/20">
+                        {{ img.mode }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (window.matchMedia("(pointer: fine)").matches) {
+            const dot = document.createElement("div"); dot.className = "cursor-dot";
+            const outline = document.createElement("div"); outline.className = "cursor-outline";
+            document.body.appendChild(dot); document.body.appendChild(outline);
+
+            window.addEventListener("mousemove", (e) => {
+                dot.style.left = `${e.clientX}px`; dot.style.top = `${e.clientY}px`;
+                outline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
+            });
+
+            window.addEventListener("mousedown", (e) => {
+                const ripple = document.createElement("div"); ripple.className = "click-ripple";
+                ripple.style.left = `${e.clientX}px`; ripple.style.top = `${e.clientY}px`;
+                document.body.appendChild(ripple);
+                outline.style.transform = "translate(-50%, -50%) scale(0.7)";
+                setTimeout(() => outline.style.transform = "translate(-50%, -50%) scale(1)", 150);
+                setTimeout(() => ripple.remove(), 500);
+            });
+
+            const addHoverEffect = () => {
+                document.querySelectorAll("a, button, input, textarea, .mode-btn").forEach(el => {
+                    el.addEventListener("mouseenter", () => {
+                        outline.style.width = "50px"; outline.style.height = "50px";
+                        outline.style.backgroundColor = "rgba(236, 72, 153, 0.1)"; // Pink Hover
+                    });
+                    el.addEventListener("mouseleave", () => {
+                        outline.style.width = "32px"; outline.style.height = "32px";
+                        outline.style.backgroundColor = "transparent";
+                    });
+                });
+            };
+            addHoverEffect();
+        }
+    });
+        async function deleteImage(btn, url) {
+            if(!confirm("Delete this artwork?")) return;
+            
+            // UI Hide immediately
+            const card = btn.closest('.break-inside');
+            card.style.opacity = '0';
+            setTimeout(() => card.remove(), 300);
+
+            // Backend Call
+            await fetch('/api/delete_gallery_item', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ url: url })
+            });
+        }
+    </script>
+</body>
+</html>

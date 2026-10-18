@@ -1,0 +1,798 @@
+// ==================================================================================
+//  FILE: static/js/script.js
+//  DESCRIPTION: Main Frontend Logic (Updated with Global Colors & Image Gen Options)
+// ==================================================================================
+
+let currentSessionId = localStorage.getItem('session_id') || null;
+let currentMode = 'chat';
+let isRecording = false;
+let recognition = null;
+let currentFile = null;
+let lastMessageDate = null;
+
+function getDateLabel(timestamp) {
+    let ts = timestamp;
+    if (ts && typeof ts === 'string' && !ts.endsWith('Z') && !ts.includes('+')) {
+        ts += 'Z';
+    }
+    const date = ts ? new Date(ts) : new Date();
+    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+let imageSettings = {
+    quality: 'fast',
+    style: 'painting'
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadGlobalPreferences();
+    loadHistory();
+    loadProfile();
+
+    if (!currentSessionId) {
+        createNewChat();
+    } else {
+        loadChat(currentSessionId);
+    }
+});
+
+// --- THEME & VANTA CONFIG ---
+let vantaEffect = null;
+
+function initVanta() {
+    if (!window.VANTA) return;
+    const isLight = document.body.classList.contains('light-mode');
+    if (vantaEffect) { vantaEffect.destroy(); }
+
+    if (isLight) {
+        vantaEffect = VANTA.RINGS({
+            el: "#vanta-bg",
+            mouseControls: true, touchControls: true, gyroControls: false,
+            minHeight: 200.00, minWidth: 200.00, scale: 1.00, scaleMobile: 1.00,
+            backgroundColor: 0xe0e7ff, color: 0x2563eb
+        });
+    } else {
+        let pColor = localStorage.getItem('primary_color') || '#00E5FF';
+        let hexColor = parseInt(pColor.replace('#', '0x'), 16);
+        vantaEffect = VANTA.HALO({
+            el: "#vanta-bg",
+            mouseControls: true, touchControls: true, gyroControls: false,
+            minHeight: 200.00, minWidth: 200.00,
+            baseColor: hexColor, backgroundColor: 0x000000,
+            size: 0.8, amplitudeFactor: 1.0, xOffset: 0.0, yOffset: 0.0
+        });
+    }
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    initVanta();
+}
+
+// --- MOBILE SIDEBAR DRAWER CONTROLS ---
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (backdrop) backdrop.classList.add('hidden');
+}
+
+function toggleMobileSidebar(forceState = null) {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (!sidebar) return;
+    
+    const isOpen = forceState !== null ? forceState : !sidebar.classList.contains('mobile-open');
+    if (isOpen) {
+        sidebar.classList.add('mobile-open');
+        if (backdrop) backdrop.classList.remove('hidden');
+    } else {
+        sidebar.classList.remove('mobile-open');
+        if (backdrop) backdrop.classList.add('hidden');
+    }
+}
+
+function getWelcomeScreenHTML() {
+    return `
+        <div id="welcome-screen" class="flex flex-col items-center justify-center min-h-[70vh] my-auto opacity-95 text-center animate-fade-in px-4 py-6 select-none">
+            <div class="relative mb-3">
+                <img src="/static/images/logo.png" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full shadow-[0_0_25px_rgba(0,229,255,0.45)] border-2 border-[#00E5FF]/40 object-cover">
+                <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-[#0B0F19] shadow-[0_0_8px_rgba(16,185,129,0.8)]" title="Online"></span>
+            </div>
+            <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold mb-1.5 text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-[#00E5FF]">Hello! 👋</h2>
+            <p class="text-xs sm:text-sm text-gray-400 max-w-sm mb-6 leading-relaxed">I'm ready. What shall we explore or create today?</p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md px-2">
+                <button type="button" onclick="useQuickPrompt('🎨 Paint a futuristic cyberpunk city with neon lights')" class="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] hover:bg-[#00E5FF]/10 border border-white/10 hover:border-[#00E5FF]/40 text-left transition duration-200 group active:scale-95">
+                    <span class="w-8 h-8 rounded-xl bg-[#00E5FF]/15 text-[#00E5FF] flex items-center justify-center text-sm shrink-0 group-hover:scale-110 transition"><i class="fas fa-magic"></i></span>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-xs font-bold text-gray-200 group-hover:text-white truncate">Paint cyberpunk city</div>
+                        <div class="text-[10px] text-gray-500 truncate">Generate futuristic AI art</div>
+                    </div>
+                </button>
+                <button type="button" onclick="useQuickPrompt('💻 Write a modern Python web scraper with BeautifulSoup')" class="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] hover:bg-[#00E5FF]/10 border border-white/10 hover:border-[#00E5FF]/40 text-left transition duration-200 group active:scale-95">
+                    <span class="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center text-sm shrink-0 group-hover:scale-110 transition"><i class="fas fa-code"></i></span>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-xs font-bold text-gray-200 group-hover:text-white truncate">Python Web Scraper</div>
+                        <div class="text-[10px] text-gray-500 truncate">Clean code with explanation</div>
+                    </div>
+                </button>
+                <button type="button" onclick="useQuickPrompt('🧠 Explain quantum computing simply using real-life examples')" class="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] hover:bg-[#00E5FF]/10 border border-white/10 hover:border-[#00E5FF]/40 text-left transition duration-200 group active:scale-95">
+                    <span class="w-8 h-8 rounded-xl bg-yellow-500/15 text-yellow-400 flex items-center justify-center text-sm shrink-0 group-hover:scale-110 transition"><i class="fas fa-brain"></i></span>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-xs font-bold text-gray-200 group-hover:text-white truncate">Quantum Computing</div>
+                        <div class="text-[10px] text-gray-500 truncate">Explained with simple analogy</div>
+                    </div>
+                </button>
+                <button type="button" onclick="useQuickPrompt('💡 Give me 3 innovative AI SaaS product ideas for 2026')" class="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] hover:bg-[#00E5FF]/10 border border-white/10 hover:border-[#00E5FF]/40 text-left transition duration-200 group active:scale-95">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-sm shrink-0 group-hover:scale-110 transition"><i class="fas fa-lightbulb"></i></span>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-xs font-bold text-gray-200 group-hover:text-white truncate">SaaS Product Ideas</div>
+                        <div class="text-[10px] text-gray-500 truncate">Innovative trends for 2026</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function useQuickPrompt(text) {
+    const input = document.getElementById('user-input');
+    if (input) {
+        input.value = text;
+        sendMessage();
+    }
+}
+
+// --- CHAT FUNCTIONS ---
+async function createNewChat() {
+    closeMobileSidebar();
+    const res = await fetch('/api/new_chat');
+    const data = await res.json();
+    currentSessionId = data.session_id;
+    localStorage.setItem('session_id', currentSessionId);
+
+    const chatBox = document.getElementById('chat-box');
+    if (chatBox) {
+        chatBox.innerHTML = getWelcomeScreenHTML();
+    }
+    loadHistory();
+}
+
+async function loadChat(sid) {
+    closeMobileSidebar();
+    currentSessionId = sid;
+    localStorage.setItem('session_id', sid);
+    const res = await fetch(`/api/chat/${sid}`);
+    const data = await res.json();
+
+    const chatBox = document.getElementById('chat-box');
+    chatBox.innerHTML = '';
+    lastMessageDate = null;
+
+    data.messages.forEach(msg => {
+        appendMessage(msg.role === 'user' ? 'user' : 'assistant', msg.content, msg.timestamp);
+    });
+}
+
+async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const msg = input.value.trim();
+    if (!msg && !currentFile) return;
+
+    const welcome = document.getElementById('welcome-screen');
+    if (welcome) welcome.remove();
+
+    appendMessage('user', msg, null);
+    playSfx('send');
+    input.value = '';
+
+    const chatBox = document.getElementById('chat-box');
+    const thinkingId = 'thinking_' + Date.now();
+    const thinkingDiv = document.createElement('div');
+    thinkingDiv.className = 'msg-ai';
+    thinkingDiv.id = thinkingId;
+    thinkingDiv.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+    chatBox.appendChild(thinkingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+        const payload = {
+            message: msg, session_id: currentSessionId, mode: currentMode,
+            file_data: currentFile ? currentFile.data : null,
+            file_type: currentFile ? currentFile.type : null,
+            image_quality: imageSettings.quality, image_style: imageSettings.style
+        };
+
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        document.getElementById(thinkingId).remove();
+        currentFile = null;
+
+        if (res.status === 429 || data.limit_reached) {
+            appendMessage('assistant', data.reply, null);
+            if (data.upgrade_needed) { setTimeout(() => { openUpgradeModal(); }, 600); }
+            if (typeof updateUsageBar === 'function' && data.limit !== undefined) {
+                updateUsageBar(0, data.limit, 0, data.tool_limit || 10);
+            }
+            return;
+        }
+
+        appendMessage('assistant', data.reply, null);
+        loadHistory();
+
+        if (typeof updateUsageBar === 'function' && data.remaining !== undefined) {
+            updateUsageBar(data.remaining, data.limit, data.tool_remaining, data.tool_limit);
+        }
+
+        let voicePref = document.getElementById('voice-toggle');
+        if ((voicePref && voicePref.checked) || localStorage.getItem('voice_reply') === 'true') {
+            playAudio(data.reply);
+        }
+    } catch (e) {
+        document.getElementById(thinkingId).innerHTML = '<span class="text-red-400">Error: Could not connect to Ethrix.</span>';
+    }
+}
+
+function appendMessage(role, text, timestamp = null) {
+    const chatBox = document.getElementById('chat-box');
+
+    let ts = timestamp;
+    if (ts && typeof ts === 'string' && !ts.endsWith('Z') && !ts.includes('+')) { ts += 'Z'; }
+    const msgDateObj = ts ? new Date(ts) : new Date();
+    const displayTime = msgDateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const dateLabel = getDateLabel(ts);
+
+    if (lastMessageDate !== dateLabel) {
+        const divider = document.createElement('div');
+        divider.className = 'date-divider';
+        divider.innerText = dateLabel;
+        chatBox.appendChild(divider);
+        lastMessageDate = dateLabel;
+    }
+
+    const msgId = 'msg_' + Date.now() + Math.floor(Math.random() * 1000);
+    const div = document.createElement('div');
+    div.className = role === 'user' ? 'msg-user' : 'msg-ai';
+
+    let content = text;
+    if (role === 'assistant') { content = marked.parse(text); }
+
+    let actionHTML = '';
+    if (role === 'assistant') {
+        actionHTML = `
+            <div class="msg-meta">
+                <span class="msg-time">${displayTime}</span>
+                <div class="msg-actions">
+                    <button class="action-btn" onclick="regenerateMessage('${msgId}')" title="Regenerate"><i class="fas fa-sync-alt text-[12px]"></i></button>
+                    <button class="action-btn" onclick="copyText('${msgId}')" title="Copy"><i class="fas fa-copy text-[12px]"></i></button>
+                    <button class="action-btn" onclick="handleFeedback('${msgId}', 'good')" title="Good"><i class="fas fa-thumbs-up text-[12px]"></i></button>
+                    <button class="action-btn" onclick="handleFeedback('${msgId}', 'bad')" title="Bad"><i class="fas fa-thumbs-down text-[12px]"></i></button>
+                    <button class="action-btn" onclick="shareResponse('${msgId}')" title="Share"><i class="fas fa-share-alt text-[12px]"></i></button>
+                </div>
+            </div>`;
+    } else {
+        actionHTML = `
+            <div class="msg-meta" style="border-top:none; justify-content:flex-end; gap: 8px;">
+                <button class="action-btn" onclick="editMyMessage('${msgId}')" title="Edit Message"><i class="fas fa-pen text-[11px]"></i></button>
+                <button class="action-btn" onclick="copyText('${msgId}')" title="Copy Message"><i class="fas fa-copy text-[11px]"></i></button>
+                <span class="msg-time">${displayTime}</span>
+            </div>`;
+    }
+
+    if (role === 'assistant' && window.ethrixPrefs && !window.ethrixPrefs.fast_mode) {
+        div.innerHTML = `<div id="${msgId}_content" style="opacity:0; transform: translateY(10px); transition: all 0.4s ease-out;">${content}</div> ${actionHTML}`;
+        chatBox.appendChild(div);
+        playSfx('pop');
+        setTimeout(() => {
+            const contentDiv = document.getElementById(`${msgId}_content`);
+            if (contentDiv) { contentDiv.style.opacity = '1'; contentDiv.style.transform = 'translateY(0)'; }
+        }, 50);
+    } else {
+        div.innerHTML = `<div id="${msgId}_content">${content}</div> ${actionHTML}`;
+        chatBox.appendChild(div);
+        if (role === 'assistant') playSfx('pop');
+    }
+
+    if (!window.ethrixPrefs || window.ethrixPrefs.auto_scroll) {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    if (role === 'assistant') {
+        div.querySelectorAll('pre code').forEach((block) => {
+            if (window.hljs) hljs.highlightElement(block);
+            const pre = block.parentElement;
+            if (pre && !pre.querySelector('.copy-btn')) {
+                pre.style.position = 'relative';
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(block.innerText).then(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        copyBtn.style.background = 'rgba(74,222,128,0.3)';
+                        setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; copyBtn.style.background = ''; }, 2000);
+                    }).catch(() => {
+                        const ta = document.createElement('textarea');
+                        ta.value = block.innerText;
+                        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
+                    });
+                });
+                pre.appendChild(copyBtn);
+            }
+        });
+    }
+}
+
+// --- ACTIONS & FEEDBACK ---
+function copyText(msgId) {
+    const content = document.getElementById(msgId + '_content').innerText;
+    navigator.clipboard.writeText(content).then(() => {
+        const btn = document.querySelector(`button[onclick="copyText('${msgId}')"] i`);
+        btn.className = "fas fa-check text-green-400";
+        setTimeout(() => { btn.className = "fas fa-copy"; }, 2000);
+    });
+}
+
+function shareResponse(msgId) {
+    const content = document.getElementById(msgId + '_content').innerText;
+    if (navigator.share) {
+        navigator.share({ title: 'Ethrix AI', text: content, url: window.location.href });
+    } else {
+        copyText(msgId);
+        Swal.fire({ icon: 'success', title: 'Copied!', text: 'Link copied to clipboard', timer: 1500, showConfirmButton: false });
+    }
+}
+
+async function handleFeedback(msgId, type) {
+    const userEmail = document.getElementById('profile-name-sidebar').innerText === 'Guest' ? 'guest' : 'user';
+    const options = type === 'good'
+        ? [{ id: 'helpful', label: '🧠 Helpful', color: 'bg-green-500/20 text-green-400 border-green-500/50' }, { id: 'creative', label: '🎨 Creative', color: 'bg-purple-500/20 text-purple-400 border-purple-500/50' }, { id: 'fast', label: '⚡ Fast', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' }, { id: 'other', label: '✨ Other', color: 'bg-gray-700 text-gray-300 border-gray-600' }]
+        : [{ id: 'inaccurate', label: '❌ Inaccurate', color: 'bg-red-500/20 text-red-400 border-red-500/50' }, { id: 'rude', label: '😠 Rude', color: 'bg-orange-500/20 text-orange-400 border-orange-500/50' }, { id: 'bug', label: '🐞 Bug', color: 'bg-blue-500/20 text-blue-400 border-blue-500/50' }, { id: 'other', label: '❓ Other', color: 'bg-gray-700 text-gray-300 border-gray-600' }];
+
+    let tagsHTML = `<div class="flex flex-wrap gap-2 justify-center mb-4">`;
+    options.forEach(opt => { tagsHTML += `<input type="radio" name="fb_category" value="${opt.id}" id="${opt.id}" class="hidden peer"><label for="${opt.id}" class="cursor-pointer px-4 py-2 rounded-full border ${opt.color} hover:brightness-125 transition-all text-sm font-medium peer-checked:ring-2 peer-checked:ring-white peer-checked:brightness-150 select-none">${opt.label}</label>`; });
+    tagsHTML += `</div>`;
+
+    const { value: formValues } = await Swal.fire({
+        title: type === 'good' ? 'Nice! What did you like? ❤️' : 'Oops! What went wrong? 💔',
+        html: `${tagsHTML}<textarea id="fb_comment" class="swal2-textarea w-full bg-[#111] text-white border border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-pink-500" placeholder="(Optional) Tell us more..." style="margin: 0; display: block; height: 80px;"></textarea>`,
+        background: '#1e1e1e', color: '#fff', showCancelButton: true,
+        confirmButtonText: 'Submit Feedback', confirmButtonColor: type === 'good' ? '#4ade80' : '#f87171', cancelButtonColor: '#374151',
+        preConfirm: () => {
+            const selected = document.querySelector('input[name="fb_category"]:checked');
+            const comment = document.getElementById('fb_comment').value;
+            if (!selected) { Swal.showValidationMessage('Please select a category'); }
+            return { category: selected ? selected.value : null, comment: comment };
+        }
+    });
+
+    if (formValues) {
+        await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message_id: msgId, user_email: userEmail, type: type, category: formValues.category, comment: formValues.comment }) });
+        const btn = document.querySelector(`button[onclick="handleFeedback('${msgId}', '${type}')"]`);
+        if (btn) { btn.classList.add(type === 'good' ? 'text-green-400' : 'text-red-400'); btn.classList.add('scale-110'); }
+        Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, background: '#1e1e1e', color: '#fff' }).fire({ icon: 'success', title: 'Thanks!' });
+    }
+}
+
+// --- FILE UPLOAD & PREVIEW ---
+function handleFileUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        currentFile = { data: e.target.result.split(',')[1], type: file.type, name: file.name };
+        const previewContainer = document.getElementById('file-preview-container');
+        const previewName = document.getElementById('file-preview-name');
+        if (previewContainer && previewName) {
+            previewName.innerText = file.name;
+            previewContainer.classList.remove('hidden');
+            previewContainer.classList.add('flex');
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeFile() {
+    currentFile = null;
+    document.getElementById('file-upload').value = '';
+    const previewContainer = document.getElementById('file-preview-container');
+    if (previewContainer) { previewContainer.classList.add('hidden'); previewContainer.classList.remove('flex'); }
+}
+
+// --- MODE SELECTION ---
+async function setMode(mode, btn) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    if (mode === 'image_gen') {
+        const { value: formValues } = await Swal.fire({
+            title: '🎨 Image Studio Settings',
+            html: `<div class="text-left mb-2 text-gray-400 text-sm">Select Quality Mode:</div><div class="flex gap-2 mb-4"><input type="radio" name="quality" value="fast" id="q_fast" class="hidden peer/fast" checked><label for="q_fast" class="flex-1 text-center p-2 rounded-lg border border-gray-600 cursor-pointer peer-checked/fast:bg-pink-600 peer-checked/fast:border-pink-500 hover:bg-white/5 transition">⚡ Fast (CPU)</label><input type="radio" name="quality" value="pro" id="q_pro" class="hidden peer/pro"><label for="q_pro" class="flex-1 text-center p-2 rounded-lg border border-gray-600 cursor-pointer peer-checked/pro:bg-purple-600 peer-checked/pro:border-purple-500 hover:bg-white/5 transition">💎 Pro (HQ)</label></div><div class="text-left mb-2 text-gray-400 text-sm">Select Art Style:</div><div class="flex gap-2"><input type="radio" name="style" value="painting" id="s_paint" class="hidden peer/paint" checked><label for="s_paint" class="flex-1 text-center p-2 rounded-lg border border-gray-600 cursor-pointer peer-checked/paint:bg-orange-600 peer-checked/paint:border-orange-500 hover:bg-white/5 transition">🖌️ Painting</label><input type="radio" name="style" value="realistic" id="s_real" class="hidden peer/real"><label for="s_real" class="flex-1 text-center p-2 rounded-lg border border-gray-600 cursor-pointer peer-checked/real:bg-blue-600 peer-checked/real:border-blue-500 hover:bg-white/5 transition">📸 Realistic</label></div>`,
+            background: '#111', color: '#fff', confirmButtonText: 'Set Preferences', confirmButtonColor: '#ec4899',
+            preConfirm: () => ({ quality: document.querySelector('input[name="quality"]:checked').value, style: document.querySelector('input[name="style"]:checked').value })
+        });
+        if (formValues) {
+            imageSettings = formValues;
+            Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#1e1e1e', color: '#fff' }).fire({ icon: 'success', title: `Mode Set: ${imageSettings.quality.toUpperCase()} + ${imageSettings.style.toUpperCase()}` });
+        }
+    } else if (mode === 'ethrix_agent') {
+        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 2000, background: '#020205', color: '#0ff' }).fire({ icon: 'success', title: '🌌 Ethrix Agent Online' });
+    } else {
+        Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 1000 }).fire({ icon: 'info', title: `Mode: ${mode}` });
+    }
+}
+
+// --- VOICE FUNCTIONS ---
+function toggleRecording() {
+    if (!('webkitSpeechRecognition' in window)) { alert("Voice not supported"); return; }
+    if (isRecording) { recognition.stop(); isRecording = false; document.getElementById('mic-btn').classList.remove('text-red-500', 'animate-pulse'); return; }
+
+    recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-IN";
+    recognition.onstart = () => { isRecording = true; document.getElementById('mic-btn').classList.add('text-red-500', 'animate-pulse'); };
+    recognition.onresult = (event) => { document.getElementById('user-input').value = event.results[0][0].transcript; sendMessage(); };
+    recognition.onend = () => { isRecording = false; document.getElementById('mic-btn').classList.remove('text-red-500', 'animate-pulse'); };
+    recognition.start();
+}
+
+async function playAudio(text) {
+    try {
+        const res = await fetch('/api/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text }) });
+        const blob = await res.blob();
+        const audio = new Audio(URL.createObjectURL(blob));
+        audio.play();
+    } catch (e) { console.error(e); }
+}
+
+// --- SIDEBAR DATA LOADERS ---
+async function loadHistory() {
+    const res = await fetch('/api/history');
+    const data = await res.json();
+    const list = document.getElementById('history-list');
+    list.innerHTML = '';
+
+    data.history.filter(chat => !chat.title.startsWith('Tool:')).forEach(chat => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `<div class="history-icon"><i class="far fa-comment-alt"></i></div><span class="nav-label truncate text-xs md:text-sm flex-1">${chat.title}</span>`;
+        div.onclick = () => loadChat(chat.id);
+        if (typeof showContextMenu === "function") {
+            div.oncontextmenu = (e) => { e.preventDefault(); showContextMenu(e, chat.id); };
+        }
+        list.appendChild(div);
+    });
+}
+
+async function loadProfile() {
+    try {
+        const res = await fetch('/api/profile');
+        const data = await res.json();
+        const sidebarName = document.getElementById('profile-name-sidebar');
+        if (sidebarName) sidebarName.innerText = data.name || "User";
+        const sidebarImg = document.getElementById('profile-img-sidebar');
+        if (sidebarImg) sidebarImg.src = data.avatar || "/static/images/logo.png";
+        const sidebarPlan = document.getElementById('profile-plan-sidebar');
+        if (sidebarPlan) sidebarPlan.innerText = data.plan;
+    } catch (e) { console.log("Profile could not be fetched."); }
+}
+
+// --- UTILITIES ---
+function closeModal(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+function toggleVoice() { }
+
+async function deleteAllChats() {
+    if (confirm("Delete all history?")) {
+        await fetch('/api/delete_all_chats', { method: 'DELETE' });
+        loadHistory(); createNewChat(); closeModal('settings-modal');
+    }
+}
+
+function editMyMessage(msgId) {
+    const contentDiv = document.getElementById(msgId + '_content');
+    if (contentDiv) { document.getElementById('user-input').value = contentDiv.innerText; document.getElementById('user-input').focus(); }
+}
+
+async function regenerateMessage(msgId) {
+    const chatBox = document.getElementById('chat-box');
+    const aiMsgDiv = document.getElementById(msgId + '_content').closest('.msg-ai');
+    if (!aiMsgDiv) return;
+
+    let prevElement = aiMsgDiv.previousElementSibling;
+    let userText = "";
+    while (prevElement) {
+        if (prevElement.classList.contains('msg-user')) {
+            let contentDiv = prevElement.querySelector('[id$="_content"]');
+            if (contentDiv) { userText = contentDiv.innerText.trim(); }
+            break;
+        }
+        prevElement = prevElement.previousElementSibling;
+    }
+
+    if (!userText) {
+        Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: 'Original message not found!', timer: 2000, showConfirmButton: false, background: '#1e1e1e', color: '#fff' });
+        return;
+    }
+
+    aiMsgDiv.remove();
+    const thinkingId = 'thinking_' + Date.now();
+    const thinkingDiv = document.createElement('div');
+    thinkingDiv.className = 'msg-ai'; thinkingDiv.id = thinkingId;
+    thinkingDiv.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+    chatBox.appendChild(thinkingDiv); chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+        const payload = { message: userText, session_id: currentSessionId, mode: currentMode, image_quality: imageSettings.quality, image_style: imageSettings.style };
+        const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await res.json();
+        document.getElementById(thinkingId).remove();
+        appendMessage('assistant', data.reply, null);
+    } catch (e) {
+        document.getElementById(thinkingId).innerHTML = '<span class="text-red-400">Error: Could not regenerate.</span>';
+    }
+}
+
+// ==================================================================================
+// 🚀 ETHRIX GLOBAL PREFERENCES & CUSTOM THEME INJECTOR
+// ==================================================================================
+async function loadGlobalPreferences() {
+    try {
+        const res = await fetch('/api/get_preferences');
+        const prefs = await res.json();
+
+        if (prefs.font) {
+            const fontFamily = prefs.font + ", sans-serif";
+            document.body.style.fontFamily = fontFamily;
+            document.querySelectorAll('input, button, select, textarea').forEach(el => { el.style.fontFamily = fontFamily; });
+        }
+
+        if (prefs.theme === 'light') {
+            document.body.classList.add('light-mode');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.body.classList.remove('light-mode');
+            localStorage.setItem('theme', 'dark');
+        }
+
+        const voiceToggle = document.getElementById('voice-toggle');
+        if (voiceToggle) voiceToggle.checked = prefs.voice;
+        localStorage.setItem('voice_reply', prefs.voice);
+
+        // ✅ CURSOR MODE — neon ya system default
+        applyCursorMode(prefs.cursor_mode || 'neon');
+
+        const textSize = prefs.chat_text_size || 'default';
+        document.body.setAttribute('data-text-size', textSize);
+        let textSizeStyle = document.getElementById('text-size-override');
+        if (!textSizeStyle) {
+            textSizeStyle = document.createElement('style');
+            textSizeStyle.id = 'text-size-override';
+            document.head.appendChild(textSizeStyle);
+        }
+        const sizeMap = { small: '0.82rem', default: '0.95rem', large: '1.1rem', xlarge: '1.25rem' };
+        const sz = sizeMap[textSize] || '0.95rem';
+        textSizeStyle.innerHTML = `.msg-user, .msg-ai { font-size: ${sz} !important; line-height: 1.6 !important; }`;
+
+        if (prefs.zen_mode) {
+            document.body.classList.add('zen-mode-active');
+        } else {
+            document.body.classList.remove('zen-mode-active');
+        }
+
+        window.ethrixPrefs = {
+            send_on_enter:  prefs.send_on_enter !== false,
+            ui_sfx:         prefs.ui_sfx !== false,
+            fast_mode:      prefs.fast_mode === true,
+            auto_scroll:    prefs.auto_scroll !== false,
+            smart_memory:   prefs.smart_memory !== false,
+            ai_persona:     prefs.ai_persona || 'friendly',
+            chat_text_size: textSize,
+            cursor_mode:    prefs.cursor_mode || 'neon'
+        };
+
+        let pColor = prefs.primary_color || '#00E5FF';
+        localStorage.setItem('primary_color', pColor);
+        applyCustomColor(pColor);
+
+    } catch (e) { console.log("Preferences load error", e); }
+}
+
+// ==================================================================================
+// ✅ FIXED: applyCursorMode — neon ya bilkul system default cursor
+// ==================================================================================
+function applyCursorMode(mode) {
+    // --- Step 1: Purani state saaf karo ---
+    document.body.classList.remove('neon-cursor-active', 'default-cursor-active');
+    document.querySelector('.cursor-dot')?.remove();
+    document.querySelector('.cursor-outline')?.remove();
+
+    // Purana cursor override style hata do
+    document.getElementById('cursor-override-style')?.remove();
+
+    // =========================================================
+    // DEFAULT MODE — bilkul normal OS cursor, koi image nahi
+    // =========================================================
+    if (mode === 'default') {
+        document.body.classList.add('default-cursor-active');
+
+        // Ek strong CSS inject karo jo style.css ke !important rules ko override kare
+        const s = document.createElement('style');
+        s.id = 'cursor-override-style';
+        s.innerHTML = `
+            /* ✅ Default system cursor — sabhi custom PNG cursors off */
+            body.default-cursor-active,
+            body.default-cursor-active *,
+            body.default-cursor-active a,
+            body.default-cursor-active button,
+            body.default-cursor-active input,
+            body.default-cursor-active select,
+            body.default-cursor-active textarea,
+            body.default-cursor-active label,
+            body.default-cursor-active [role="button"],
+            body.default-cursor-active .mode-btn,
+            body.default-cursor-active .history-item,
+            body.default-cursor-active .tool-card,
+            body.default-cursor-active .cursor-pointer {
+                cursor: auto !important;
+            }
+            body.default-cursor-active a,
+            body.default-cursor-active button,
+            body.default-cursor-active input[type="submit"],
+            body.default-cursor-active input[type="button"],
+            body.default-cursor-active input[type="checkbox"],
+            body.default-cursor-active input[type="radio"],
+            body.default-cursor-active select,
+            body.default-cursor-active [role="button"],
+            body.default-cursor-active .mode-btn,
+            body.default-cursor-active .history-item,
+            body.default-cursor-active .tool-card,
+            body.default-cursor-active .cursor-pointer,
+            body.default-cursor-active label[for] {
+                cursor: pointer !important;
+            }
+        `;
+        document.head.appendChild(s);
+        return; // Yahan se wapas, koi dot/outline nahi banana
+    }
+
+    // =========================================================
+    // NEON MODE — custom glowing cyan cursor
+    // =========================================================
+    if (window.matchMedia("(pointer: fine)").matches) {
+        document.body.classList.add('neon-cursor-active');
+
+        // Neon dot
+        const dot = document.createElement("div");
+        dot.className = "cursor-dot";
+
+        // Neon outline ring
+        const outline = document.createElement("div");
+        outline.className = "cursor-outline";
+
+        document.body.appendChild(dot);
+        document.body.appendChild(outline);
+
+        // Mouse follow karna
+        window.addEventListener("mousemove", (e) => {
+            dot.style.left = `${e.clientX}px`;
+            dot.style.top = `${e.clientY}px`;
+            outline.animate(
+                { left: `${e.clientX}px`, top: `${e.clientY}px` },
+                { duration: 500, fill: "forwards" }
+            );
+        });
+
+        // Click ripple effect
+        window.addEventListener("mousedown", (e) => {
+            const ripple = document.createElement("div");
+            ripple.className = "click-ripple";
+            ripple.style.left = `${e.clientX}px`;
+            ripple.style.top = `${e.clientY}px`;
+            document.body.appendChild(ripple);
+            outline.style.transform = "translate(-50%, -50%) scale(0.7)";
+            setTimeout(() => { outline.style.transform = "translate(-50%, -50%) scale(1)"; }, 150);
+            setTimeout(() => { ripple.remove(); }, 500);
+        });
+
+        // Hover pe outline bada ho
+        const addHoverEffect = () => {
+            document.querySelectorAll("a, button, input, textarea, select, .tool-card, .goti, .dice").forEach(el => {
+                el.addEventListener("mouseenter", () => {
+                    outline.style.width = "50px";
+                    outline.style.height = "50px";
+                    outline.style.backgroundColor = "rgba(236, 72, 153, 0.1)";
+                });
+                el.addEventListener("mouseleave", () => {
+                    outline.style.width = "32px";
+                    outline.style.height = "32px";
+                    outline.style.backgroundColor = "transparent";
+                });
+            });
+        };
+        addHoverEffect();
+    }
+}
+
+// ==================================================================================
+// 🎨 CUSTOM COLOR INJECTOR
+// ==================================================================================
+function applyCustomColor(color) {
+    let oldStyle = document.getElementById('dynamic-theme-style');
+    if (oldStyle) oldStyle.remove();
+
+    let r = parseInt(color.slice(1, 3), 16);
+    let g = parseInt(color.slice(3, 5), 16);
+    let b = parseInt(color.slice(5, 7), 16);
+    let rgb = `${r}, ${g}, ${b}`;
+
+    let css = `
+        .msg-user { background: linear-gradient(135deg, rgba(${rgb}, 0.7), ${color}) !important; box-shadow: 0 4px 12px rgba(${rgb}, 0.3) !important; }
+        .mode-btn.active { background: linear-gradient(135deg, rgba(${rgb}, 0.7), ${color}) !important; box-shadow: 0 0 15px rgba(${rgb}, 0.4) !important; color: white !important; }
+        .history-item:hover { background: rgba(${rgb}, 0.15) !important; color: ${color} !important; }
+        .history-item:hover .history-icon { color: ${color} !important; }
+        #chat-search:focus { border-color: rgba(${rgb}, 0.5) !important; box-shadow: 0 0 15px rgba(${rgb}, 0.15) !important; }
+        .input-container button[type="submit"] { background: linear-gradient(135deg, rgba(${rgb}, 0.8), ${color}) !important; box-shadow: 0 0 15px rgba(${rgb}, 0.4) !important; }
+        .input-container button:hover i { color: ${color} !important; }
+        .cursor-dot { background: ${color} !important; box-shadow: 0 0 10px ${color}, 0 0 20px ${color} !important; }
+        .cursor-outline { border-color: rgba(${rgb}, 0.6) !important; }
+        .click-ripple { background: radial-gradient(circle, rgba(${rgb}, 0.8) 0%, rgba(0, 0, 0, 0) 70%) !important; }
+    `;
+
+    let style = document.createElement('style');
+    style.id = 'dynamic-theme-style';
+    style.innerHTML = css;
+    document.head.appendChild(style);
+
+    if (typeof initVanta === 'function') { initVanta(); }
+}
+
+// ==================================================================================
+// 🎵 UI SOUND EFFECTS & ENTER KEY LOGIC
+// ==================================================================================
+function playSfx(type = 'pop') {
+    if (!window.ethrixPrefs || !window.ethrixPrefs.ui_sfx) return;
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        if (type === 'pop') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        } else if (type === 'send') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        }
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
+    } catch (e) { console.log("SFX Error", e); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const userInput = document.getElementById('user-input');
+    if (userInput) {
+        userInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                if (window.ethrixPrefs && window.ethrixPrefs.send_on_enter) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            }
+        });
+    }
+});

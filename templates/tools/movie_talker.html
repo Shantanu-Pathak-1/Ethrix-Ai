@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Talker - Ethrix</title>
+    
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* =========================================
+           🎬 CUSTOM CURSORS FOR MOVIE TALKER
+           ========================================= */
+        *, body, html { 
+            cursor: url('/static/cursors/movie-cursor.png'), auto !important; 
+        }
+        a, button, [role="button"], input, select, textarea, label, .clickable, .history-item {
+            cursor: url('/static/cursors/movie-pointer.png'), pointer !important;
+        }
+
+        /* =========================================
+           🎬 PREMIUM CINEMATIC THEME (RED & BLACK)
+           ========================================= */
+        :root {
+            --netflix-red: #E50914;
+            --netflix-red-hover: #ff0f1a;
+            --dark-bg: #050505;
+            --card-bg: rgba(20, 20, 20, 0.8);
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            background-image: radial-gradient(circle at 50% 0%, #2a0808 0%, #050505 60%);
+            color: #f3f4f6;
+            font-family: 'Outfit', sans-serif;
+            margin: 0; 
+            height: 100vh; 
+            display: flex; 
+            overflow: hidden;
+        }
+
+        /* =========================================
+           🎬 SIDEBAR STYLING
+           ========================================= */
+        .tools-nav-sidebar {
+            width: 280px; 
+            background: rgba(10, 10, 10, 0.95);
+            border-right: 1px solid rgba(229, 9, 20, 0.2);
+            backdrop-filter: blur(20px); 
+            display: flex; 
+            flex-direction: column;
+            transition: transform 0.3s ease; 
+            z-index: 50; 
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand { 
+            font-size: 1.5rem; 
+            font-weight: 900; 
+            color: var(--netflix-red); 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            letter-spacing: 1px; 
+            padding: 20px; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        .nav-link { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            padding: 15px 20px; 
+            color: #aaa; 
+            text-decoration: none; 
+            font-size: 0.9rem; 
+            transition: 0.2s; 
+        }
+
+        .nav-link:hover { 
+            color: #fff; 
+            background: rgba(255,255,255,0.05); 
+        }
+
+        .section-label { 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            color: #666; 
+            padding: 15px 20px 5px; 
+            font-weight: 700; 
+        }
+
+        #tool-history-list { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 10px 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+        }
+
+        .history-item { 
+            padding: 12px 15px; 
+            background: rgba(255,255,255,0.03); 
+            border-radius: 10px; 
+            font-size: 0.85rem; 
+            color: #aaa; 
+            transition: 0.2s; 
+            border: 1px solid transparent; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+
+        .history-item:hover { 
+            background: rgba(229, 9, 20, 0.1); 
+            border-color: rgba(229, 9, 20, 0.3); 
+            color: #fff; 
+            transform: translateX(5px); 
+        }
+
+        /* =========================================
+           🎬 MAIN CONTENT AREA
+           ========================================= */
+        .tools-main-content { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            position: relative; 
+            background: transparent; 
+        }
+
+        .page-header { 
+            padding: 15px 25px; 
+            background: rgba(5, 5, 5, 0.8); 
+            backdrop-filter: blur(10px); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+
+        .header-title { 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+
+        .new-topic-btn { 
+            background: var(--netflix-red); 
+            color: white; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            font-size: 0.85rem; 
+            transition: 0.2s; 
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3); 
+            border: none; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+        }
+
+        .new-topic-btn:hover { 
+            background: var(--netflix-red-hover); 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.5); 
+        }
+
+        /* =========================================
+           🎬 CHAT CONTAINER & BUBBLES
+           ========================================= */
+        .tool-page-content { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 30px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            scrollbar-width: thin; 
+            scrollbar-color: var(--netflix-red) transparent; 
+        }
+
+        .tool-page-content::-webkit-scrollbar { width: 6px; }
+        .tool-page-content::-webkit-scrollbar-thumb { background: var(--netflix-red); border-radius: 10px; }
+        
+        .welcome-card { 
+            background: linear-gradient(135deg, rgba(229, 9, 20, 0.1), rgba(0,0,0,0.8)); 
+            border: 1px solid rgba(229, 9, 20, 0.3); 
+            border-radius: 20px; 
+            padding: 30px; 
+            text-align: center; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
+        }
+
+        .welcome-card-title { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            color: white; 
+            margin-bottom: 15px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+        }
+
+        .welcome-card-title i { color: var(--netflix-red); font-size: 2rem; }
+        .welcome-card-body { color: #aaa; font-size: 1rem; line-height: 1.6; }
+        
+        .user-bubble { 
+            background: var(--netflix-red); 
+            color: white; 
+            border-radius: 20px 20px 4px 20px; 
+            padding: 14px 20px; 
+            max-width: 80%; 
+            align-self: flex-end; 
+            font-size: 0.95rem; 
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.2); 
+        }
+
+        .ai-bubble { 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 20px 20px 20px 4px; 
+            padding: 15px 20px; 
+            max-width: 85%; 
+            align-self: flex-start; 
+            font-size: 0.95rem; 
+            line-height: 1.6; 
+            backdrop-filter: blur(10px); 
+        }
+
+        /* =========================================
+           🎬 INPUT BAR
+           ========================================= */
+        .input-bar { 
+            padding: 20px 30px; 
+            background: linear-gradient(to top, #050505 60%, transparent); 
+            flex-shrink: 0; 
+        }
+
+        .input-inner { 
+            display: flex; 
+            gap: 10px; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: var(--card-bg); 
+            border: 1px solid rgba(229, 9, 20, 0.3); 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            backdrop-filter: blur(15px); 
+            align-items: center; 
+        }
+
+        #chat-input { 
+            flex: 1; 
+            background: transparent; 
+            border: none; 
+            color: white; 
+            font-size: 1rem; 
+            padding: 10px; 
+            outline: none; 
+        }
+
+        #chat-input::placeholder { color: #666; }
+        
+        .mic-btn, .send-btn { 
+            width: 45px; 
+            height: 45px; 
+            border-radius: 15px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.2rem; 
+            transition: 0.2s; 
+            border: none; 
+        }
+
+        .mic-btn { 
+            color: #aaa; 
+            background: rgba(255,255,255,0.05); 
+        }
+
+        .mic-btn:hover, .mic-btn.active { 
+            color: var(--netflix-red); 
+            background: rgba(229, 9, 20, 0.1); 
+        }
+
+        .send-btn { 
+            background: var(--netflix-red); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3); 
+        }
+
+        .send-btn:hover { 
+            background: var(--netflix-red-hover); 
+            transform: scale(1.05); 
+        }
+
+        /* =========================================
+           🎬 MOBILE RESPONSIVENESS
+           ========================================= */
+        .tools-mobile-topbar { 
+            display: none; 
+            background: rgba(5,5,5,0.9); 
+            backdrop-filter: blur(10px); 
+            padding: 15px; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+
+        @media (max-width: 768px) {
+            .tools-nav-sidebar { 
+                position: fixed; 
+                left: -100%; 
+                top: 0; 
+                bottom: 0; 
+                width: 280px; 
+                box-shadow: 5px 0 20px rgba(0,0,0,0.8); 
+            }
+            .tools-nav-sidebar.mobile-open { left: 0; }
+            .tools-mobile-topbar { display: flex; }
+            .page-header { display: none; }
+            .tool-page-content { padding: 15px; }
+            .input-bar { padding: 15px; }
+            .user-bubble, .ai-bubble { max-width: 90%; font-size: 0.9rem; }
+        }
+
+        /* =========================================
+           🎬 MARKDOWN STYLES & ANIMATIONS
+           ========================================= */
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 { 
+            color: var(--netflix-red); 
+            margin-bottom: 10px; 
+            font-weight: 700; 
+        }
+        .markdown-body strong { color: #fff; }
+        .markdown-body p { margin-bottom: 10px; }
+        .markdown-body ul { padding-left: 20px; list-style-type: disc; margin-bottom: 10px; }
+        .markdown-body li { margin-bottom: 5px; }
+
+        @keyframes dotPulse {
+            0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+            40% { transform: scale(1.1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tools-mobile-topbar z-50">
+        <button onclick="document.getElementById('tools-sidebar').classList.toggle('mobile-open')" class="text-white text-xl">
+            <i class="fas fa-bars"></i>
+        </button>
+        <span class="text-lg font-bold text-[#E50914] tracking-wide">
+            <i class="fas fa-film mr-2"></i>Ethrix
+        </span>
+        <button onclick="window.location.reload()" class="text-white bg-[#E50914] px-3 py-1.5 rounded-md text-xs font-bold">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <nav id="tools-sidebar" class="tools-nav-sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-film"></i> Movie Talker
+            <button onclick="document.getElementById('tools-sidebar').classList.remove('mobile-open')" class="md:hidden ml-auto text-white">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+        <a href="/tools" class="nav-link">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+        <div class="section-label">History</div>
+        <div id="tool-history-list">
+            </div>
+    </nav>
+
+    <main class="tools-main-content">
+        <header class="page-header">
+            <div class="header-title">
+                <i class="fas fa-popcorn text-[#E50914]"></i> Movie & Series Gossip
+            </div>
+            <button onclick="window.location.reload()" class="new-topic-btn">
+                <i class="fas fa-plus"></i> New Topic
+            </button>
+        </header>
+
+        <div class="tool-page-content" id="chat-container">
+            <div class="welcome-card" id="welcome-msg">
+                <div class="welcome-card-title">
+                    <i class="fas fa-popcorn"></i> Lights, Camera, Action!
+                </div>
+                <div class="welcome-card-body">
+                    Hello! Which series or movie are we discussing today? I'm ready to geek out! 🥰 🎙️
+                </div>
+            </div>
+        </div>
+
+        <div class="input-bar">
+            <div class="input-inner">
+                <button id="mic-btn" onclick="startVoiceCommand('chat-input')" class="mic-btn">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <input type="text" id="chat-input"
+                    placeholder="Type your thoughts or ask for a story..."
+                    onkeydown="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" class="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // =========================================
+        // 🎬 JAVASCRIPT LOGIC (Uncut & Fully Preserved)
+        // =========================================
+        
+        let sessionId = 'movie_tool_' + Date.now();
+        window.onload = loadToolHistory;
+
+        function startVoiceCommand(inputId) {
+            if (!('webkitSpeechRecognition' in window)) return;
+            
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'hi-IN';
+            
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.add('active');
+            
+            recognition.onresult = (e) => { 
+                document.getElementById(inputId).value += " " + e.results[0][0].transcript; 
+                micBtn.classList.remove('active'); 
+            };
+            
+            recognition.onerror = () => micBtn.classList.remove('active');
+            recognition.onend = () => micBtn.classList.remove('active');
+            
+            recognition.start();
+        }
+
+        async function loadToolHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                
+                const list = document.getElementById('tool-history-list');
+                list.innerHTML = '';
+                
+                data.history.filter(c => c.title.toLowerCase().includes('movie')).forEach(chat => {
+                    list.innerHTML += `
+                        <div onclick="loadOldSession('${chat.id}')" class="history-item">
+                            <i class="fas fa-history" style="opacity:0.5;"></i> 
+                            ${chat.title.replace('Tool: Movie Talker - ', '')}
+                        </div>`;
+                });
+            } catch(e) {
+                console.error("Failed to load history:", e);
+            }
+        }
+
+        async function loadOldSession(id) {
+            sessionId = id;
+            const container = document.getElementById('chat-container');
+            container.innerHTML = '<div style="text-align:center;color:#E50914;margin-top:40px;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i> Loading Chat...</div>';
+            
+            try {
+                const res = await fetch(`/api/chat/${id}`);
+                const data = await res.json();
+                
+                container.innerHTML = '';
+                
+                data.messages.forEach(msg => {
+                    if (msg.role === 'user') {
+                        container.innerHTML += `<div class="user-bubble">${msg.content}</div>`;
+                    } else {
+                        container.innerHTML += `<div class="ai-bubble markdown-body">${marked.parse(msg.content)}</div>`;
+                    }
+                });
+                
+                // If on mobile, close sidebar after clicking a chat
+                if(window.innerWidth <= 768) {
+                    document.getElementById('tools-sidebar').classList.remove('mobile-open');
+                }
+                
+                container.scrollTop = container.scrollHeight;
+            } catch(e) {
+                console.error("Failed to load session:", e);
+                container.innerHTML = '<div style="text-align:center;color:white;margin-top:40px;">Failed to load chat.</div>';
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            
+            if(!msg) return;
+            
+            const container = document.getElementById('chat-container');
+
+            let welcome = document.getElementById('welcome-msg');
+            if(welcome && sessionId.includes(Date.now().toString().substring(0,5))) { 
+                welcome.style.display = 'none'; 
+            }
+
+            container.innerHTML += `<div class="user-bubble">${msg}</div>`;
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            const typingId = 'typing_' + Date.now();
+            container.innerHTML += `
+                <div class="ai-bubble" id="${typingId}" style="display:flex;gap:6px;align-items:center;padding:12px 18px;">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#E50914;animation:dotPulse 1.2s infinite 0s;display:inline-block;"></span>
+                    <span style="width:8px;height:8px;border-radius:50%;background:#E50914;animation:dotPulse 1.2s infinite 0.2s;display:inline-block;"></span>
+                    <span style="width:8px;height:8px;border-radius:50%;background:#E50914;animation:dotPulse 1.2s infinite 0.4s;display:inline-block;"></span>
+                </div>`;
+            
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const res = await fetch('/api/chat', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ message: msg, session_id: sessionId, mode: 'movie_talker' }) 
+                });
+                
+                const data = await res.json();
+                const typingEl = document.getElementById(typingId);
+                
+                if(typingEl) typingEl.remove();
+                
+                if(data.reply) {
+                    container.innerHTML += `<div class="ai-bubble markdown-body">${marked.parse(data.reply)}</div>`;
+                    container.scrollTop = container.scrollHeight;
+                    loadToolHistory();
+                }
+            } catch(e) {
+                console.error("Failed to send message:", e);
+                const typingEl = document.getElementById(typingId);
+                if(typingEl) typingEl.remove();
+            }
+        }
+    </script>
+</body>
+</html>

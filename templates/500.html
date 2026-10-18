@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 — Server Error · Ethrix AI</title>
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0B0F19; color: #fff; font-family: 'Inter', sans-serif; }
+        @keyframes shake { 0%,100%{transform:rotate(0deg)} 20%{transform:rotate(-8deg)} 40%{transform:rotate(8deg)} 60%{transform:rotate(-5deg)} 80%{transform:rotate(5deg)} }
+        @keyframes pulse-red { 0%,100%{opacity:0.5} 50%{opacity:1} }
+        .shake { animation: shake 0.6s ease-in-out; }
+        .glow-red { animation: pulse-red 2s ease-in-out infinite; text-shadow: 0 0 40px rgba(239,68,68,0.5); }
+        .glass { background: rgba(18,24,38,0.7); border: 1px solid rgba(239,68,68,0.15); backdrop-filter: blur(12px); }
+        .glass-cyan { background: rgba(18,24,38,0.7); border: 1px solid rgba(0,229,255,0.12); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center px-4">
+
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-1/3 left-1/3 w-72 h-72 bg-red-500/5 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-1/3 right-1/3 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="relative text-center max-w-md">
+
+        <!-- Animated icon -->
+        <div class="text-6xl mb-6 shake" id="icon">⚡</div>
+
+        <!-- 500 -->
+        <div class="text-8xl md:text-9xl font-bold glow-red text-red-400 mb-4 leading-none">500</div>
+
+        <h1 class="text-2xl font-bold text-white mb-3">Something Broke!</h1>
+        <p class="text-gray-400 text-sm mb-8 leading-relaxed">
+            Something went wrong on our end — the error has been logged automatically.<br>
+            Please try again in a moment. 🙏
+        </p>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+            <button onclick="window.location.reload()" class="px-6 py-3 bg-red-500/20 hover:bg-red-500/30 text-red-300 font-bold rounded-xl text-sm border border-red-500/30 transition">
+                Dobara Try Karo
+            </button>
+            <a href="/" class="px-6 py-3 glass-cyan text-gray-300 font-semibold rounded-xl text-sm hover:text-white transition border border-[#00E5FF]/20">
+                Home par Jaao
+            </a>
+        </div>
+
+        <!-- Status info -->
+        <div class="glass rounded-2xl p-4 text-left">
+            <p class="text-xs text-red-400 font-bold uppercase tracking-wider mb-3">What happened?</p>
+            <div class="space-y-2 text-xs text-gray-500">
+                <div class="flex items-start gap-2">
+                    <span class="text-red-400 mt-0.5">•</span>
+                    <span>This error has been logged automatically and will be looked into.</span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-yellow-400 mt-0.5">•</span>
+                    <span>If this keeps happening, please contact support: <span class="text-[#00E5FF]">support@ethrix.ai</span></span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-green-400 mt-0.5">•</span>
+                    <span>Your data is safe — nothing was deleted.</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <p class="absolute bottom-6 text-gray-600 text-xs">© 2025 Ethrix AI</p>
+
+    <script>
+        // Shake animation repeat on click
+        const icon = document.getElementById('icon');
+        icon.addEventListener('click', () => {
+            icon.style.animation = 'none';
+            icon.offsetHeight;
+            icon.style.animation = 'shake 0.6s ease-in-out';
+        });
+    </script>
+</body>
+</html>

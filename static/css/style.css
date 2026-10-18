@@ -1,0 +1,770 @@
+/* ==================================================================================
+   FILE: static/css/style.css
+   DESCRIPTION: Master Stylesheet for Ethrix AI Web Interface
+   ================================================================================== */
+
+/* =========================================
+   [CATEGORY] 1. CORE & LAYOUT
+   ========================================= */
+body { 
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+    margin: 0; padding: 0;
+    background-color: #0B0F19; /* Deep futuristic dark blue */
+    color: #e0e0e0;
+    overflow: hidden; /* Default for Chat App */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Allow scrolling for Diary & Memory pages */
+body.scrollable-page {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+canvas.vanta-canvas { 
+    position: fixed !important; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    z-index: 0 !important; 
+    pointer-events: none; 
+}
+
+/* Z-INDEX HIERARCHY */
+#sidebar-backdrop { z-index: 90; }
+#sidebar { z-index: 100; }
+main { position: relative; z-index: 10; }
+.input-fixed-bottom { z-index: 50; }
+.modal { z-index: 200 !important; }
+.dropdown-menu { z-index: 210 !important; position: fixed; }
+
+/* =========================================
+   [CATEGORY] 2. SCROLLBARS
+   ========================================= */
+*::-webkit-scrollbar { width: 4px; height: 4px; }
+*::-webkit-scrollbar-track { background: rgba(20, 20, 20, 0.5); }
+*::-webkit-scrollbar-thumb { 
+    background: linear-gradient(180deg, #1E90FF, #00E5FF); 
+    border-radius: 10px; 
+}
+*::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #00C6DD, #00E5FF); }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* =========================================
+   [CATEGORY] 3. SIDEBAR STYLING
+   ========================================= */
+#sidebar { 
+    position: fixed; 
+    left: 0; top: 0; bottom: 0;
+    display: flex; flex-direction: column;
+    background: rgba(18, 24, 38, 0.95); 
+    border-right: 1px solid rgba(0, 229, 255, 0.12);
+    backdrop-filter: blur(20px);
+    width: 5rem; 
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-label {
+    white-space: nowrap; opacity: 0; width: 0; overflow: hidden;
+    transition: all 0.2s ease-in-out;
+}
+
+/* MOBILE */
+@media (max-width: 767px) { 
+    #sidebar { 
+        left: -100%; width: 85%; max-width: 310px;
+        background: rgba(11, 15, 25, 0.98); z-index: 100;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+        height: 100dvh;
+        transition: left 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #sidebar.mobile-open { left: 0; }
+    #sidebar.mobile-open .nav-label { opacity: 1; width: auto; }
+    #sidebar .sidebar-header { justify-content: space-between; padding: 0 16px; }
+    #sidebar.mobile-open .sidebar-header > div { justify-content: flex-start; }
+}
+
+/* TABLET */
+@media (min-width: 768px) and (max-width: 1024px) {
+    #sidebar { width: 5rem; }
+    #sidebar:hover { width: 16rem; background: rgba(11, 15, 25, 0.98); }
+    #sidebar:hover .nav-label { opacity: 1; width: auto; margin-left: 8px; }
+}
+
+/* DESKTOP */
+@media (min-width: 1025px) { 
+    #sidebar:hover { width: 18rem; background: rgba(11, 15, 25, 0.98); }
+    #sidebar:hover .nav-label { opacity: 1; width: auto; margin-left: 10px; }
+    #sidebar:not(:hover) .w-10, #sidebar:not(:hover) .w-9, #sidebar:not(:hover) .w-8 { margin: 0 auto; }
+    #sidebar:not(:hover) .sidebar-header { justify-content: center; padding: 0; }
+    #sidebar:not(:hover) .sidebar-header > div { justify-content: center; width: 100%; }
+    #sidebar:not(:hover) .sidebar-header button { display: none; }
+}
+
+.history-item {
+    display: flex; align-items: center; height: 42px;
+    padding: 0 10px; margin-bottom: 4px; border-radius: 12px;
+    cursor: pointer; transition: 0.2s; color: #d1d5db; position: relative;
+}
+.history-item:hover { background: rgba(0, 229, 255, 0.12); color: #00E5FF; }
+.history-icon { width: 36px; display: flex; justify-content: center; align-items: center; font-size: 1rem; color: #6b7280; flex-shrink: 0; }
+.history-item:hover .history-icon { color: #00E5FF; }
+
+@media (min-width: 768px) {
+    .history-item { height: 44px; padding: 0 12px; }
+    .history-icon { width: 40px; font-size: 1.1rem; }
+}
+
+/* =========================================
+   [CATEGORY] 4. CHAT BOX & INPUT LAYOUT
+   ========================================= */
+#chat-box { 
+    width: 100%; max-width: 100%; padding: 12px 14px;
+    padding-bottom: 140px !important; flex: 1; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767px) {
+    #chat-box { padding: 10px 12px; padding-bottom: 140px !important; }
+}
+@media (min-width: 768px) { 
+    #chat-box { padding-left: 6.5rem; padding-right: 2rem; padding-bottom: 160px !important; }
+}
+
+.input-fixed-bottom { 
+    position: fixed; bottom: 0; left: 0; right: 0; width: auto;
+    padding: 0.6rem 0.75rem; pointer-events: none;
+    background: linear-gradient(to top, #0B0F19 45%, rgba(11,15,25,0.85) 75%, transparent);
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+    padding-top: 24px;
+}
+@media (min-width: 768px) {
+    .input-fixed-bottom { left: 5rem; padding: 1rem 2rem; padding-bottom: 25px; padding-top: 40px; }
+}
+
+.input-wrapper { 
+    pointer-events: auto; width: 100%; max-width: 900px; margin: 0 auto; 
+    display: flex; flex-direction: column; gap: 8px;
+}
+@media (min-width: 768px) { .input-wrapper { gap: 10px; } }
+
+.input-container { 
+    width: 100%; background: rgba(18, 24, 38, 0.92); 
+    border: 1px solid rgba(0, 229, 255, 0.22); border-radius: 20px;
+    backdrop-filter: blur(20px); transition: 0.3s; 
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+@media (min-width: 768px) {
+    .input-container { border-radius: 26px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+}
+
+/* =========================================
+   [CATEGORY] 5. MESSAGES & TYPOGRAPHY
+   ========================================= */
+.msg-user { 
+    background: linear-gradient(135deg, #1E90FF, #00E5FF); color: white; 
+    border-radius: 18px 18px 4px 18px; width: fit-content; max-width: 88%;
+    padding: 10px 14px; margin-left: auto; margin-bottom: 12px;
+    box-shadow: 0 4px 14px rgba(0, 229, 255, 0.25); font-size: 0.9rem; line-height: 1.55; word-wrap: break-word;
+}
+
+.msg-ai { 
+    background: rgba(18, 24, 38, 0.9); border: 1px solid rgba(0, 229, 255, 0.18); 
+    color: #f1f5f9; border-radius: 18px 18px 18px 4px; width: fit-content; max-width: 92%;
+    padding: 12px 16px; margin-right: auto; margin-bottom: 12px;
+    font-size: 0.9rem; line-height: 1.6; word-wrap: break-word;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+@media (min-width: 768px) {
+    .msg-user { border-radius: 20px 20px 4px 20px; max-width: 82%; padding: 12px 18px; margin-bottom: 15px; font-size: 0.95rem; }
+    .msg-ai { border-radius: 20px 20px 20px 4px; max-width: 82%; padding: 14px 22px; margin-bottom: 15px; font-size: 0.95rem; }
+}
+
+.msg-ai img, .msg-user img { max-width: 100%; border-radius: 10px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.1); }
+@media (min-width: 768px) { .msg-ai img, .msg-user img { border-radius: 12px; } }
+
+/* Markdown Typography Inside Assistant Message */
+.msg-ai h1, .msg-ai h2, .msg-ai h3, .msg-ai h4 {
+    color: #ffffff;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-top: 14px;
+    margin-bottom: 6px;
+}
+.msg-ai h1:first-child, .msg-ai h2:first-child, .msg-ai h3:first-child {
+    margin-top: 2px;
+}
+.msg-ai h1 { font-size: 1.25rem; border-bottom: 1px solid rgba(0, 229, 255, 0.2); padding-bottom: 4px; }
+.msg-ai h2 { font-size: 1.12rem; color: #38bdf8; }
+.msg-ai h3 { font-size: 1.02rem; color: #a5f3fc; }
+.msg-ai p { margin: 6px 0; }
+.msg-ai p:first-child { margin-top: 0; }
+.msg-ai p:last-child { margin-bottom: 0; }
+.msg-ai ul { list-style-type: disc !important; padding-left: 1.35rem !important; margin: 8px 0 !important; }
+.msg-ai ol { list-style-type: decimal !important; padding-left: 1.35rem !important; margin: 8px 0 !important; }
+.msg-ai li { margin-bottom: 4px; line-height: 1.55; }
+.msg-ai strong { color: #ffffff; font-weight: 600; }
+.msg-ai em { color: #cbd5e1; }
+.msg-ai blockquote {
+    border-left: 3px solid #00E5FF;
+    background: rgba(0, 229, 255, 0.05);
+    padding: 8px 12px;
+    margin: 8px 0;
+    border-radius: 0 8px 8px 0;
+    color: #94a3b8;
+    font-style: italic;
+}
+.msg-ai a {
+    color: #00E5FF;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+}
+.msg-ai a:hover { color: #67e8f9; }
+.msg-ai code:not(pre code) {
+    background: rgba(0, 229, 255, 0.12);
+    color: #00E5FF;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.88em;
+    font-family: 'Consolas', 'Courier New', monospace;
+    border: 1px solid rgba(0, 229, 255, 0.2);
+}
+.msg-ai table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    display: block;
+}
+.msg-ai th, .msg-ai td {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 10px;
+    text-align: left;
+}
+.msg-ai th {
+    background: rgba(0, 229, 255, 0.12);
+    color: #ffffff;
+    font-weight: 600;
+}
+.msg-ai tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* --- Message Metadata (Time & Actions) --- */
+.msg-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 6px; padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.7rem; color: #9ca3af;
+}
+
+.msg-time { font-size: 0.65rem; opacity: 0.7; }
+
+.msg-actions {
+    display: flex; gap: 6px; opacity: 0.8; transition: opacity 0.2s;
+}
+.msg-ai:hover .msg-actions { opacity: 1; }
+
+.action-btn {
+    background: none; border: none; cursor: pointer; color: #9ca3af;
+    font-size: 0.8rem; transition: all 0.2s; padding: 4px;
+    border-radius: 6px;
+}
+.action-btn:hover { color: #fff; transform: scale(1.1); background: rgba(255, 255, 255, 0.08); }
+.action-btn.liked { color: #4ade80; }
+.action-btn.disliked { color: #f87171; }
+
+@media (max-width: 768px) {
+    .msg-actions { opacity: 1; gap: 6px; }
+    .action-btn { 
+        min-width: 30px; 
+        min-height: 30px; 
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center; 
+        padding: 4px; 
+        font-size: 0.85rem; 
+        background: rgba(255, 255, 255, 0.05);
+    }
+}
+
+/* Modes */
+.mode-scroll { mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent); }
+.mode-btn { 
+    padding: 5px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; 
+    cursor: pointer; transition: 0.2s; background: rgba(255,255,255,0.08); 
+    border: 1px solid rgba(255,255,255,0.1); color: #aaa; white-space: nowrap;
+}
+@media (min-width: 768px) { .mode-btn { padding: 6px 16px; font-size: 0.85rem; } }
+.mode-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-1px); color: white; }
+.mode-btn.active { background: linear-gradient(135deg, #1E90FF, #00E5FF); border-color: transparent; color: white; box-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
+
+/* =========================================
+   [CATEGORY] 6. LIGHT MODE OVERRIDES
+   ========================================= */
+body.light-mode { background-color: #f8fafc !important; color: #1e293b !important; }
+body.light-mode canvas.vanta-canvas { opacity: 0.6; }
+body.light-mode #sidebar { background: rgba(255, 255, 255, 0.9); border-right: 1px solid #e2e8f0; }
+body.light-mode #sidebar:hover { background: #ffffff; }
+body.light-mode .text-white { color: #1e293b !important; }
+body.light-mode .text-gray-400 { color: #64748b !important; }
+body.light-mode .text-gray-300 { color: #475569 !important; }
+/* Ye tumhare dark mode (default) ke liye hai */
+.input-fixed-bottom { 
+    position: fixed; bottom: 0; left: 0; right: 0; width: auto;
+    padding: 1rem; pointer-events: none;
+    background: linear-gradient(to top, #000000 40%, rgba(0, 0, 0, 0.8) 70%, transparent);
+    padding-bottom: 20px; padding-top: 40px;
+}
+
+/* Aur ye tumhare white theme (light mode) ke liye hai 👇 */
+body.light-mode .input-fixed-bottom { 
+    background: linear-gradient(to top, #ffffff 40%, rgba(255,255,255,0.9) 80%, transparent) !important; 
+}
+body.light-mode .input-container { background: rgba(255, 255, 255, 0.95); border: 1px solid #cbd5e1; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+body.light-mode input { color: #000 !important; }
+body.light-mode .msg-ai { background: #ffffff; border: 1px solid #e2e8f0; color: #334155; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+body.light-mode .msg-user { background: linear-gradient(135deg, #1E90FF, #00E5FF); color: white !important; }
+body.light-mode .modal-content { background: #ffffff; color: #0f172a; border: 1px solid #e2e8f0; }
+body.light-mode .modal-content input, body.light-mode .modal-content textarea { background: #f1f5f9; color: #000; border: 1px solid #cbd5e1; }
+/* Old Chats Light Mode Fixes */
+body.light-mode .history-item { color: #000000; }
+body.light-mode .history-item:hover { background: rgba(0,0,0,0.05); color: #00E5FF; }
+body.light-mode .history-icon { color: #475569; }
+
+/* =========================================
+   [CATEGORY] 7. CODE BLOCKS
+   ========================================= */
+pre { background: #1e1e1e !important; padding: 0.75rem; border-radius: 10px; border: 1px solid #333; overflow-x: auto; margin-top: 10px; font-size: 0.8rem; }
+@media (min-width: 768px) { pre { padding: 1rem; border-radius: 12px; font-size: 0.9em; } }
+code { font-family: 'Consolas', monospace; color: #d4d4d4; }
+.copy-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.15); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; border: none; }
+/* Ensure copy-btn always shows pointer (even on neon cursor pages) */
+body.neon-cursor-active .copy-btn { cursor: none !important; }
+
+/* =========================================
+   [CATEGORY] 8. MODALS & DROPDOWNS
+   ========================================= */
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); align-items: center; justify-content: center; z-index: 999; padding: 1rem; }
+.modal-content { width: 95%; max-width: 480px; padding: 20px; border-radius: 16px; background: #121826; border: 1px solid rgba(0, 229, 255, 0.3); margin: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.6); max-height: 90vh; overflow-y: auto; }
+@media (min-width: 768px) { .modal-content { padding: 25px; border-radius: 20px; } }
+.dropdown-menu { display: none; padding: 6px; min-width: 140px; border-radius: 10px; position: fixed; background: #121826; border: 1px solid rgba(0, 229, 255, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; }
+@media (min-width: 768px) { .dropdown-menu { min-width: 150px; border-radius: 12px; } }
+.dropdown-menu.show { display: block; animation: fadeIn 0.2s ease; }
+.dropdown-item { padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 6px; color: #eee; font-size: 0.85rem; transition: 0.2s; }
+@media (min-width: 768px) { .dropdown-item { padding: 10px 14px; gap: 10px; border-radius: 8px; font-size: 0.9rem; } }
+.dropdown-item:hover { background: rgba(255,255,255,0.1); }
+
+/* =========================================
+   [CATEGORY] 9. ANIMATIONS & UTILITIES
+   ========================================= */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+.animate-pulse { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+.typing-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #aaa; margin: 0 2px; animation: typing 1.4s infinite; }
+@media (min-width: 768px) { .typing-dot { width: 6px; height: 6px; } }
+@keyframes typing { 0%, 100% { transform: scale(0.5); opacity: 0.5; } 50% { transform: scale(1); opacity: 1; } }
+
+@media (max-width: 767px) {
+    #sidebar-backdrop:not(.hidden) { display: block; }
+    button, a, .mode-btn, .history-item { min-height: 40px; }
+    input, textarea, select { font-size: 16px !important; }
+}
+#welcome-screen { padding: 1rem; }
+@media (min-width: 768px) { #welcome-screen { padding: 2rem; } }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.break-words { overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
+
+/* Date Divider */
+.date-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.date-divider::before, .date-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.date-divider:not(:empty)::before { margin-right: 15px; }
+.date-divider:not(:empty)::after { margin-left: 15px; }
+
+/* =========================================================
+   🚀 CUSTOM NEON CURSOR & CLICK ANIMATION (DESKTOP ONLY)
+   ========================================================= */
+/*
+  =====================================================================
+  style.css mein sirf yeh CURSOR SECTION replace karo
+  (line ~420 ke aaspaas — "@media (pointer: fine)" wala block)
+  =====================================================================
+*/
+
+/* 🚀 CUSTOM NEON CURSOR & CLICK ANIMATION (DESKTOP ONLY) */
+@media (pointer: fine) {
+
+    /* DEFAULT MODE: body.default-cursor-active ho toh kuch mat karo
+       — JS wala cursor-override-style handle karega */
+
+    /* TOOL PAGES (non-neon, non-default): PNG cursor dikhao */
+    body:not(.neon-cursor-active):not(.default-cursor-active) {
+        cursor: url('/static/cursors/tools-cursor.png'), auto !important;
+    }
+    body:not(.neon-cursor-active):not(.default-cursor-active) a,
+    body:not(.neon-cursor-active):not(.default-cursor-active) button,
+    body:not(.neon-cursor-active):not(.default-cursor-active) input,
+    body:not(.neon-cursor-active):not(.default-cursor-active) select,
+    body:not(.neon-cursor-active):not(.default-cursor-active) textarea,
+    body:not(.neon-cursor-active):not(.default-cursor-active) [role="button"],
+    body:not(.neon-cursor-active):not(.default-cursor-active) label[for],
+    body:not(.neon-cursor-active):not(.default-cursor-active) .cursor-pointer {
+        cursor: url('/static/cursors/tools-pointer.png'), pointer !important;
+    }
+
+    /* NEON MODE: cursor bilkul hide karo */
+    body.neon-cursor-active * {
+        cursor: none !important;
+    }
+
+    /* The tiny glowing dot */
+    .cursor-dot {
+        position: fixed;
+        top: 0; left: 0;
+        width: 8px; height: 8px;
+        background: #00E5FF;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 99999;
+        pointer-events: none;
+        box-shadow: 0 0 10px #00E5FF, 0 0 20px #00E5FF;
+    }
+
+    /* The following circle */
+    .cursor-outline {
+        position: fixed;
+        top: 0; left: 0;
+        width: 32px; height: 32px;
+        border: 2px solid rgba(0, 229, 255, 0.6);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 99998;
+        pointer-events: none;
+        transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
+    }
+
+    /* Ripple Effect on Click */
+    .click-ripple {
+        position: fixed;
+        top: 0; left: 0;
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0, 229, 255, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
+        transform: translate(-50%, -50%) scale(0);
+        z-index: 99997;
+        pointer-events: none;
+        animation: ripple-anim 0.5s ease-out forwards;
+    }
+
+    @keyframes ripple-anim {
+        0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(3);   opacity: 0; }
+    }
+}
+/* ==================================================================================
+   RESPONSIVE ADDITIONS — Mobile (320–480px) & Tablet (481–1024px)
+   Added during Ethrix AI rebranding & responsiveness pass
+   ================================================================================== */
+
+/* =========================================
+   [R1] GLOBAL — Prevent horizontal scroll
+   ========================================= */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* =========================================
+   [R2] TOOLS SIDEBAR — Mobile nav overlay
+   ========================================= */
+.tools-nav-sidebar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 767px) {
+    /* Tools/tool-page sidebars: hidden off-screen, slide in when open */
+    nav.tools-nav-sidebar {
+        position: fixed !important;
+        left: 0; top: 0; bottom: 0;
+        width: 80% !important;
+        max-width: 280px !important;
+        z-index: 200 !important;
+        transform: translateX(-100%);
+        display: flex !important; /* override hidden md:flex */
+    }
+    nav.tools-nav-sidebar.mobile-open {
+        transform: translateX(0);
+    }
+    nav.tools-nav-sidebar.mobile-open::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: -1;
+        left: 100%;
+        width: 100vw;
+    }
+    /* Mobile top bar for tools pages */
+    .tools-mobile-topbar {
+        display: flex !important;
+    }
+    /* Ensure main content fills screen on mobile */
+    .tools-main-content {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .tools-mobile-topbar {
+        display: none !important;
+    }
+}
+
+/* =========================================
+   [R3] LOGIN CARD — Fluid on small screens
+   ========================================= */
+@media (max-width: 480px) {
+    .login-card {
+        width: calc(100vw - 32px) !important;
+        max-width: 380px !important;
+        padding: 20px 16px !important;
+        border-radius: 16px !important;
+        margin: 0 16px;
+    }
+    .brand-title {
+        font-size: 1.6rem !important;
+    }
+    .login-logo-responsive {
+        width: 64px !important;
+        height: 64px !important;
+    }
+}
+
+/* =========================================
+   [R4] TOOLS DASHBOARD GRID — Responsive
+   ========================================= */
+@media (max-width: 480px) {
+    /* Single column on tiny phones */
+    .tools-grid-responsive {
+        grid-template-columns: 1fr !important;
+    }
+    /* Tool card inner padding */
+    .tool-card-responsive {
+        padding: 16px !important;
+    }
+    /* Page heading size */
+    .tools-page-heading {
+        font-size: 1.4rem !important;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+    .tools-grid-responsive {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* =========================================
+   [R5] LANDING PAGE — Mobile hero & cards
+   ========================================= */
+@media (max-width: 480px) {
+    /* Shrink hero heading on very small phones */
+    .landing-hero-h1 {
+        font-size: 2rem !important;
+        line-height: 1.2 !important;
+    }
+    .landing-hero-sub {
+        font-size: 0.95rem !important;
+    }
+    /* Stack CTA buttons */
+    .landing-cta-row {
+        flex-direction: column !important;
+        gap: 12px !important;
+        align-items: stretch !important;
+    }
+    .landing-cta-row a {
+        text-align: center;
+    }
+    /* Feature cards: single column */
+    .landing-features-grid {
+        grid-template-columns: 1fr !important;
+    }
+    /* Nav brand text */
+    .landing-nav-brand {
+        font-size: 1rem !important;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+    .landing-hero-h1 {
+        font-size: 2.8rem !important;
+    }
+}
+
+/* =========================================
+   [R6] ABOUT PAGE — Content sections
+   ========================================= */
+@media (max-width: 480px) {
+    /* Tighten about card padding */
+    .about-main-card {
+        padding: 16px !important;
+        border-radius: 16px !important;
+    }
+    /* Creator avatar smaller */
+    .about-avatar {
+        width: 96px !important;
+        height: 96px !important;
+    }
+    /* Name heading */
+    .about-name-heading {
+        font-size: 2rem !important;
+    }
+    /* Timeline left offset */
+    .timeline-container {
+        padding-left: 1.5rem !important;
+    }
+}
+
+/* =========================================
+   [R7] CHAT INPUT — Tighter on 320px
+   ========================================= */
+@media (max-width: 360px) {
+    .input-fixed-bottom {
+        padding: 0.5rem !important;
+        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        padding-top: 20px !important;
+    }
+    .mode-btn {
+        font-size: 0.72rem !important;
+        padding: 4px 10px !important;
+    }
+    #user-input {
+        font-size: 16px !important; /* Prevents iOS auto-zoom */
+    }
+}
+
+/* =========================================
+   [R8] FLASHCARDS — Mobile grid fix
+   ========================================= */
+@media (max-width: 480px) {
+    .flashcard-container {
+        grid-template-columns: 1fr !important;
+        padding: 10px !important;
+    }
+    .flashcard {
+        height: 200px !important;
+    }
+}
+
+/* =========================================
+   [R9] MEMORY / DIARY pages — padding fix
+   ========================================= */
+@media (max-width: 480px) {
+    .memory-container {
+        padding: 12px !important;
+        padding-top: 20px !important;
+    }
+}
+
+/* =========================================
+   [R10] MODAL — Full-width on tiny screens
+   ========================================= */
+@media (max-width: 480px) {
+    .modal-content {
+        width: 100% !important;
+        max-width: calc(100vw - 24px) !important;
+        padding: 16px !important;
+        border-radius: 16px !important;
+        margin: 0 12px !important;
+    }
+}
+
+/* =========================================
+   [R11] ONBOARDING — Form responsiveness
+   ========================================= */
+@media (max-width: 480px) {
+    .onboarding-card {
+        width: calc(100vw - 32px) !important;
+        padding: 20px 16px !important;
+        border-radius: 16px !important;
+    }
+}
+
+/* =========================================
+   [R12] GALLERY — Image grid
+   ========================================= */
+@media (max-width: 480px) {
+    .gallery-grid-responsive {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+}
+
+/* =========================================
+   [R13] TOOL PAGES — Header & content area
+   ========================================= */
+@media (max-width: 767px) {
+    /* Tool page headers with text */
+    .tool-page-header {
+        padding: 16px !important;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .tool-page-header h1 {
+        font-size: 1.2rem !important;
+    }
+    /* Tool page content areas */
+    .tool-page-content {
+        padding: 12px !important;
+    }
+    /* Textarea and inputs in tools */
+    .tool-input-area {
+        font-size: 14px !important;
+    }
+    /* Result boxes */
+    .tool-result-box {
+        padding: 12px !important;
+        font-size: 0.875rem !important;
+    }
+}
+
+/* =========================================
+   [R14] PREVENT OVERFLOW on all pages
+   ========================================= */
+img, video, iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure long URLs/words don't overflow */
+p, span, div, li, td, th {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}

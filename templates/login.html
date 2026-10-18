@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="MwrbfdlLx3xF8CILvK16Glar7CAECETS50_zOaXseyg" />
+    <title>Ethrix AI • Welcome Back</title>
+    
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px 16px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Elegant warm aesthetic gradient matching Screenshot 2 */
+            background: radial-gradient(circle at 45% 35%, #B47F75 0%, #9B675D 50%, #764740 100%);
+            background-attachment: fixed;
+            color: #1E2024;
+            overflow-x: hidden;
+        }
+
+        /* Master Card */
+        .auth-card {
+            width: 100%;
+            max-width: 1060px;
+            background: #FFFFFF;
+            border-radius: 38px;
+            box-shadow: 0 35px 80px -15px rgba(50, 18, 15, 0.45), 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1.05fr 1.12fr;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 920px) {
+            .auth-card {
+                grid-template-columns: 1fr;
+                max-width: 480px;
+                border-radius: 30px;
+            }
+            .showcase-column {
+                display: none !important;
+            }
+            .form-column {
+                padding: 36px 26px !important;
+            }
+        }
+
+        .form-column {
+            padding: 48px 46px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Inputs */
+        .custom-input {
+            width: 100%;
+            height: 52px;
+            background: #F5F6F8;
+            border: 1.5px solid #EAEDF1;
+            border-radius: 14px;
+            padding: 0 18px;
+            font-size: 0.95rem;
+            color: #1E2024;
+            outline: none;
+            transition: all 0.25s ease;
+            font-weight: 500;
+        }
+        .custom-input::placeholder {
+            color: #9EA3AB;
+            font-weight: 400;
+        }
+        .custom-input:focus {
+            background: #FFFFFF;
+            border-color: #8E5E69;
+            box-shadow: 0 0 0 4px rgba(142, 94, 105, 0.12);
+        }
+
+        /* Primary Action Button (Dusty Rose Palette) */
+        .btn-submit {
+            width: 100%;
+            height: 52px;
+            background: #8E5E69;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px -4px rgba(142, 94, 105, 0.45);
+        }
+        .btn-submit:hover:not(:disabled) {
+            background: #7B4F59;
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px -4px rgba(142, 94, 105, 0.55);
+        }
+        .btn-submit:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .btn-submit:disabled {
+            background: #BFA5AC;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Social Auth Button */
+        .social-btn {
+            width: 60px;
+            height: 50px;
+            background: #FFFFFF;
+            border: 1.5px solid #ECEFF3;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+        .social-btn:hover {
+            border-color: #D1D5DB;
+            background: #F9FAFB;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Switch Mode Pills */
+        .tab-pill {
+            cursor: pointer;
+            padding: 6px 16px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: #71767B;
+        }
+        .tab-pill.active {
+            background: #8E5E69;
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(142, 94, 105, 0.3);
+        }
+
+        /* Showcase Column */
+        .showcase-column {
+            padding: 16px;
+            display: flex;
+        }
+        .showcase-inner {
+            width: 100%;
+            height: 100%;
+            min-height: 560px;
+            border-radius: 28px;
+            background: url('/static/images/login-showcase.jpg') center / cover no-repeat;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 34px;
+            box-shadow: inset 0 -80px 100px -20px rgba(15, 10, 20, 0.5);
+        }
+
+        /* Spinner */
+        .spinner {
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 2.5px solid #ffffff;
+            width: 18px;
+            height: 18px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="auth-card">
+    
+    <!-- LEFT: FORM COLUMN -->
+    <div class="form-column">
+        
+        <!-- Header Branding & Tab Switcher -->
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-2.5">
+                <img src="/static/images/logo.png" class="w-8 h-8 rounded-full border border-gray-200 shadow-sm object-cover">
+                <span class="font-bold text-base text-[#1E2024] tracking-wide">Ethrix AI</span>
+            </div>
+            
+            <!-- Quick Tab Toggle -->
+            <div class="flex bg-[#F5F6F8] p-1 rounded-xl border border-[#EAEDF1]">
+                <button type="button" id="tab-login-btn" onclick="switchAuthTab('login')" class="tab-pill active">Sign In</button>
+                <button type="button" id="tab-signup-btn" onclick="switchAuthTab('signup')" class="tab-pill">Sign Up</button>
+            </div>
+        </div>
+
+        <!-- Title Section -->
+        <div class="mb-6">
+            <h1 id="auth-heading" class="text-3xl sm:text-4xl font-bold text-[#1E2024] tracking-tight mb-2">Hello Again!</h1>
+            <p id="auth-subheading" class="text-xs sm:text-sm text-[#7D828A] font-medium">Let's get started with your account</p>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- LOGIN FORM                                 -->
+        <!-- ========================================== -->
+        <div id="login-form" class="space-y-4 fade-in">
+            <div>
+                <input type="text" id="login-id" class="custom-input" placeholder="Email or Username" autocomplete="username">
+            </div>
+            
+            <div class="relative">
+                <input type="password" id="login-pass" class="custom-input pr-12" placeholder="Password" autocomplete="current-password">
+                <button type="button" onclick="togglePasswordVisibility('login-pass', 'pass-eye-icon')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none">
+                    <i id="pass-eye-icon" class="fas fa-eye-slash text-sm"></i>
+                </button>
+            </div>
+
+            <div class="flex justify-end">
+                <a href="javascript:void(0)" onclick="forgotPasswordNotice()" class="text-xs font-semibold text-[#7D828A] hover:text-[#8E5E69] transition">Recovery Password</a>
+            </div>
+
+            <button type="button" class="btn-submit mt-2" onclick="handleLogin(this)">
+                <span>Sign In</span>
+            </button>
+
+            <!-- Divider -->
+            <div class="relative flex items-center justify-center my-6">
+                <div class="border-t border-[#EAEDF1] w-full"></div>
+                <span class="bg-white px-3 text-xs font-medium text-[#9EA3AB] whitespace-nowrap">Or continue with</span>
+                <div class="border-t border-[#EAEDF1] w-full"></div>
+            </div>
+
+            <!-- Social OAuth Buttons -->
+            <div class="flex items-center justify-center gap-4">
+                <!-- Google Button -->
+                <button type="button" onclick="handleGoogleLogin()" class="social-btn" title="Sign in with Google">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                </button>
+
+                <!-- Apple Button -->
+                <button type="button" onclick="socialNotice('Apple ID')" class="social-btn" title="Sign in with Apple">
+                    <i class="fab fa-apple text-xl text-[#1E2024]"></i>
+                </button>
+
+                <!-- Facebook Button -->
+                <button type="button" onclick="socialNotice('Facebook')" class="social-btn" title="Sign in with Facebook">
+                    <i class="fab fa-facebook-f text-lg text-[#1877F2]"></i>
+                </button>
+            </div>
+
+            <!-- Bypass / Guest Access Option -->
+            <div class="mt-4">
+                <a href="/guest_login" class="w-full py-2.5 px-4 rounded-xl border border-dashed border-[#8E5E69]/40 hover:border-[#8E5E69] text-[#8E5E69] hover:bg-[#8E5E69]/10 text-xs font-bold transition flex items-center justify-center gap-2" style="text-decoration:none;">
+                    <i class="fas fa-bolt text-amber-500"></i>
+                    <span>⚡ Skip & Explore as Guest (Bypass Login)</span>
+                </a>
+            </div>
+
+            <!-- Consent Checkbox -->
+            <div class="flex items-start gap-2.5 mt-5 pt-2 border-t border-[#F2F4F7]">
+                <input type="checkbox" id="google-consent" class="mt-1 w-4 h-4 rounded text-[#8E5E69] focus:ring-[#8E5E69] cursor-pointer" checked>
+                <label for="google-consent" class="text-[11px] text-[#7D828A] leading-relaxed cursor-pointer select-none">
+                    I agree to the <a href="/legal" target="_blank" class="text-[#8E5E69] underline hover:text-[#1E2024]">Terms of Service</a> & <a href="/legal" target="_blank" class="text-[#8E5E69] underline hover:text-[#1E2024]">Privacy Policy</a>, and authorize Ethrix AI services.
+                </label>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SIGNUP FORM                                -->
+        <!-- ========================================== -->
+        <div id="signup-form" class="hidden space-y-4 fade-in">
+            <!-- Step 1: Email -->
+            <div id="step-1" class="space-y-3">
+                <input type="email" id="reg-email" class="custom-input" placeholder="Enter your email address">
+                <button type="button" class="btn-submit" onclick="sendOTP(this)">
+                    <span>Send Verification Code</span>
+                </button>
+            </div>
+
+            <!-- Step 2: OTP Verification -->
+            <div id="step-2" class="hidden space-y-3 fade-in">
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800">
+                    <i class="fas fa-check-circle mr-1 text-emerald-600"></i> Verification code sent! Check your inbox or spam.
+                </div>
+                <input type="text" id="reg-otp" class="custom-input text-center text-lg tracking-widest font-bold" placeholder="• • • • • •" maxlength="6">
+                <button type="button" class="btn-submit" onclick="verifyOTP(this)">
+                    <span>Verify & Continue</span>
+                </button>
+            </div>
+
+            <!-- Step 3: Complete Details -->
+            <div id="step-3" class="hidden space-y-3 fade-in">
+                <input type="text" id="reg-name" class="custom-input" placeholder="Full Name">
+                <input type="text" id="reg-user" class="custom-input" placeholder="Choose a unique username">
+                
+                <div class="text-left">
+                    <label class="text-[11px] font-semibold text-gray-500 ml-1">Date of Birth</label>
+                    <input type="date" id="reg-dob" class="custom-input mt-1">
+                </div>
+
+                <div class="relative">
+                    <input type="password" id="reg-pass" class="custom-input pr-12" placeholder="Create Password">
+                    <button type="button" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-base hover:scale-110 transition" onclick="generateMagicPass()" title="Auto-generate secure magic password">
+                        ✨
+                    </button>
+                </div>
+
+                <div class="flex items-start gap-2.5 pt-1">
+                    <input type="checkbox" id="terms-agree" class="mt-1 w-4 h-4 rounded text-[#8E5E69] focus:ring-[#8E5E69] cursor-pointer">
+                    <label for="terms-agree" class="text-[11px] text-[#7D828A] leading-relaxed cursor-pointer select-none">
+                        I am at least 13 years old and accept the <a href="/legal" target="_blank" class="text-[#8E5E69] underline">Terms of Service</a> & <a href="/legal" target="_blank" class="text-[#8E5E69] underline">Privacy Policy</a>.
+                    </label>
+                </div>
+
+                <button type="button" class="btn-submit mt-1" onclick="completeSignup(this)">
+                    <span>Create Account 🚀</span>
+                </button>
+            </div>
+
+            <div class="text-center pt-2">
+                <p class="text-xs text-gray-500">
+                    Already have an account? 
+                    <a href="javascript:void(0)" onclick="switchAuthTab('login')" class="text-[#8E5E69] font-bold underline hover:text-[#1E2024]">Sign In</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RIGHT: SHOWCASE COLUMN (Matching Screenshot 2) -->
+    <div class="showcase-column">
+        <div class="showcase-inner">
+            
+            <!-- Bottom Content -->
+            <div class="relative z-10">
+                <p class="text-white text-base sm:text-lg font-medium drop-shadow-md mb-4 tracking-tight">
+                    Finally, all your AI work in one place.
+                </p>
+
+                <!-- Slider Arrows -->
+                <div class="flex items-center gap-2">
+                    <button type="button" class="w-8 h-8 rounded-full border border-white/40 bg-black/20 backdrop-blur-md flex items-center justify-center text-white/90 hover:bg-white/30 transition text-xs shadow-sm">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <button type="button" class="w-8 h-8 rounded-full border border-white/40 bg-black/20 backdrop-blur-md flex items-center justify-center text-white/90 hover:bg-white/30 transition text-xs shadow-sm">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- Switch between Login and Signup ---
+    function switchAuthTab(tab) {
+        const loginBtn = document.getElementById('tab-login-btn');
+        const signupBtn = document.getElementById('tab-signup-btn');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const heading = document.getElementById('auth-heading');
+        const subheading = document.getElementById('auth-subheading');
+
+        if (tab === 'login') {
+            loginBtn.classList.add('active');
+            signupBtn.classList.remove('active');
+            loginForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+            heading.textContent = "Hello Again!";
+            subheading.textContent = "Let's get started with your account";
+        } else {
+            signupBtn.classList.add('active');
+            loginBtn.classList.remove('active');
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+            document.getElementById('step-1').classList.remove('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').classList.add('hidden');
+            heading.textContent = "Create Account";
+            subheading.textContent = "Join Ethrix AI for a 30-day trial";
+        }
+    }
+
+    // --- Password Visibility Toggle ---
+    function togglePasswordVisibility(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fas fa-eye text-sm text-[#8E5E69]';
+        } else {
+            input.type = 'password';
+            icon.className = 'fas fa-eye-slash text-sm text-gray-400';
+        }
+    }
+
+    // --- Loading State Helper ---
+    function setLoading(btn, isLoading, defaultText) {
+        if (isLoading) {
+            btn.disabled = true;
+            btn.innerHTML = `<div class="spinner"></div> <span>Processing...</span>`;
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = `<span>${defaultText}</span>`;
+        }
+    }
+
+    // --- Login Handler ---
+    async function handleLogin(btn) {
+        const identifier = document.getElementById('login-id').value.trim();
+        const password = document.getElementById('login-pass').value;
+        if (!identifier || !password) {
+            return Swal.fire({
+                icon: 'warning',
+                title: 'Missing Details',
+                text: 'Please enter your username/email and password.',
+                confirmButtonColor: '#8E5E69'
+            });
+        }
+        setLoading(btn, true);
+        try {
+            const res = await fetch('/api/login_manual', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identifier, password })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                window.location.href = '/';
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Failed',
+                    text: data.message || 'Incorrect credentials',
+                    confirmButtonColor: '#8E5E69'
+                });
+            }
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Could not connect to the server.',
+                confirmButtonColor: '#8E5E69'
+            });
+        }
+        setLoading(btn, false, "Sign In");
+    }
+
+    // --- Google OAuth Handler ---
+    function handleGoogleLogin() {
+        const consentChecked = document.getElementById('google-consent').checked;
+        if (!consentChecked) {
+            return Swal.fire({
+                icon: 'info',
+                title: 'Terms Agreement',
+                text: 'Please agree to the Terms & Privacy Policy to continue with Google.',
+                confirmButtonColor: '#8E5E69'
+            });
+        }
+        window.location.href = '/auth/login';
+    }
+
+    // --- Social notice for demo icons ---
+    function socialNotice(provider) {
+        Swal.fire({
+            icon: 'info',
+            title: provider,
+            text: `${provider} login is coming soon. Please use Google or your registered email/password!`,
+            confirmButtonColor: '#8E5E69'
+        });
+    }
+
+    function forgotPasswordNotice() {
+        Swal.fire({
+            title: 'Password Recovery',
+            text: 'Please contact support or register your verified email to request a reset link.',
+            input: 'email',
+            inputPlaceholder: 'Enter your registered email',
+            showCancelButton: true,
+            confirmButtonText: 'Send Reset Link',
+            confirmButtonColor: '#8E5E69'
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Reset Link Sent',
+                    text: 'If an account exists with this email, instructions have been sent.',
+                    confirmButtonColor: '#8E5E69'
+                });
+            }
+        });
+    }
+
+    // --- Signup: Step 1 Send OTP ---
+    async function sendOTP(btn) {
+        const email = document.getElementById('reg-email').value.trim();
+        if (!email || !email.includes('@')) {
+            return Swal.fire({
+                icon: 'warning',
+                title: 'Valid Email Needed',
+                text: 'Please enter a valid email address.',
+                confirmButtonColor: '#8E5E69'
+            });
+        }
+        setLoading(btn, true);
+        try {
+            const res = await fetch('/api/send_otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                document.getElementById('step-1').classList.add('hidden');
+                document.getElementById('step-2').classList.remove('hidden');
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Failed to send OTP.',
+                    confirmButtonColor: '#8E5E69'
+                });
+            }
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Server Error',
+                text: 'Could not send verification code.',
+                confirmButtonColor: '#8E5E69'
+            });
+        }
+        setLoading(btn, false, 'Send Verification Code');
+    }
+
+    // --- Signup: Step 2 Verify OTP ---
+    async function verifyOTP(btn) {
+        const email = document.getElementById('reg-email').value.trim();
+        const otp = document.getElementById('reg-otp').value.trim();
+        if (!otp) {
+            return Swal.fire({
+                icon: 'warning',
+                title: 'Enter Code',
+                text: 'Please enter the 6-digit code sent to your email.',
+                confirmButtonColor: '#8E5E69'
+            });
+        }
+        setLoading(btn, true);
+        try {
+            const res = await fetch('/api/verify_otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                document.getElementById('step-2').classList.add('hidden');
+                document.getElementById('step-3').classList.remove('hidden');
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Code',
+                    text: 'The verification code entered is incorrect or expired.',
+                    confirmButtonColor: '#8E5E69'
+                });
+            }
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Verification failed. Try again.',
+                confirmButtonColor: '#8E5E69'
+            });
+        }
+        setLoading(btn, false, 'Verify & Continue');
+    }
+
+    // --- Signup: Magic Password Generator ---
+    function generateMagicPass() {
+        const email = document.getElementById('reg-email').value;
+        const passField = document.getElementById('reg-pass');
+        let namePart = (email && email.includes('@')) ? email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') : "Ethrix";
+        if (namePart.length < 3) namePart = "Ethrix";
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        const magicPass = namePart.charAt(0).toUpperCase() + namePart.slice(1) + '@' + randomNum;
+        passField.value = magicPass;
+        passField.type = "text";
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Magic Password Generated!',
+            showConfirmButton: false,
+            timer: 2500
+        });
+    }
+
+    // --- Signup: Step 3 Complete Signup ---
+    async function completeSignup(btn) {
+        const termsChecked = document.getElementById('terms-agree')?.checked;
+        if (!termsChecked) {
+            return Swal.fire({
+                icon: 'warning',
+                title: 'Agreement Required',
+                text: 'Please accept the Terms of Service & Privacy Policy to continue.',
+                confirmButtonColor: '#8E5E69'
+            });
+        }
+        const payload = {
+            email: document.getElementById('reg-email').value.trim(),
+            full_name: document.getElementById('reg-name').value.trim(),
+            username: document.getElementById('reg-user').value.trim(),
+            dob: document.getElementById('reg-dob').value,
+            password: document.getElementById('reg-pass').value
+        };
+        if (!payload.full_name || !payload.username || !payload.dob || !payload.password) {
+            return Swal.fire({
+                icon: 'warning',
+                title: 'Missing Fields',
+                text: 'Please fill in all registration fields.',
+                confirmButtonColor: '#8E5E69'
+            });
+        }
+        setLoading(btn, true);
+        try {
+            const res = await fetch('/api/complete_signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Welcome to Ethrix! 🚀',
+                    text: 'Your account has been created successfully.',
+                    confirmButtonColor: '#8E5E69'
+                }).then(() => {
+                    window.location.href = '/';
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registration Error',
+                    text: data.message || 'Failed to complete signup.',
+                    confirmButtonColor: '#8E5E69'
+                });
+            }
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Server connection failed.',
+                confirmButtonColor: '#8E5E69'
+            });
+        }
+        setLoading(btn, false, 'Create Account 🚀');
+    }
+</script>
+
+</body>
+</html>

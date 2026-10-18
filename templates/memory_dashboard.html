@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ethrix's Brain | Memory Control</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+
+        /* cursor */
+        @media (pointer: fine) {
+    body, a, button, input, textarea { cursor: none !important; }
+    .cursor-dot { position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: #eab308; border-radius: 50%; transform: translate(-50%, -50%); z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #eab308, 0 0 20px #eab308; }
+    .cursor-outline { position: fixed; top: 0; left: 0; width: 32px; height: 32px; border: 2px solid rgba(234, 179, 8, 0.6); border-radius: 50%; transform: translate(-50%, -50%); z-index: 99998; pointer-events: none; transition: width 0.2s, height 0.2s, background-color 0.2s; }
+}
+
+        /* Responsive Overrides specific to this page */
+        .memory-container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            padding-bottom: 80px;
+        }
+        
+        @media (max-width: 768px) {
+            .memory-container { padding: 15px; padding-top: 30px; }
+            h1 { font-size: 1.5rem !important; }
+            .section-card { padding: 16px !important; }
+            textarea { min-height: 80px; }
+        }
+
+        .section-card {
+            background: rgba(20, 20, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .section-title { font-size: 1.2rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 600; }
+        .section-title i { color: #facc15; } /* Yellow Brain Icon */
+        
+        .memory-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+            gap: 10px;
+        }
+        .memory-item:hover { border-color: #facc15; transform: translateY(-1px); }
+        .memory-text { color: #e2e8f0; font-size: 0.95rem; line-height: 1.5; word-break: break-word; }
+        
+        .delete-btn { 
+            background: rgba(239, 68, 68, 0.1); 
+            border: 1px solid rgba(239, 68, 68, 0.2); 
+            color: #ef4444; 
+            cursor: pointer; 
+            padding: 6px 10px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            transition: 0.2s;
+        }
+        .delete-btn:hover { background: #ef4444; color: white; }
+
+        textarea {
+            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; padding: 12px; border-radius: 12px; min-height: 100px; resize: vertical;
+            font-family: inherit; margin-bottom: 12px; font-size: 0.95rem;
+        }
+        textarea:focus { border-color: #facc15; outline: none; background: rgba(0,0,0,0.5); }
+        
+        .action-btn {
+            background: linear-gradient(135deg, #ca8a04, #eab308); /* Gold Gradient */
+            color: white; border: none; padding: 10px 20px;
+            border-radius: 10px; cursor: pointer; font-weight: 600; 
+            display: inline-flex; align-items: center; gap: 8px;
+            transition: transform 0.1s;
+        }
+        .action-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .action-btn:active { transform: scale(0.98); }
+
+        .back-link { 
+            display: inline-flex; align-items: center; gap: 8px; 
+            color: #94a3b8; text-decoration: none; margin-bottom: 25px; 
+            font-weight: 500; padding: 8px 16px; 
+            background: rgba(255,255,255,0.05); border-radius: 99px;
+            transition: 0.2s;
+        }
+        .back-link:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+        /* Mobile inputs layout */
+        .add-mem-wrapper { display: flex; gap: 10px; }
+        @media (max-width: 600px) {
+            .add-mem-wrapper { flex-direction: column; }
+            .add-mem-wrapper button { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body class="scrollable-page" style="background: #050505;">
+    
+    <div class="memory-container">
+        <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Chat</a>
+        
+        <header style="margin-bottom: 30px; text-align: center md:text-left;">
+            <h1 style="font-size: 2rem; font-weight: 700; background: linear-gradient(to right, #fff, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;">
+                Ethrix's Brain
+            </h1>
+            <p style="color: #64748b; font-size: 0.95rem;">Manage memories & program her psychology.</p>
+        </header>
+
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-user-gear"></i> Custom Instructions (Persona)</div>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px; line-height: 1.4;">
+                Define who she is to you. (e.g., "Be my strict gym trainer", "Act like my girlfriend").
+            </p>
+            <textarea id="instructionInput" placeholder="Enter custom instructions here..."></textarea>
+            <div style="text-align: right;">
+                <button class="action-btn" onclick="saveInstruction()"><i class="fas fa-save"></i> Save Persona</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-plus-circle"></i> Add Specific Memory</div>
+            <div class="add-mem-wrapper">
+                <input type="text" id="newMemoryInput" placeholder="e.g., My birthday is on 24th Jan" 
+                    style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px; border-radius: 10px; outline: none;">
+                <button class="action-btn" onclick="addMemoryManual()"><i class="fas fa-magic"></i> Add</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-title" style="justify-content: space-between;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-database"></i> Long-Term Memory Bank
+                </div>
+                <span id="memCount" style="font-size: 0.75rem; background: #333; padding: 4px 10px; border-radius: 12px; color: #fbbf24;">0</span>
+            </div>
+            <div id="memoryList" style="max-height: 500px; overflow-y: auto; padding-right: 5px;" class="custom-scrollbar">
+                <p style="text-align: center; color: #64748b; padding: 20px;">Loading memories...</p>
+            </div>
+        </div>
+    </div>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (window.matchMedia("(pointer: fine)").matches) {
+            const dot = document.createElement("div"); dot.className = "cursor-dot";
+            const outline = document.createElement("div"); outline.className = "cursor-outline";
+            document.body.appendChild(dot); document.body.appendChild(outline);
+
+            window.addEventListener("mousemove", (e) => {
+                dot.style.left = `${e.clientX}px`; dot.style.top = `${e.clientY}px`;
+                outline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
+            });
+
+            window.addEventListener("mousedown", (e) => {
+                const ripple = document.createElement("div"); ripple.className = "click-ripple";
+                ripple.style.left = `${e.clientX}px`; ripple.style.top = `${e.clientY}px`;
+                document.body.appendChild(ripple);
+                outline.style.transform = "translate(-50%, -50%) scale(0.7)";
+                setTimeout(() => outline.style.transform = "translate(-50%, -50%) scale(1)", 150);
+                setTimeout(() => ripple.remove(), 500);
+            });
+
+            const addHoverEffect = () => {
+                document.querySelectorAll("a, button, input, textarea, .mode-btn").forEach(el => {
+                    el.addEventListener("mouseenter", () => {
+                        outline.style.width = "50px"; outline.style.height = "50px";
+                        outline.style.backgroundColor = "rgba(234, 179, 8, 0.1)"; // Yellow Hover
+                    });
+                    el.addEventListener("mouseleave", () => {
+                        outline.style.width = "32px"; outline.style.height = "32px";
+                        outline.style.backgroundColor = "transparent";
+                    });
+                });
+            };
+            addHoverEffect();
+        }
+    });
+</script>
+    <script src="/static/js/memory_page.js"></script>
+</body>
+</html>

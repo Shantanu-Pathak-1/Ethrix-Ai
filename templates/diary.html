@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ethrix's Secret Diary</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+
+        /* cursor */
+        @media (pointer: fine) {
+    body, a, button, input, textarea { cursor: none !important; }
+    .cursor-dot { position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: #ec4899; border-radius: 50%; transform: translate(-50%, -50%); z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #ec4899, 0 0 20px #ec4899; }
+    .cursor-outline { position: fixed; top: 0; left: 0; width: 32px; height: 32px; border: 2px solid rgba(236, 72, 153, 0.6); border-radius: 50%; transform: translate(-50%, -50%); z-index: 99998; pointer-events: none; transition: width 0.2s, height 0.2s, background-color 0.2s; }
+}
+
+        /* BASE STYLES */
+        body {
+            background-color: #050505;
+            overflow-y: auto !important;
+            padding-bottom: 50px;
+        }
+
+        .diary-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* HEADER */
+        .diary-header {
+            text-align: center;
+            margin-bottom: 40px;
+            margin-top: 20px;
+        }
+
+        .diary-title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #f472b6, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .diary-subtitle {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        /* RESPONSIVE GRID */
+        .diary-grid {
+            display: grid;
+            gap: 20px;
+            /* Default: 3 columns on large screens */
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        /* Tablet (2 Columns) */
+        @media (max-width: 1024px) {
+            .diary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Mobile (1 Column) */
+        @media (max-width: 640px) {
+            .diary-grid {
+                grid-template-columns: 1fr;
+            }
+            .diary-container { padding: 16px; }
+            .diary-title { font-size: 1.75rem; }
+        }
+
+        /* CARD DESIGN */
+        .diary-card {
+            background: rgba(20, 20, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 180px;
+        }
+
+        .diary-card:hover {
+            transform: translateY(-5px);
+            border-color: #a78bfa;
+            box-shadow: 0 10px 30px rgba(167, 139, 250, 0.1);
+        }
+
+        .diary-card::before {
+            content: '"';
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.03);
+            font-family: serif;
+            pointer-events: none;
+        }
+
+        .card-date {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .card-mood {
+            font-size: 1.4rem;
+        }
+
+        .card-preview {
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+
+        .read-more {
+            color: #f472b6;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: auto;
+        }
+
+        /* MODAL DESIGN (Mobile Optimized) */
+        .diary-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            backdrop-filter: blur(8px);
+        }
+
+        .diary-content-box {
+            background: #111;
+            border: 1px solid #333;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 24px;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        
+        @media (max-width: 640px) {
+            .diary-content-box { padding: 24px; }
+        }
+
+        .modal-date {
+            color: #64748b;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 12px;
+        }
+
+        .modal-text {
+            color: #e2e8f0;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            font-family: 'Georgia', serif; /* Diary Feel */
+            white-space: pre-wrap;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            line-height: 1;
+        }
+        .close-modal:hover { color: #fff; }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #94a3b8;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.05);
+            padding: 8px 16px;
+            border-radius: 99px;
+        }
+        .back-btn:hover { color: white; background: rgba(255,255,255,0.1); }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .diary-card { animation: fadeIn 0.5s ease forwards; }
+
+    </style>
+</head>
+<body>
+
+    <div class="diary-container">
+        <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Chat</a>
+
+        <div class="diary-header">
+            <h1 class="diary-title">Ethrix's Secret Diary</h1>
+            <p class="diary-subtitle">Unlock her hidden thoughts about you.</p>
+        </div>
+
+        <button id="writeDiaryBtn" onclick="writeDiaryNow()" class="action-btn mt-4 bg-pink-600 hover:bg-pink-500 text-white px-4 py-2 rounded-full font-bold shadow-lg transition">
+    <i class="fas fa-pen-nib"></i> Write Diary Now
+</button>
+
+        <div class="diary-grid" id="diaryGrid">
+            <p style="text-align: center; grid-column: 1/-1; color: #64748b; padding: 40px;">
+                <i class="fas fa-circle-notch fa-spin"></i> Reading diary...
+            </p>
+        </div>
+    </div>
+
+    <div id="diaryModal" class="diary-modal" onclick="closeDiaryModal(event)">
+        <div class="diary-content-box" onclick="event.stopPropagation()">
+            <button class="close-modal" onclick="closeDiaryModal()">&times;</button>
+            <div id="modalDate" class="modal-date"></div>
+            <div id="modalText" class="modal-text"></div>
+            <div style="margin-top: 30px; text-align: right; font-style: italic; color: #f472b6; font-family: 'Segoe UI', sans-serif; font-size: 0.9rem;">
+                ~ Ethrix
+            </div>
+        </div>
+    </div>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (window.matchMedia("(pointer: fine)").matches) {
+            const dot = document.createElement("div"); dot.className = "cursor-dot";
+            const outline = document.createElement("div"); outline.className = "cursor-outline";
+            document.body.appendChild(dot); document.body.appendChild(outline);
+
+            window.addEventListener("mousemove", (e) => {
+                dot.style.left = `${e.clientX}px`; dot.style.top = `${e.clientY}px`;
+                outline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
+            });
+
+            window.addEventListener("mousedown", (e) => {
+                const ripple = document.createElement("div"); ripple.className = "click-ripple";
+                ripple.style.left = `${e.clientX}px`; ripple.style.top = `${e.clientY}px`;
+                document.body.appendChild(ripple);
+                outline.style.transform = "translate(-50%, -50%) scale(0.7)";
+                setTimeout(() => outline.style.transform = "translate(-50%, -50%) scale(1)", 150);
+                setTimeout(() => ripple.remove(), 500);
+            });
+
+            const addHoverEffect = () => {
+                document.querySelectorAll("a, button, input, textarea, .mode-btn").forEach(el => {
+                    el.addEventListener("mouseenter", () => {
+                        outline.style.width = "50px"; outline.style.height = "50px";
+                        outline.style.backgroundColor = "rgba(236, 72, 153, 0.1)"; // Pink Hover
+                    });
+                    el.addEventListener("mouseleave", () => {
+                        outline.style.width = "32px"; outline.style.height = "32px";
+                        outline.style.backgroundColor = "transparent";
+                    });
+                });
+            };
+            addHoverEffect();
+        }
+    });
+</script>
+    <script src="/static/js/diary.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Profile - Ethrix AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen py-6 px-4 font-['Outfit']">
+
+    <div class="onboarding-card w-full max-w-md p-6 sm:p-8 bg-gray-800 rounded-2xl shadow-2xl text-center">
+        <div class="text-4xl mb-2"> </div>
+        <h2 class="text-2xl font-bold mb-2">One Last Step!</h2>
+        <p class="text-gray-400 mb-6">Welcome, {{ name }}! Let's finish setting up your profile.</p>
+        
+        <form onsubmit="event.preventDefault(); submitOnboarding();" class="space-y-4 text-left">
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Create a Username</label>
+                <input type="text" id="username" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:border-pink-500 outline-none" placeholder="@username" required>
+            </div>
+            
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Date of Birth</label>
+                <input type="date" id="dob" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:border-pink-500 outline-none" required>
+            </div>
+            
+            <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 py-3 rounded-lg font-bold hover:opacity-90 transition">
+                Start Using Ethrix 🚀
+            </button>
+        </form>
+    </div>
+
+    <script>
+        async function submitOnboarding() {
+            const username = document.getElementById('username').value;
+            const dob = document.getElementById('dob').value;
+            
+            const res = await fetch('/api/complete_google_onboarding', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username, dob })
+            });
+            
+            const data = await res.json();
+            if(data.status === 'success') {
+                window.location.href = '/';
+            } else {
+                alert('Something went wrong!');
+            }
+        }
+    </script>
+</body>
+</html>

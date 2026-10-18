@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethrix AI</title>
+    
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+    
+    <meta name="description" content="Ethrix AI - Your highly intelligent and futuristic personal AI companion.">
+    <meta name="keywords" content="Ethrix AI, AI Assistant, Artificial Intelligence, AI Companion, Productivity Tools">
+    <meta name="google-site-verification" content="MwrbfdlLx3xF8CILvK16Glar7CAECETS50_zOaXseyg" />
+    <meta name="robots" content="index, follow">
+    
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#0B0F19">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.halo.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.rings.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body id="vanta-bg" class="flex h-screen w-full dark-mode overflow-hidden">
+    
+    <!-- Backdrop overlay for mobile drawer -->
+    <div id="sidebar-backdrop" onclick="toggleMobileSidebar(false)" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[90] hidden transition-opacity duration-300 md:hidden"></div>
+
+    <aside id="sidebar">
+        
+        <div class="h-14 md:h-16 flex items-center justify-between shrink-0 border-b border-white/5 sidebar-header px-4">
+            <div class="flex items-center gap-3 overflow-hidden select-none cursor-pointer transition-all duration-300" onclick="window.location.reload()">
+                <img src="/static/images/logo.png" class="w-8 h-8 md:w-10 md:h-10 rounded-full shadow-lg border border-[#00E5FF]/30 object-cover flex-shrink-0">
+                <span class="font-bold text-lg md:text-xl tracking-wide whitespace-nowrap nav-label text-white">Ethrix</span>
+            </div>
+            <div class="flex items-center gap-1">
+                <button onclick="createNewChat(); closeMobileSidebar();" class="relative z-50 text-gray-400 hover:text-[#00E5FF] hover:bg-white/10 p-2 rounded-full transition nav-label flex-shrink-0" title="New Chat">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="toggleMobileSidebar(false)" class="md:hidden text-gray-400 hover:text-white hover:bg-white/10 p-2 rounded-full transition flex-shrink-0" title="Close">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-1 p-2 border-b border-white/5">
+            <a href="/tools" onclick="closeMobileSidebar()" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-white cursor-pointer" style="text-decoration: none;">
+                <div class="w-6 text-center"><i class="fas fa-flask text-[#00E5FF] text-sm md:text-base"></i></div>
+                <span class="text-sm font-bold nav-label">Tools Lab</span>
+            </a>
+
+            <a href="/gallery" onclick="closeMobileSidebar()" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-white">
+                <div class="w-6 text-center"><i class="fas fa-images text-[#00E5FF] text-sm md:text-base"></i></div>
+                <span class="text-sm font-bold nav-label">My Studio</span>
+            </a>
+
+            <a href="/memory-dashboard" onclick="closeMobileSidebar()" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-yellow-400">
+                <div class="w-6 text-center"><i class="fas fa-brain text-yellow-500 text-sm md:text-base"></i></div>
+                <span class="text-sm font-bold nav-label">Brain Control</span>
+            </a>
+
+            <a href="/diary" onclick="closeMobileSidebar()" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-white/10 transition text-gray-300 hover:text-[#00E5FF]">
+                <div class="w-6 text-center"><i class="fas fa-book text-[#00E5FF] text-sm md:text-base"></i></div>
+                <span class="text-sm font-bold nav-label">Secret Diary</span>
+            </a>
+
+            {% if user.email == 'shantanupathak94@gmail.com' %}
+            <a href="/admin" onclick="closeMobileSidebar()" class="flex items-center gap-3 p-2 md:p-3 rounded-xl hover:bg-red-900/20 transition text-gray-300 hover:text-red-400">
+                <div class="w-6 text-center"><i class="fas fa-shield-alt text-red-500 text-sm md:text-base"></i></div>
+                <span class="text-sm font-bold nav-label">God Mode</span>
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="px-3 mb-2 mt-2">
+            <div class="relative group">
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-[#00E5FF] transition-colors duration-300 text-xs"></i>
+                <input type="text" id="chat-search" onkeyup="filterChats()" 
+                    placeholder="Search history..." 
+                    class="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-[#00E5FF]/50 focus:bg-black/40 focus:shadow-[0_0_15px_rgba(0,229,255,0.15)] transition-all duration-300">
+            </div>
+        </div>
+
+        <div id="history-list" class="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-1 scrollbar-hide"></div>
+
+        <div class="p-3 md:p-4 border-t border-white/5 shrink-0">
+
+            <!-- Usage Bar — sab plans ke liye -->
+            <div id="usage-bar-wrapper" class="mb-3 nav-label hidden">
+                <!-- Plan badge -->
+                <div class="flex items-center justify-between mb-2">
+                    <span id="plan-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#00E5FF]/15 text-[#00E5FF]">Free Plan ✦</span>
+                    <span id="usage-text" class="text-[10px] text-gray-500">0 / 20 msgs</span>
+                </div>
+                <!-- AI calls bar -->
+                <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div id="usage-fill" class="h-full rounded-full transition-all duration-500 bg-[#00E5FF]" style="width: 0%"></div>
+                </div>
+                <!-- Tool calls bar (smaller) -->
+                <div class="w-full bg-white/10 rounded-full h-0.5 mt-1 overflow-hidden">
+                    <div id="tool-usage-fill" class="h-full rounded-full transition-all duration-500 bg-purple-400" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-0.5">
+                    <span class="text-[9px] text-gray-600">AI msgs</span>
+                    <span id="tool-usage-text" class="text-[9px] text-gray-600">Tools: 0/10</span>
+                </div>
+                <!-- Upgrade button — sirf free aur pro users ke liye -->
+                <button id="upgrade-btn" onclick="openUpgradeModal()" class="hidden mt-2 w-full text-[10px] text-[#00E5FF] hover:text-white border border-[#00E5FF]/30 hover:bg-[#00E5FF]/10 rounded-lg py-1.5 transition">
+                    Upgrade Plan ✦
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2 md:gap-3 p-2 rounded-xl transition group/profile">
+                <div class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gray-700 overflow-hidden shrink-0 border border-gray-500 mx-auto"><img id="profile-img-sidebar" src="" class="w-full h-full object-cover"></div>
+                <div class="flex-1 overflow-hidden nav-label">
+                    <div id="profile-name-sidebar" class="text-xs md:text-sm font-bold truncate text-white">User</div>
+                    <div id="profile-plan-sidebar" class="text-[10px] md:text-xs text-gray-400">Free Plan</div>
+                </div>
+                <a href="/settings" class="text-gray-400 hover:text-[#00E5FF] hover:bg-white/10 p-2 rounded-xl transition-all duration-300 nav-label text-sm md:text-base group flex items-center justify-center" title="Control Center">
+                    <i class="fas fa-sliders-h transition-transform duration-300 group-hover:scale-110"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col relative z-10 h-full transition-all duration-300 min-w-0">
+        
+        <!-- Mobile Header with Brand Logo & Actions -->
+        <header class="md:hidden flex justify-between items-center px-4 py-2.5 bg-[#0B0F19]/90 backdrop-blur-xl z-20 border-b border-[#00E5FF]/15 sticky top-0 shadow-lg">
+            <div class="flex items-center gap-2.5 cursor-pointer select-none" onclick="window.location.reload()">
+                <img src="/static/images/logo.png" class="w-8 h-8 rounded-full border border-[#00E5FF]/40 shadow-[0_0_10px_rgba(0,229,255,0.3)] object-cover">
+                <span class="font-bold text-white text-lg tracking-wide">Ethrix</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-[#00E5FF]/15 text-[#00E5FF] font-semibold border border-[#00E5FF]/30">AI</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <button onclick="createNewChat()" class="text-gray-300 hover:text-white p-2 rounded-xl hover:bg-white/10 transition active:scale-95" title="New Chat">
+                    <i class="fas fa-pen-to-square text-base text-[#00E5FF]"></i>
+                </button>
+                <button onclick="toggleMobileSidebar()" class="text-gray-300 hover:text-white p-2 rounded-xl hover:bg-white/10 transition active:scale-95" title="Menu">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+            </div>
+        </header>
+
+        <div id="chat-box" class="flex-1 overflow-y-auto p-3 md:p-6 scroll-smooth">
+            <div id="welcome-screen" class="flex flex-col items-center justify-center min-h-[70vh] my-auto opacity-95 text-center animate-fade-in px-4 py-6 select-none">
+                <div class="relative mb-3">
+                    <img src="/static/images/logo.png" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full shadow-[0_0_25px_rgba(0,229,255,0.45)] border-2 border-[#00E5FF]/40 object-cover">
+                    <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-[#0B0F19] shadow-[0_0_8px_rgba(16,185,129,0.8)]" title="Online"></span>
+                </div>
+                <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold mb-1.5 text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-[#00E5FF]">Hello! 👋</h2>
+                <p class="text-xs sm:text-sm text-gray-400 max-w-sm mb-6 leading-relaxed">I'm ready. What shall we explore or create today?</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md px-2">
+                    <button type="button" onclick="useQuickPrompt('🎨 Paint a futuristic cyberpunk city with neon lights')" class="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] hover:bg-[#00E5FF]/10 border border-white/10 hover:border-[#00E5FF]/40 text-left transition duration-200 group active:scale-95">
+                        <span class="w-8 h-8 rounded-xl bg-[#00E5FF]/15 text-[#00E5FF] flex items-center justify-center text-sm shrink-0 group-hover:scale-110 transition"><i class="fas fa-magic"></i></span>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-xs font-bold text-gray-200 group-hover:text-white truncate">Paint cyberpunk city</div>
+                            <div class="text-[10px] text-gray-500 truncate">Generate futuristic AI art</div>
+                        </div>
+                    </button>
+                    <button type="button" onclick="useQuickPrompt('💻 Write a modern Python web scraper with BeautifulSoup')" class="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] hover:bg-[#00E5FF]/10 border border-white/10 hover:border-[#00E5FF]/40 text-left transition duration-200 group active:scale-95">
+                        <span class="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center text-sm shrink-0 group-hover:scale-110 transition"><i class="fas fa-code"></i></span>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-xs font-bold text-gray-200 group-hover:text-white truncate">Python Web Scraper</div>
+                            <div class="text-[10px] text-gray-500 truncate">Clean code with explanation</div>
+                        </div>
+                    </button>
+                    <button type="button" onclick="useQuickPrompt('🧠 Explain quantum computing simply using real-life examples')" class="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] hover:bg-[#00E5FF]/10 border border-white/10 hover:border-[#00E5FF]/40 text-left transition duration-200 group active:scale-95">
+                        <span class="w-8 h-8 rounded-xl bg-yellow-500/15 text-yellow-400 flex items-center justify-center text-sm shrink-0 group-hover:scale-110 transition"><i class="fas fa-brain"></i></span>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-xs font-bold text-gray-200 group-hover:text-white truncate">Quantum Computing</div>
+                            <div class="text-[10px] text-gray-500 truncate">Explained with simple analogy</div>
+                        </div>
+                    </button>
+                    <button type="button" onclick="useQuickPrompt('💡 Give me 3 innovative AI SaaS product ideas for 2026')" class="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] hover:bg-[#00E5FF]/10 border border-white/10 hover:border-[#00E5FF]/40 text-left transition duration-200 group active:scale-95">
+                        <span class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-sm shrink-0 group-hover:scale-110 transition"><i class="fas fa-lightbulb"></i></span>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-xs font-bold text-gray-200 group-hover:text-white truncate">SaaS Product Ideas</div>
+                            <div class="text-[10px] text-gray-500 truncate">Innovative trends for 2026</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-fixed-bottom">
+            <div class="input-wrapper"> 
+                
+                <div class="flex gap-2 overflow-x-auto mode-scroll pb-1 px-2 no-scrollbar justify-start md:justify-center">
+                    <div class="mode-btn active flex-shrink-0" onclick="setMode('chat', this)">💬 Chat</div>
+                    <div class="mode-btn flex-shrink-0" onclick="setMode('coding', this)">💻 Coding</div>
+                    <div class="mode-btn flex-shrink-0" onclick="setMode('research', this)">🔍 Research</div>
+                    <div class="mode-btn flex-shrink-0" onclick="setMode('ethrix_agent', this)">🌌 Ethrix Agent</div>
+                </div>
+                        
+                <div id="file-preview-container" class="hidden mx-auto md:mx-4 mb-2 w-max max-w-[85%] bg-gray-800/95 border border-[#00E5FF]/30 px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-3 animate-fade-in backdrop-blur-md">
+                    <i class="fas fa-file-alt text-[#00E5FF]"></i>
+                    <span id="file-preview-name" class="text-xs md:text-sm text-gray-200 truncate max-w-[150px] md:max-w-[200px]"></span>
+                    <button type="button" onclick="removeFile()" class="text-gray-400 hover:text-red-500 transition ml-1"><i class="fas fa-times"></i></button>
+                </div>
+
+                <form class="input-container flex items-center p-1.5 md:p-2 shadow-2xl bg-[#0B0F19]/90 backdrop-blur-xl border border-[#00E5FF]/20 rounded-2xl md:rounded-3xl" onsubmit="event.preventDefault(); sendMessage();">
+                    <button type="button" class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-[#00E5FF] hover:bg-white/10 flex-shrink-0 transition active:scale-95" onclick="document.getElementById('file-upload').click()" title="Attach File">
+                        <i class="fas fa-paperclip text-sm md:text-base"></i>
+                    </button>
+                    <input type="file" id="file-upload" class="hidden" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx" onchange="handleFileUpload(this)">
+                    
+                    <input type="text" id="user-input" class="flex-1 bg-transparent border-none outline-none px-2.5 md:px-3 py-2 md:py-3 text-white min-w-0 placeholder-gray-500 text-base" placeholder="Message Ethrix..." autocomplete="off">
+                    
+                    <button type="button" id="mic-btn" class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-[#00E5FF] hover:bg-white/10 flex-shrink-0 transition mr-1 active:scale-95" onclick="toggleRecording()" title="Voice Input">
+                        <i class="fas fa-microphone text-sm md:text-base"></i>
+                    </button>
+                    
+                    <button type="submit" class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] text-white hover:opacity-90 shadow-[0_0_15px_rgba(0,229,255,0.4)] transition transform active:scale-95 flex-shrink-0" title="Send Message">
+                        <i class="fas fa-arrow-up text-sm md:text-base"></i>
+                    </button>
+                </form>
+
+            </div> 
+        </div>
+    </main>
+
+    <div id="dropdown" class="dropdown-menu bg-[#121826] border border-[#00E5FF]/30 text-white shadow-xl z-50"><div class="dropdown-item hover:bg-[#00E5FF]/20" id="act-rename"><i class="fas fa-edit text-[#00E5FF]"></i> Rename</div><div class="dropdown-item hover:bg-[#00E5FF]/20" onclick="showExportMenu()"><i class="fas fa-download text-green-400"></i> Export</div><div class="dropdown-item hover:bg-[#00E5FF]/20 text-red-400" id="act-delete"><i class="fas fa-trash"></i> Delete</div></div>
+    
+    <div id="payment-modal" class="modal"><div class="modal-content w-11/12 md:w-full max-w-md bg-[#0B0F19] border border-[#00E5FF]/30 text-white rounded-2xl relative overflow-hidden"><div class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] p-3 md:p-4 text-center"><h2 class="text-lg md:text-xl font-bold text-white"><i class="fas fa-secure"></i> Secure Payment</h2><p class="text-[10px] md:text-xs text-cyan-100">Ethrix AI Pro Plan • ₹499.00</p></div><div class="p-4 md:p-6 space-y-3 md:space-y-4"><div id="pay-loader" class="hidden text-center py-4"><i class="fas fa-circle-notch fa-spin text-2xl md:text-3xl text-[#00E5FF]"></i><p class="text-[10px] md:text-xs text-gray-400 mt-2">Processing secure transaction...</p></div><button id="pay-btn" onclick="processFakePayment()" class="w-full bg-[#00E5FF] hover:bg-[#00bfff] text-black font-bold py-2.5 md:py-3 rounded-xl transition shadow-[0_0_15px_rgba(0,229,255,0.4)] transform active:scale-95 mt-2 text-sm md:text-base">Pay ₹499.00</button><button onclick="closeModal('payment-modal')" class="w-full text-gray-500 text-xs hover:text-[#00E5FF] mt-2">Cancel Transaction</button></div></div></div>
+
+    <!-- Upgrade Modal — geo-pricing ke saath -->
+    <div id="upgrade-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+        <div class="bg-[#0B0F19] border border-[#00E5FF]/30 rounded-2xl w-full max-w-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-[#1E90FF] to-[#00E5FF] p-4 text-center relative">
+                <button onclick="document.getElementById('upgrade-modal').classList.add('hidden')" class="absolute right-3 top-3 text-white/70 hover:text-white text-lg">✕</button>
+                <div class="text-2xl mb-1">✦</div>
+                <h2 class="text-lg font-bold text-white">Upgrade Ethrix</h2>
+                <p id="modal-country-label" class="text-xs text-cyan-100 mt-1">Loading pricing...</p>
+            </div>
+            <!-- Plans grid -->
+            <div class="p-4 grid grid-cols-2 gap-3">
+                <!-- Pro Plan Card -->
+                <div class="border border-[#1E90FF]/40 rounded-xl p-3 flex flex-col gap-2">
+                    <div class="text-center">
+                        <div class="text-xs font-bold text-[#00E5FF] mb-1">⚡ Pro</div>
+                        <div id="pro-price-display" class="text-xl font-bold text-white">--</div>
+                        <div class="text-[10px] text-gray-500">/ month</div>
+                    </div>
+                    <div class="text-[10px] text-gray-400 space-y-1">
+                        <div>✓ 80 AI messages/day</div>
+                        <div>✓ 40 tool uses/day</div>
+                        <div>✓ All chat modes</div>
+                        <div>✓ Long-term memory</div>
+                    </div>
+                    <button onclick="handleUpgrade('pro')" class="mt-auto w-full bg-[#1E90FF]/20 hover:bg-[#1E90FF]/40 text-[#00E5FF] font-bold py-2 rounded-lg transition text-xs border border-[#1E90FF]/30">
+                        Get Pro
+                    </button>
+                </div>
+                <!-- Elite Plan Card -->
+                <div class="border border-purple-500/40 rounded-xl p-3 flex flex-col gap-2 relative">
+                    <div class="absolute -top-2 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">BEST VALUE</div>
+                    <div class="text-center">
+                        <div class="text-xs font-bold text-purple-400 mb-1">👑 Elite</div>
+                        <div id="elite-price-display" class="text-xl font-bold text-white">--</div>
+                        <div class="text-[10px] text-gray-500">/ month</div>
+                    </div>
+                    <div class="text-[10px] text-gray-400 space-y-1">
+                        <div>✓ 200 AI messages/day</div>
+                        <div>✓ 100 tool uses/day</div>
+                        <div>✓ Image generation</div>
+                        <div>✓ Priority speed</div>
+                    </div>
+                    <button onclick="handleUpgrade('elite')" class="mt-auto w-full bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 font-bold py-2 rounded-lg transition text-xs border border-purple-500/30">
+                        Get Elite
+                    </button>
+                </div>
+            </div>
+            <div class="px-4 pb-4 text-center">
+                <p class="text-[10px] text-gray-600">Pricing shown in your local currency</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PWA Install Prompt Banner -->
+    <div id="pwa-banner" class="hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm">
+        <div class="bg-[#0B0F19] border border-[#00E5FF]/30 rounded-2xl p-3.5 shadow-[0_0_30px_rgba(0,229,255,0.15)] flex items-center gap-3">
+            <img src="/static/images/logo.png" class="w-10 h-10 rounded-xl border border-[#00E5FF]/20 flex-shrink-0">
+            <div class="flex-1 min-w-0">
+                <div class="text-sm font-bold text-white">Install Ethrix AI</div>
+                <div class="text-[11px] text-gray-400">Add to home screen for an app-like experience!</div>
+            </div>
+            <div class="flex gap-2 flex-shrink-0">
+                <button id="pwa-install-btn" class="text-xs font-bold bg-[#00E5FF] text-black px-3 py-1.5 rounded-lg hover:bg-[#00bfff] transition">Install</button>
+                <button onclick="document.getElementById('pwa-banner').classList.add('hidden');localStorage.setItem('pwa-dismissed','1')" class="text-xs text-gray-500 hover:text-white px-2 py-1.5 transition">✕</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/tools.js"></script>
+    <script src="/static/js/script.js"></script>
+
+    <script>
+    // ── PLAN CONFIG ────────────────────────────────────────────────────────────
+    const PLAN_STYLES = {
+        free:  { badgeClass: "bg-[#00E5FF]/15 text-[#00E5FF]",    barClass: "bg-[#00E5FF]",  label: "Free Plan ✦",  showUpgrade: true  },
+        pro:   { badgeClass: "bg-blue-500/20 text-blue-400",       barClass: "bg-blue-400",   label: "Pro Plan ⚡",  showUpgrade: true  },
+        elite: { badgeClass: "bg-purple-500/20 text-purple-400",   barClass: "bg-purple-400", label: "Elite Plan 👑",showUpgrade: false },
+        admin: { badgeClass: "bg-red-500/20 text-red-400",         barClass: "bg-red-400",    label: "Admin 🛡️",    showUpgrade: false },
+    };
+
+    let _geoPricing = null;
+
+    // ── USAGE BAR LOADER ───────────────────────────────────────────────────────
+    async function loadUsageBar() {
+        try {
+            const res  = await fetch('/api/usage');
+            const data = await res.json();
+            renderUsageBar(data);
+        } catch(e) {}
+    }
+
+    function renderUsageBar(data) {
+        const plan      = data.plan || "free";
+        const style     = PLAN_STYLES[plan] || PLAN_STYLES.free;
+        const aiUsed    = data.ai_calls    || 0;
+        const aiLimit   = data.ai_limit    || 20;
+        const toolUsed  = data.tool_calls  || 0;
+        const toolLimit = data.tool_limit  || 10;
+        const aiPct     = Math.min(100, Math.round((aiUsed   / aiLimit)   * 100));
+        const toolPct   = Math.min(100, Math.round((toolUsed / toolLimit) * 100));
+
+        const wrapper  = document.getElementById('usage-bar-wrapper');
+        const badge    = document.getElementById('plan-badge');
+        const fill     = document.getElementById('usage-fill');
+        const toolFill = document.getElementById('tool-usage-fill');
+        const text     = document.getElementById('usage-text');
+        const toolText = document.getElementById('tool-usage-text');
+        const upBtn    = document.getElementById('upgrade-btn');
+
+        if (!wrapper) return;
+        wrapper.classList.remove('hidden');
+
+        badge.textContent  = style.label;
+        badge.className    = `text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badgeClass}`;
+        text.textContent   = `${aiUsed} / ${aiLimit} msgs`;
+        toolText.textContent = `Tools: ${toolUsed}/${toolLimit}`;
+
+        fill.className     = `h-full rounded-full transition-all duration-500 ${_barColor(aiPct, style.barClass)}`;
+        fill.style.width   = aiPct + '%';
+        toolFill.style.width = toolPct + '%';
+
+        if (upBtn) {
+            if (style.showUpgrade) upBtn.classList.remove('hidden');
+            else                   upBtn.classList.add('hidden');
+        }
+    }
+
+    function _barColor(pct, defaultClass) {
+        if (pct >= 90) return 'bg-red-500';
+        if (pct >= 70) return 'bg-yellow-400';
+        return defaultClass;
+    }
+
+    function updateUsageBar(remaining, limit, toolRemaining, toolLimit) {
+        const aiUsed   = limit   - remaining;
+        const toolUsed = (toolLimit || 10) - (toolRemaining || 0);
+        const plan     = document.getElementById('plan-badge')?.textContent?.includes('Elite') ? 'elite'
+                       : document.getElementById('plan-badge')?.textContent?.includes('Pro')   ? 'pro'
+                       : 'free';
+        renderUsageBar({
+            plan, ai_calls: aiUsed, ai_limit: limit,
+            tool_calls: toolUsed, tool_limit: toolLimit || 10
+        });
+    }
+
+    // ── GEO PRICING MODAL ──────────────────────────────────────────────────────
+    async function openUpgradeModal() {
+        document.getElementById('upgrade-modal').classList.remove('hidden');
+        if (_geoPricing) { _applyPricing(_geoPricing); return; }
+        try {
+            const res = await fetch('/api/geo-pricing');
+            _geoPricing = await res.json();
+            _applyPricing(_geoPricing);
+        } catch(e) {
+            // Fallback INR prices
+            _applyPricing({ country: "India", pro_display: "₹149", elite_display: "₹399" });
+        }
+    }
+
+    function _applyPricing(p) {
+        const proEl   = document.getElementById('pro-price-display');
+        const eliteEl = document.getElementById('elite-price-display');
+        const label   = document.getElementById('modal-country-label');
+        if (proEl)   proEl.textContent   = p.pro_display   || "₹149";
+        if (eliteEl) eliteEl.textContent = p.elite_display || "₹399";
+        if (label)   label.textContent   = `Pricing for ${p.country || 'your region'}`;
+    }
+
+    function handleUpgrade(planType) {
+        // Abhi payment modal kholo (Razorpay integration baad mein)
+        document.getElementById('upgrade-modal').classList.add('hidden');
+        openModal('payment-modal');
+        // Save plan type for post-payment upgrade
+        localStorage.setItem('pending_plan', planType);
+    }
+
+    window.addEventListener('DOMContentLoaded', loadUsageBar);
+
+    // ── PWA INSTALL PROMPT ─────────────────────────────────────────────────────
+    let _pwaPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        _pwaPrompt = e;
+        if (!localStorage.getItem('pwa-dismissed') && !localStorage.getItem('pwa-installed')) {
+            setTimeout(() => {
+                document.getElementById('pwa-banner').classList.remove('hidden');
+            }, 5000); // 5 sec baad dikhao
+        }
+    });
+    document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
+        if (!_pwaPrompt) return;
+        _pwaPrompt.prompt();
+        const { outcome } = await _pwaPrompt.userChoice;
+        if (outcome === 'accepted') {
+            localStorage.setItem('pwa-installed', '1');
+        }
+        document.getElementById('pwa-banner').classList.add('hidden');
+        _pwaPrompt = null;
+    });
+    window.addEventListener('appinstalled', () => {
+        localStorage.setItem('pwa-installed', '1');
+        document.getElementById('pwa-banner').classList.add('hidden');
+    });
+
+    // ── CHAT EXPORT ────────────────────────────────────────────────────────────
+    async function exportCurrentChat(format = 'txt') {
+        const sid = localStorage.getItem('session_id');
+        if (!sid) return Swal.fire({ icon: 'info', title: 'No chat selected!', text: 'Please open a chat first.', background: '#0B0F19', color: '#fff', confirmButtonColor: '#00E5FF' });
+
+        const res  = await fetch(`/api/chat/${sid}`);
+        const data = await res.json();
+        const msgs = data.messages || [];
+        if (!msgs.length) return Swal.fire({ icon: 'info', title: 'Chat is empty!', background: '#0B0F19', color: '#fff', confirmButtonColor: '#00E5FF' });
+
+        const title = document.querySelector('.history-item.active span')?.textContent || 'Ethrix Chat';
+        const date  = new Date().toLocaleDateString('en-IN');
+
+        if (format === 'txt') {
+            let text = `Ethrix AI — Chat Export
+${title}
+${date}
+${'='.repeat(50)}
+
+`;
+            msgs.forEach(m => {
+                const role = m.role === 'user' ? 'You' : 'Ethrix';
+                text += `[${role}]
+${m.content}
+
+`;
+            });
+            const blob = new Blob([text], { type: 'text/plain' });
+            _downloadBlob(blob, `ethrix-chat-${sid}.txt`);
+
+        } else if (format === 'json') {
+            const exportData = { title, date, session_id: sid, messages: msgs };
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            _downloadBlob(blob, `ethrix-chat-${sid}.json`);
+        }
+
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Chat exported!', timer: 2000, showConfirmButton: false, background: '#0B0F19', color: '#fff' });
+    }
+
+    function _downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function showExportMenu() {
+        Swal.fire({
+            title: 'Chat Export',
+            html: `<div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+                <button onclick="Swal.close();exportCurrentChat('txt')" style="background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:#00E5FF;padding:10px 16px;border-radius:10px;font-weight:600;cursor:pointer;width:100%">
+                    📄 Text (.txt)
+                </button>
+                <button onclick="Swal.close();exportCurrentChat('json')" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;padding:10px 16px;border-radius:10px;font-weight:600;cursor:pointer;width:100%">
+                    📦 JSON (.json)
+                </button>
+            </div>`,
+            background: '#0B0F19', color: '#fff',
+            showConfirmButton: false, showCloseButton: true,
+            customClass: { popup: 'rounded-2xl border border-white/10' }
+        });
+    }
+    </script>
+</body>
+</html>

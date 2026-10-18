@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About The Creator • Shan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+
+    <style>
+               /* cursor */
+        @media (pointer: fine) {
+    body, a, button, input, textarea { cursor: none !important; }
+    .cursor-dot { position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: #ec4899; border-radius: 50%; transform: translate(-50%, -50%); z-index: 99999; pointer-events: none; box-shadow: 0 0 10px #ec4899, 0 0 20px #ec4899; }
+    .cursor-outline { position: fixed; top: 0; left: 0; width: 32px; height: 32px; border: 2px solid rgba(236, 72, 153, 0.6); border-radius: 50%; transform: translate(-50%, -50%); z-index: 99998; pointer-events: none; transition: width 0.2s, height 0.2s, background-color 0.2s; }
+}
+
+        body { font-family: 'Segoe UI', sans-serif; background-color: #050505; color: white; overflow-x: hidden; }
+        
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; }
+
+        /* Premium Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(10, 10, 10, 0.8); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #ec4899, #8b5cf6); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #db2777, #7c3aed); }
+
+        /* Hide scrollbar for mobile tabs */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Glass Card */
+        .glass {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .glass-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(236, 72, 153, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Timeline Styling for Version History */
+        .timeline-container { position: relative; padding-left: 2rem; margin-top: 1.5rem; }
+        .timeline-line { position: absolute; left: 11px; top: 10px; bottom: 0; width: 2px; background: linear-gradient(to bottom, #ec4899, #8b5cf6, rgba(255,255,255,0.05)); }
+        .timeline-dot { position: absolute; left: -25px; width: 16px; height: 16px; border-radius: 50%; background: #050505; border: 3px solid #6b7280; z-index: 10; transition: border-color 0.3s; }
+        .glass-hover:hover ~ .timeline-dot, .glass-hover:hover .timeline-dot { border-color: #ec4899; }
+        
+        .timeline-dot-latest { 
+            position: absolute; left: -28px; width: 22px; height: 22px; border-radius: 50%; 
+            background: #ec4899; border: 4px solid white; box-shadow: 0 0 15px #ec4899; z-index: 10;
+        }
+
+        /* List Styling for Changelog */
+        ul.custom-list li { margin-bottom: 0.5rem; display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.85rem; color: #d1d5db; }
+        ul.custom-list li i { margin-top: 0.25rem; font-size: 0.75rem; color: #9ca3af; }
+        @media (min-width: 768px) { ul.custom-list li { font-size: 0.9rem; } }
+
+        /* Tab Animation */
+        .tab-content { display: none; animation: fadeIn 0.5s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="bg-canvas"></div>
+
+    <nav class="p-4 md:p-6 flex justify-between items-center max-w-6xl mx-auto">
+        <a href="/" class="flex items-center gap-2 text-white hover:text-pink-400 transition font-bold text-sm md:text-base">
+            <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Back to Ethrix</span><span class="sm:hidden">Back</span>
+        </a>
+        <div class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest border border-gray-700 px-3 py-1 rounded-full bg-black/50 backdrop-blur-md text-center">
+            Project Portfolio
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 pb-20 flex flex-col md:flex-row gap-6 md:gap-8 min-h-[80vh]">
+        
+        <aside class="w-full md:w-1/4 flex flex-row md:flex-col gap-2 z-10 overflow-x-auto no-scrollbar pb-2 md:pb-0 snap-x">
+            <button onclick="switchTab('creator')" class="tab-btn active text-left px-4 py-3 md:p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-2 md:gap-3 border-b-4 md:border-b-0 md:border-l-4 border-pink-500 whitespace-nowrap snap-center text-sm md:text-base">
+                <i class="fas fa-user-astronaut text-pink-400"></i> The Architect
+            </button>
+            <button onclick="switchTab('journey')" class="tab-btn text-left px-4 py-3 md:p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-2 md:gap-3 border-b-4 md:border-b-0 md:border-l-4 border-transparent opacity-70 hover:opacity-100 whitespace-nowrap snap-center text-sm md:text-base">
+                <i class="fas fa-history text-blue-400"></i> Version History
+            </button>
+            <button onclick="switchTab('tech')" class="tab-btn text-left px-4 py-3 md:p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-2 md:gap-3 border-b-4 md:border-b-0 md:border-l-4 border-transparent opacity-70 hover:opacity-100 whitespace-nowrap snap-center text-sm md:text-base">
+                <i class="fas fa-code text-green-400"></i> Tech Stack
+            </button>
+            <button onclick="switchTab('vision')" class="tab-btn text-left px-4 py-3 md:p-4 rounded-xl glass hover:bg-white/10 transition flex items-center gap-2 md:gap-3 border-b-4 md:border-b-0 md:border-l-4 border-transparent opacity-70 hover:opacity-100 whitespace-nowrap snap-center text-sm md:text-base">
+                <i class="fas fa-rocket text-purple-400"></i> Future Vision
+            </button>
+        </aside>
+
+        <section class="w-full md:w-3/4 glass rounded-3xl p-6 sm:p-8 md:p-12 relative overflow-hidden min-h-[500px] z-10">
+            
+            <div id="creator" class="tab-content active">
+                <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
+                    
+                    <div class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-pink-500/30 overflow-hidden shadow-[0_0_30px_rgba(236,72,153,0.3)] shrink-0 group relative">
+                        <img src="/static/images/admin-logo.jpeg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt="Shan">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                            <i class="fas fa-user-secret text-2xl text-white"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 text-center md:text-left">
+                        <h1 class="text-3xl md:text-5xl font-bold mb-2">Shan</h1>
+                        <p class="text-pink-400 font-mono text-sm md:text-base mb-4">First-Year B.Tech CSE (AIML) • Creative Coder</p>
+                        
+                        <div class="space-y-4 text-gray-300 leading-relaxed text-base md:text-lg text-left">
+                            <p>
+                                People often say the first year of college is just for having fun, but I wanted to build something meaningful. I created <span class="text-white font-bold">Ethrix</span> because I was tired of boring documentation and robotic replies. I wanted to build an AI with a soul—one that doesn't just respond, but actually connects.
+                            </p>
+                            <p>
+                                I might be a bit of an introvert in the real world, but when it comes to technology and innovation, I'm unstoppable. Coding is my passion, AI is my future, and Ethrix is the perfect blend of both.
+                            </p>
+                        </div>
+                        
+                        <div class="flex flex-wrap justify-center md:justify-start gap-3 mt-8">
+                            <a href="https://github.com/Shantanu-Pathak-1" target="_blank" class="px-4 py-2 rounded-full glass flex items-center gap-2 hover:bg-gray-800 transition hover:scale-105">
+                                <i class="fab fa-github text-lg md:text-xl"></i> <span class="text-xs md:text-sm font-bold">GitHub</span>
+                            </a>
+                            <a href="https://www.linkedin.com/in/shantanu-pathak-9b465b30b" target="_blank" class="px-4 py-2 rounded-full glass flex items-center gap-2 hover:bg-blue-600/50 transition hover:scale-105">
+                                <i class="fab fa-linkedin text-lg md:text-xl text-blue-400"></i> <span class="text-xs md:text-sm font-bold">LinkedIn</span>
+                            </a>
+                            <a href="https://www.instagram.com/__dark.soul__2?igsh=ZnQ3Ymg1eXIyMHJy" target="_blank" class="px-4 py-2 rounded-full glass flex items-center gap-2 hover:bg-pink-600/50 transition hover:scale-105">
+                                <i class="fab fa-instagram text-lg md:text-xl text-pink-400"></i> <span class="text-xs md:text-sm font-bold">Instagram</span>
+                            </a>
+                            <a href="mailto:shantanupathak94@gmail.com" class="px-4 py-2 rounded-full glass flex items-center gap-2 hover:bg-red-500/50 transition hover:scale-105">
+                                <i class="fas fa-envelope text-lg md:text-xl text-red-400"></i> <span class="text-xs md:text-sm font-bold">Email</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="journey" class="tab-content">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-white/10 pb-4 gap-3">
+                    <h2 class="text-2xl md:text-3xl font-bold flex items-center gap-3"><i class="fas fa-history text-blue-400"></i> Version History</h2>
+                    <span class="badge px-3 py-1 rounded-full text-[10px] md:text-xs font-bold text-pink-400 bg-pink-500/10 border border-pink-500/30">Detailed Changelog</span>
+                </div>
+                
+                <div class="timeline-container space-y-8 md:space-y-12">
+                    <div class="timeline-line"></div>
+
+                    <div class="relative">
+                        <div class="timeline-dot-latest mt-4 md:mt-6 animate-pulse"></div>
+                        <div class="glass glass-hover p-5 md:p-6 rounded-2xl relative border border-pink-500/50 shadow-[0_0_20px_rgba(236,72,153,0.15)] bg-gradient-to-br from-pink-500/5 to-transparent">
+                            <div class="absolute -top-3 right-4 md:right-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[10px] md:text-xs px-3 py-1 rounded-full font-bold animate-pulse shadow-lg flex items-center gap-1 md:gap-2">
+                                <i class="fas fa-star text-yellow-300"></i> LATEST
+                            </div>
+                            <h3 class="text-xl md:text-2xl font-bold text-white mb-1">🟣 Beta v3.4</h3>
+                            <p class="text-pink-400 font-mono text-[10px] md:text-xs mb-4">Tri-Model AI engine, custom tools, arcade upgrades & memory hardened</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Tri-Model Architecture:</strong> Groq (Primary) + Gemini 1.5 Flash (Vision/Math) + OpenRouter</span></li>
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Smart Task-Based Routing:</strong> DeepSeek Coder → Coding, Llama/Qwen → Logic</span></li>
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Arcade Updates:</strong> MongoDB High Scores, Flappy Bug 3 modes, Neon Ludo Battle</span></li>
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Custom Tool Builder:</strong> Create & save AI tools with custom prompts</span></li>
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Hybrid Image Engine:</strong> Pollinations AI (Free) & HuggingFace SDXL (Pro Mode)</span></li>
+                                <li><i class="fas fa-check text-pink-500"></i> <span><strong>Memory Hardening:</strong> Hinglish triggers ("yaad rakhna"), On-Demand Secret Diary</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="timeline-dot mt-4 md:mt-6 border-purple-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl">
+                            <h3 class="text-lg md:text-xl font-bold text-white mb-1">🟣 Beta v3.3</h3>
+                            <p class="text-purple-400 font-mono text-[10px] md:text-xs mb-3">Arcade Zone launched + Admin analytics</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>Smart File Upload Preview Box above input bar.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Admin Analytics & Live System Error Logs.</span></li>
+                                <li><i class="fas fa-circle"></i> <span><strong>Arcade Zone Launched:</strong> 5 Games (Tic-Tac-Toe, Code-le, Flappy Bug, Ludo).</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Microservice Architecture for Arcade.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="timeline-dot mt-4 md:mt-6 border-blue-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl">
+                            <h3 class="text-lg md:text-xl font-bold text-white mb-1">🟣 Beta v3.2</h3>
+                            <p class="text-blue-400 font-mono text-[10px] md:text-xs mb-3">Tools Lab expands to 16 tools</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>Tools Dashboard expanded from 4 to 16 tools.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Voice Commands added to every tool.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>6 New Tools: Cold Email Pro, Fitness Coach, Feynman Explainer, etc.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="timeline-dot mt-4 md:mt-6 border-green-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl">
+                            <h3 class="text-lg md:text-xl font-bold text-white mb-1">🟣 Beta v3.0 & v3.1</h3>
+                            <p class="text-green-400 font-mono text-[10px] md:text-xs mb-3">Admin panel operational</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>God Mode Fully Activated: Strict email auth.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>4 Admin Superpowers: Promote, Demote, Ban, Unban.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="timeline-dot mt-4 md:mt-6 border-yellow-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl">
+                            <h3 class="text-lg md:text-xl font-bold text-white mb-1">🟣 Beta v2.0 - v2.5</h3>
+                            <p class="text-yellow-400 font-mono text-[10px] md:text-xs mb-3">Tools Lab born, Voice & Emotional Memory</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>Human-Like Voice (Edge TTS): Microsoft Neerja Neural.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Ethrix's Secret Diary & Proactive Messaging.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Interactive Image Studio UI & Multi-Tier Fallbacks.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="timeline-dot mt-4 md:mt-6 border-pink-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl">
+                            <h3 class="text-lg md:text-xl font-bold text-white mb-1">🟣 Beta v1.0 - v1.3</h3>
+                            <p class="text-pink-400 font-mono text-[10px] md:text-xs mb-3">First functional multimodal AI</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>Image & Video Generation, Document Reading.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Custom Instructions Logic & Long-Term Memory (RAG).</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="timeline-dot mt-4 md:mt-6 border-gray-500"></div>
+                        <div class="glass glass-hover p-4 md:p-5 rounded-2xl opacity-80">
+                            <h3 class="text-lg md:text-xl font-bold text-gray-300 mb-1">⚡ Alpha v0.1 - v0.3</h3>
+                            <p class="text-gray-500 font-mono text-[10px] md:text-xs mb-3">Building the Foundation</p>
+                            <ul class="custom-list">
+                                <li><i class="fas fa-circle"></i> <span>Live Animated 3D Background & Glassmorphism theme.</span></li>
+                                <li><i class="fas fa-circle"></i> <span>Vision Feature: AI can read & analyze images.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="tech" class="tab-content">
+                <h2 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8 flex items-center gap-3"><i class="fas fa-microchip text-green-400"></i> Built With</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fab fa-python text-3xl md:text-4xl text-yellow-400 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">Python & FastAPI</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">Backend Core</span>
+                    </div>
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fas fa-brain text-3xl md:text-4xl text-pink-400 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">LLMs</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">Groq & Gemini</span>
+                    </div>
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fas fa-database text-3xl md:text-4xl text-green-400 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">MongoDB</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">Memory Database</span>
+                    </div>
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fab fa-js text-3xl md:text-4xl text-yellow-300 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">Vanilla JS</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">Frontend Logic</span>
+                    </div>
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fas fa-cube text-3xl md:text-4xl text-purple-400 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">Spline 3D</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">WebGL Experience</span>
+                    </div>
+                    <div class="p-3 md:p-4 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center hover:bg-white/10 transition glass-hover text-center">
+                        <i class="fas fa-palette text-3xl md:text-4xl text-blue-400 mb-2"></i>
+                        <span class="font-bold text-sm md:text-base">Tailwind CSS</span>
+                        <span class="text-[10px] md:text-xs text-gray-400 mt-1">Styling</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="vision" class="tab-content">
+                <h2 class="text-2xl md:text-3xl font-bold mb-4 md:mb-6 flex items-center gap-3"><i class="fas fa-rocket text-purple-400"></i> The Roadmap</h2>
+                
+                <div class="space-y-4 text-gray-400 bg-white/5 p-5 md:p-6 rounded-2xl border border-white/10">
+                    <p class="text-base md:text-lg flex items-center"><i class="fas fa-hourglass-half text-pink-400 mr-3"></i> New roadmap details are currently being structured.</p>
+                    <p class="text-xs md:text-sm opacity-70 mt-2 ml-7">Stay tuned for the next phase of evolution!</p>
+                </div>
+
+                </div>
+
+        </section>
+    </main>
+
+    <script>
+        // Tab Logic Setup (Responsive handling)
+        function switchTab(tabId) {
+            // Hide all
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active', 'border-pink-500', 'border-b-4', 'md:border-l-4');
+                el.classList.add('border-transparent', 'opacity-70');
+            });
+
+            // Show One
+            document.getElementById(tabId).classList.add('active');
+            const activeBtn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
+            
+            // Apply responsive active borders (bottom for mobile, left for desktop)
+            activeBtn.classList.add('active', 'border-pink-500');
+            
+            if (window.innerWidth < 768) {
+                activeBtn.classList.add('border-b-4');
+            } else {
+                activeBtn.classList.add('md:border-l-4');
+            }
+            
+            activeBtn.classList.remove('border-transparent', 'opacity-70');
+        }
+
+        // Handle window resize for borders
+        window.addEventListener('resize', () => {
+            const activeBtn = document.querySelector('.tab-btn.active');
+            if(activeBtn) {
+                if (window.innerWidth < 768) {
+                    activeBtn.classList.add('border-b-4');
+                    activeBtn.classList.remove('md:border-l-4');
+                } else {
+                    activeBtn.classList.remove('border-b-4');
+                    activeBtn.classList.add('md:border-l-4');
+                }
+            }
+        });
+
+        // Vanta Background (Net Effect)
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                VANTA.NET({
+                    el: "#bg-canvas",
+                    mouseControls: true,
+                    touchControls: true,
+                    gyroControls: false,
+                    minHeight: 200.00,
+                    minWidth: 200.00,
+                    scale: 1.00,
+                    scaleMobile: 1.00,
+                    color: 0xec4899,
+                    backgroundColor: 0x050505,
+                    points: 10.00,
+                    maxDistance: 20.00,
+                    spacing: 18.00
+                })
+            } catch(e) {}
+        });
+    </script>
+        <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (window.matchMedia("(pointer: fine)").matches) {
+            const dot = document.createElement("div"); dot.className = "cursor-dot";
+            const outline = document.createElement("div"); outline.className = "cursor-outline";
+            document.body.appendChild(dot); document.body.appendChild(outline);
+
+            window.addEventListener("mousemove", (e) => {
+                dot.style.left = `${e.clientX}px`; dot.style.top = `${e.clientY}px`;
+                outline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
+            });
+
+            window.addEventListener("mousedown", (e) => {
+                const ripple = document.createElement("div"); ripple.className = "click-ripple";
+                ripple.style.left = `${e.clientX}px`; ripple.style.top = `${e.clientY}px`;
+                document.body.appendChild(ripple);
+                outline.style.transform = "translate(-50%, -50%) scale(0.7)";
+                setTimeout(() => outline.style.transform = "translate(-50%, -50%) scale(1)", 150);
+                setTimeout(() => ripple.remove(), 500);
+            });
+
+            const addHoverEffect = () => {
+                document.querySelectorAll("a, button, input, textarea, .mode-btn").forEach(el => {
+                    el.addEventListener("mouseenter", () => {
+                        outline.style.width = "50px"; outline.style.height = "50px";
+                        outline.style.backgroundColor = "rgba(236, 72, 153, 0.1)"; // Pink Hover
+                    });
+                    el.addEventListener("mouseleave", () => {
+                        outline.style.width = "32px"; outline.style.height = "32px";
+                        outline.style.backgroundColor = "transparent";
+                    });
+                });
+            };
+            addHoverEffect();
+        }
+    });
+    </script>
+</body>
+</html>
