@@ -2,27 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Tools Dashboard - Ethrix</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* ── CUSTOM CURSORS ─────────────────────────────── */
-   *, body, html { cursor: url('/static/cursors/tools-cursor.png'), auto !important; }
-a, button, input, .tool-card { cursor: url('/static/cursors/tools-pointer.png'), pointer !important; }
+        @media (pointer: fine) {
+            *, body, html { cursor: url('/static/cursors/tools-cursor.png'), auto !important; }
+            a, button, input, .tool-card, .arcade-card, .category-pill { cursor: url('/static/cursors/tools-pointer.png'), pointer !important; }
+        }
 
-        /* ── TOOL CARD HOVER EFFECTS ────────────────────── */
+        /* ── TOOL CARD HOVER & TOUCH EFFECTS ────────────── */
         .tool-card {
-            transition: all 0.3s ease;
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+            -webkit-tap-highlight-color: transparent;
         }
         .tool-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-4px);
             box-shadow: 0 10px 30px -5px rgba(0, 229, 255, 0.25);
             border-color: rgba(0, 229, 255, 0.5) !important;
         }
-        .tool-icon-wrapper { transition: all 0.3s ease; }
-        .tool-card:hover .tool-icon-wrapper { transform: scale(1.1) rotate(5deg); }
+        .tool-card:active {
+            transform: scale(0.98);
+        }
+        .tool-icon-wrapper { transition: all 0.25s ease; }
+        .tool-card:hover .tool-icon-wrapper { transform: scale(1.08) rotate(4deg); }
 
         /* ── SIDEBAR ACTIVE LINK ───────────────────────── */
         .sidebar-active-link {
@@ -33,393 +39,576 @@ a, button, input, .tool-card { cursor: url('/static/cursors/tools-pointer.png'),
 
         /* ── ARCADE CARD HOVER ──────────────────────────── */
         .arcade-card {
-            transition: all 0.3s ease;
+            transition: transform 0.22s ease, border-color 0.22s ease, background-color 0.22s ease;
+            -webkit-tap-highlight-color: transparent;
         }
         .arcade-card:hover {
             transform: translateY(-3px);
         }
+        .arcade-card:active {
+            transform: scale(0.98);
+        }
+
+        /* ── CATEGORY PILLS ─────────────────────────────── */
+        .category-pill {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         /* ── CUSTOM SCROLLBAR ───────────────────────────── */
-        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
         ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1E90FF, #00E5FF); border-radius: 10px; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
         /* ── MOBILE TOPBAR ──────────────────────────────── */
-        @media (max-width: 767px) { .tools-mobile-topbar { display: flex !important; } }
+        @media (max-width: 767px) { 
+            .tools-mobile-topbar { display: flex !important; } 
+        }
+
         /* ── MOBILE SIDEBAR SLIDE-IN ────────────────────── */
         .tools-nav-sidebar.mobile-open {
-            display: flex !important; position: fixed;
-            top: 0; left: 0; height: 100vh; width: 260px;
-            z-index: 100; box-shadow: 4px 0 24px rgba(0,0,0,0.6);
-            animation: slideIn 0.22s ease;
+            display: flex !important; 
+            position: fixed;
+            top: 0; left: 0; 
+            height: 100dvh; 
+            width: 270px;
+            z-index: 100; 
+            box-shadow: 8px 0 35px rgba(0, 0, 0, 0.8);
+            animation: slideIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        @keyframes slideIn { from { transform: translateX(-100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
-        #sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99; }
-        #sidebar-overlay.active { display:block; }
+        @keyframes slideIn { 
+            from { transform: translateX(-100%); opacity: 0; } 
+            to { transform: translateX(0); opacity: 1; } 
+        }
+        
+        #sidebar-overlay { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0, 0, 0, 0.65); 
+            backdrop-filter: blur(4px); 
+            z-index: 99; 
+            transition: opacity 0.2s ease;
+        }
+        #sidebar-overlay.active { display: block; }
     </style>
 </head>
-<body class="bg-gray-900 text-white flex h-screen overflow-hidden">
+<body class="bg-gray-950 text-white flex h-screen overflow-hidden">
 
-    <!-- Mobile top bar -->
-    <div class="tools-mobile-topbar hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-2.5 bg-gray-900/95 backdrop-blur-md border-b border-gray-700/60 shadow-md">
-        <div class="flex items-center gap-2.5">
-            <button onclick="openMobileSidebar()" class="text-white text-lg p-1.5 rounded-lg hover:bg-gray-800 transition"><i class="fas fa-bars"></i></button>
+    <!-- Mobile Top Navigation Bar -->
+    <div class="tools-mobile-topbar hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3.5 py-2.5 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 shadow-lg">
+        <div class="flex items-center gap-2">
+            <button onclick="openMobileSidebar()" class="text-white text-lg p-2 rounded-xl hover:bg-gray-800 transition active:scale-95" aria-label="Open Sidebar Menu">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="flex items-center gap-2">
                 <img src="/static/images/logo.png" class="w-7 h-7 rounded-full border border-cyan-500/40 object-cover shadow-[0_0_8px_rgba(0,229,255,0.3)]">
-                <span class="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Ethrix</span>
+                <span class="font-bold text-base text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Ethrix Tools</span>
             </div>
         </div>
-        <a href="/" class="text-gray-300 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition text-sm flex items-center gap-1.5" title="Main Chat">
-            <i class="fas fa-home text-cyan-400"></i>
-            <span class="text-xs font-medium">Chat</span>
-        </a>
+        
+        <div class="flex items-center gap-2">
+            <a href="/" class="bg-gray-800/80 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-700/80 flex items-center gap-1.5 transition active:scale-95" title="Return to Chat">
+                <i class="fas fa-comment-dots text-cyan-400"></i>
+                <span>Chat</span>
+            </a>
+        </div>
     </div>
-    <!-- Mobile topbar spacer -->
-    <div class="tools-mobile-spacer h-14 md:hidden"></div>
+
     <!-- Overlay for mobile sidebar -->
     <div id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
-    <nav id="tools-sidebar" class="tools-nav-sidebar w-64 bg-gray-800 border-r border-gray-700 flex flex-col justify-between hidden md:flex z-20">
+    <!-- Sidebar Navigation (Desktop Fixed, Mobile Slide-in) -->
+    <nav id="tools-sidebar" class="tools-nav-sidebar w-64 bg-gray-900 border-r border-gray-800 flex flex-col justify-between hidden md:flex z-20 shrink-0">
         <div class="p-4">
             <div class="flex justify-between items-center mb-8 mt-2">
-                <div class="flex items-center gap-2.5">
+                <a href="/" class="flex items-center gap-2.5 text-decoration-none">
                     <img src="/static/images/logo.png" class="w-8 h-8 rounded-full border border-cyan-500/40 object-cover shadow-[0_0_8px_rgba(0,229,255,0.3)]">
-                    <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Ethrix</h2>
-                </div>
-                <button class="md:hidden text-gray-400 hover:text-white p-2 text-lg" onclick="closeMobileSidebar()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="space-y-2">
-                <a href="/" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-700 transition text-gray-300 hover:text-white">
-                    <i class="fas fa-home w-5 text-center"></i> 
-                    <span class="font-medium">Main Chat</span>
+                    <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 font-['Outfit']">Ethrix</h2>
                 </a>
-                <a href="/tools" class="flex items-center gap-3 p-3 rounded-xl sidebar-active-link transition shadow-inner">
-                    <i class="fas fa-flask w-5 text-center"></i> 
-                    <span class="font-medium">Tools Lab</span>
+                <button class="md:hidden text-gray-400 hover:text-white p-2 text-lg" onclick="closeMobileSidebar()" aria-label="Close menu">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-1.5">
+                <a href="/" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 transition text-gray-300 hover:text-white min-h-[44px]">
+                    <i class="fas fa-home w-5 text-center text-gray-400"></i> 
+                    <span class="font-medium text-sm">Main Chat</span>
+                </a>
+                <a href="/tools" class="flex items-center gap-3 p-3 rounded-xl sidebar-active-link transition shadow-inner min-h-[44px]">
+                    <i class="fas fa-flask w-5 text-center text-cyan-400"></i> 
+                    <span class="font-medium text-sm">Tools Lab</span>
+                </a>
+                <a href="/gallery" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 transition text-gray-300 hover:text-white min-h-[44px]">
+                    <i class="fas fa-palette w-5 text-center text-gray-400"></i> 
+                    <span class="font-medium text-sm">My Studio</span>
+                </a>
+                <a href="/memory-dashboard" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 transition text-gray-300 hover:text-white min-h-[44px]">
+                    <i class="fas fa-brain w-5 text-center text-gray-400"></i> 
+                    <span class="font-medium text-sm">Brain Memory</span>
+                </a>
+                <a href="/settings" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 transition text-gray-300 hover:text-white min-h-[44px]">
+                    <i class="fas fa-cog w-5 text-center text-gray-400"></i> 
+                    <span class="font-medium text-sm">Control Center</span>
                 </a>
             </div>
         </div>
-        <div class="p-4 border-t border-gray-700 space-y-2">
-            <div class="flex items-center gap-3 p-3 mt-2 rounded-xl bg-gray-700/50 border border-gray-600">
-                <img src="{{ user.picture if user.picture else url_for('static', filename='images/logo.png') }}" alt="Profile" class="w-9 h-9 rounded-full object-cover border-2 border-cyan-500">
-                <span class="font-medium truncate">{{ user.name }}</span>
+
+        <div class="p-4 border-t border-gray-800 space-y-2">
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-gray-800/60 border border-gray-700/60">
+                <img src="{{ user.picture if user and user.picture else url_for('static', filename='images/logo.png') }}" alt="Profile" class="w-8 h-8 rounded-full object-cover border-2 border-cyan-500">
+                <div class="truncate">
+                    <p class="font-semibold text-xs text-white truncate">{{ user.name if user and user.name else 'Ethrix User' }}</p>
+                    <p class="text-[10px] text-gray-400 truncate">{{ user.email if user and user.email else 'Guest' }}</p>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="tools-main-content flex-1 overflow-y-auto p-4 md:p-8 relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-800 via-gray-900 to-black">
-        <header class="mb-10 text-center md:text-left pt-4">
-            <h1 class="text-3xl md:text-4xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">Welcome to Tools Lab ✨</h1>
-            <p class="text-gray-400 text-lg">Select a tool to get started.</p>
+    <!-- Main Content Area -->
+    <main class="tools-main-content flex-1 overflow-y-auto p-3.5 sm:p-5 md:p-8 relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 via-gray-950 to-black">
+        
+        <!-- Top Spacer for Mobile Navigation -->
+        <div class="h-14 md:hidden shrink-0"></div>
+
+        <!-- Header -->
+        <header class="mb-6 md:mb-8 text-left max-w-7xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-400 text-xs font-bold mb-2">
+                <i class="fas fa-sparkles"></i>
+                <span>Ethrix Productivity Suite</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight font-['Outfit'] mb-1">
+                Tools Lab & Playground ✨
+            </h1>
+            <p class="text-gray-400 text-xs sm:text-sm md:text-base">
+                Instant AI utilities for developers, students, career growth, and creative projects.
+            </p>
         </header>
 
-        <!-- Custom Tools Section -->
-        <div class="mb-12 max-w-7xl mx-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
-                    <i class="fas fa-hammer mr-2 text-yellow-500"></i> My Custom Tools
-                </h2>
-                <button onclick="document.getElementById('customToolModal').classList.remove('hidden')" class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 transition transform hover:-translate-y-0.5">
-                    <i class="fas fa-plus mr-1"></i> Create Tool
+        <!-- Search Bar & Category Filters -->
+        <div class="mb-6 max-w-7xl mx-auto">
+            <div class="relative flex items-center mb-3">
+                <i class="fas fa-search absolute left-3.5 text-gray-400 text-sm pointer-events-none"></i>
+                <input type="text" id="toolSearchInput" oninput="filterTools()" placeholder="Search tools (e.g. Resume, YouTube, Code, Math, Anime)..." class="w-full bg-gray-900/90 border border-gray-700/80 rounded-xl pl-10 pr-9 py-2.5 sm:py-3 text-xs sm:text-sm text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-md transition">
+                <button type="button" id="clearSearchBtn" onclick="clearToolSearch()" class="hidden absolute right-3 text-gray-400 hover:text-white p-1 text-xs" aria-label="Clear Search">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div id="customToolsGrid" class="tools-grid-responsive grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <p class="text-gray-500 text-sm italic col-span-full">Loading your custom tools...</p>
+
+            <!-- Scrollable Category Filter Pills -->
+            <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-1 text-xs">
+                <button type="button" onclick="filterCategory('all', this)" class="category-pill active px-3.5 py-1.5 rounded-full font-bold transition shrink-0 bg-cyan-500 text-black shadow-sm">All Tools</button>
+                <button type="button" onclick="filterCategory('dev', this)" class="category-pill px-3 py-1.5 rounded-full font-semibold transition shrink-0 bg-gray-900 text-gray-300 hover:text-white border border-gray-800">💻 Code & Dev</button>
+                <button type="button" onclick="filterCategory('career', this)" class="category-pill px-3 py-1.5 rounded-full font-semibold transition shrink-0 bg-gray-900 text-gray-300 hover:text-white border border-gray-800">💼 Career & Jobs</button>
+                <button type="button" onclick="filterCategory('creative', this)" class="category-pill px-3 py-1.5 rounded-full font-semibold transition shrink-0 bg-gray-900 text-gray-300 hover:text-white border border-gray-800">🎨 Creative & Media</button>
+                <button type="button" onclick="filterCategory('learning', this)" class="category-pill px-3 py-1.5 rounded-full font-semibold transition shrink-0 bg-gray-900 text-gray-300 hover:text-white border border-gray-800">📚 Study & Brain</button>
+                <button type="button" onclick="filterCategory('arcade', this)" class="category-pill px-3 py-1.5 rounded-full font-semibold transition shrink-0 bg-gray-900 text-gray-300 hover:text-white border border-gray-800">🎮 Arcade Games</button>
+            </div>
+        </div>
+
+        <!-- Custom Tools Section -->
+        <div id="customToolsSection" class="mb-8 md:mb-10 max-w-7xl mx-auto">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4">
+                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center gap-2">
+                    <i class="fas fa-hammer text-yellow-500"></i>
+                    <span>My Custom Tools</span>
+                </h2>
+                <button onclick="document.getElementById('customToolModal').classList.remove('hidden')" class="w-full sm:w-auto bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-orange-500/20 transition transform active:scale-95 flex items-center justify-center gap-1.5">
+                    <i class="fas fa-plus text-xs"></i>
+                    <span>Create Custom Tool</span>
+                </button>
+            </div>
+            
+            <div id="customToolsGrid" class="tools-grid-responsive grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5">
+                <p class="text-gray-500 text-xs sm:text-sm italic col-span-full">Loading your custom tools...</p>
             </div>
         </div>
 
         <!-- Standard Tools Section -->
-        <div class="flex items-center gap-3 mb-6 max-w-7xl mx-auto mt-8">
-            <h2 class="text-2xl font-bold text-white"><i class="fas fa-layer-group text-cyan-500 mr-2"></i> Standard Tools</h2>
-        </div>
-        
-        <div class="tools-grid-responsive grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto pb-10">
+        <div id="standardToolsSection" class="max-w-7xl mx-auto">
+            <div class="flex items-center gap-2.5 mb-4">
+                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-layer-group text-cyan-500"></i>
+                    <span>Standard Tools</span>
+                </h2>
+                <span id="toolCountBadge" class="text-xs bg-gray-800 text-cyan-400 px-2 py-0.5 rounded-full font-bold">14 tools</span>
+            </div>
             
-            <a href="/tools/flashcards" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-purple-500/30">
-                    <i class="fas fa-clone text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">🎴🧠BrainSpark</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Study smarter, not harder! 📚✨
-Generate AI-powered flashcards in seconds.</p>
-            </a>
+            <div id="toolsGridContainer" class="tools-grid-responsive grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5 pb-8">
+                
+                <!-- 1. BrainSpark -->
+                <a href="/tools/flashcards" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="brainspark flashcards study" data-cat="learning">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl mb-3 shadow-md shadow-purple-500/25">
+                        <i class="fas fa-clone text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>BrainSpark</span>
+                        <span class="text-xs">🎴</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Generate AI-powered flashcards from notes, PDFs, and topics in seconds.
+                    </p>
+                </a>
 
-            <a href="/tools/image_gen" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-pink-500/30">
-                    <i class="fas fa-image text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">🎨VisionForge</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Turn imagination into reality! 🎨✨
-Create stunning, high-quality images in seconds.</p>
-            </a>
+                <!-- 2. VisionForge -->
+                <a href="/tools/image_gen" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="visionforge image generation art" data-cat="creative">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-xl mb-3 shadow-md shadow-pink-500/25">
+                        <i class="fas fa-image text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>VisionForge</span>
+                        <span class="text-xs">🎨</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Create high-resolution digital artwork, concept portraits, and 3D renders.
+                    </p>
+                </a>
 
-            <a href="/tools/resume_builder" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-blue-500/30">
-                    <i class="fas fa-file-alt text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">📄ResumeX</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Stand out and get hired! 💼✨
-Build an ATS-friendly resume that lands your dream job.</p>
-            </a>
+                <!-- 3. ResumeX Builder -->
+                <a href="/tools/resume_builder" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="resumex resume builder cv career" data-cat="career">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-xl mb-3 shadow-md shadow-blue-500/25">
+                        <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>ResumeX</span>
+                        <span class="text-xs">📄</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Build an ATS-optimized, recruiter-ready resume tailored to your target roles.
+                    </p>
+                </a>
 
-            <a href="/tools/youtube_summarizer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-red-500/30">
-                    <i class="fab fa-youtube text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">🎬YT Summarizer</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Learn more in less time! ⏱️📚
-Turn long YT tutorials into quick, easy summaries.</p>
-            </a>
+                <!-- 4. YT Summarizer -->
+                <a href="/tools/youtube_summarizer" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="yt summarizer youtube video summary" data-cat="learning">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-xl mb-3 shadow-md shadow-red-500/25">
+                        <i class="fab fa-youtube text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>YT Summarizer</span>
+                        <span class="text-xs">🎬</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Turn hour-long tutorials and podcasts into clear key takeaways and notes.
+                    </p>
+                </a>
 
-            <a href="/tools/github_review" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-gray-500/30">
-                    <i class="fab fa-github text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">🥸CodeInsight</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Level up your coding profile! 🚀💻
-Get AI-powered insights to improve your GitHub.</p>
-            </a>
+                <!-- 5. CodeInsight (GitHub Review) -->
+                <a href="/tools/github_review" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="codeinsight github code review git" data-cat="dev">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-xl mb-3 shadow-md shadow-gray-500/25">
+                        <i class="fab fa-github text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>CodeInsight</span>
+                        <span class="text-xs">🥸</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Get AI feedback on your GitHub repositories, code quality, and READMEs.
+                    </p>
+                </a>
 
-            <a href="/tools/smart_todo" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-green-400 to-teal-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-green-500/30">
-                    <i class="fas fa-tasks text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">✅TaskFlow</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Clear your mind instantly! 🧠✨
-Transform messy thoughts into organized task lists.</p>
-            </a>
+                <!-- 6. TaskFlow Todo -->
+                <a href="/tools/smart_todo" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="taskflow smart todo productivity" data-cat="career">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-400 to-teal-600 flex items-center justify-center text-xl mb-3 shadow-md shadow-green-500/25">
+                        <i class="fas fa-tasks text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>TaskFlow</span>
+                        <span class="text-xs">✅</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Transform brain dumps into actionable, prioritized checklists with deadlines.
+                    </p>
+                </a>
 
-            <a href="/tools/prompt_writer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-700 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-purple-500/30">
-                    <i class="fas fa-pen-fancy text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">✍️PromptCraft</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Turn ideas into powerful AI prompts! ✨🤖
-Convert simple thoughts into professional-ready prompts.</p>
-            </a>
+                <!-- 7. PromptCraft -->
+                <a href="/tools/prompt_writer" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="promptcraft prompt writer engineer ai" data-cat="creative">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-700 flex items-center justify-center text-xl mb-3 shadow-md shadow-purple-500/25">
+                        <i class="fas fa-pen-fancy text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>PromptCraft</span>
+                        <span class="text-xs">✍️</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Convert basic thoughts into high-performance prompts for ChatGPT & Midjourney.
+                    </p>
+                </a>
 
-            <a href="/tools/qr_generator" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-gray-100 to-gray-400 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-white/30">
-                    <i class="fas fa-qrcode text-black"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">🔳QR Maker</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Share smarter, instantly! 📲✨
-Generate custom QR codes for links and text in seconds.</p>
-            </a>
+                <!-- 8. QR Maker -->
+                <a href="/tools/qr_generator" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="qr maker qr code generator" data-cat="dev">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-gray-100 to-gray-400 flex items-center justify-center text-xl mb-3 shadow-md shadow-white/20">
+                        <i class="fas fa-qrcode text-black"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>QR Maker</span>
+                        <span class="text-xs">🔳</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Generate custom, branded QR codes for URLs, WiFi, texts, and portfolios.
+                    </p>
+                </a>
 
-            <a href="/tools/resume_analyzer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-400 to-green-700 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-green-500/30">
-                    <i class="fas fa-microscope text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">📊HireScore</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Know your resume's true impact! 📄📈
-Check your ATS score and get instant improvements.</p>
-            </a>
+                <!-- 9. HireScore (Resume Analyzer) -->
+                <a href="/tools/resume_analyzer" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="hirescore resume analyzer ats score" data-cat="career">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-green-700 flex items-center justify-center text-xl mb-3 shadow-md shadow-green-500/25">
+                        <i class="fas fa-microscope text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>HireScore</span>
+                        <span class="text-xs">📊</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Simulate top ATS software to get instant resume scores and keyword fixes.
+                    </p>
+                </a>
 
-            <a href="/tools/currency_converter" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-yellow-500/30">
-                    <i class="fas fa-coins text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">💱GlobalRate</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Stay updated worldwide! 🌍💱
-Get live exchange rates and instant currency conversions.</p>
-            </a>
+                <!-- 10. GlobalRate -->
+                <a href="/tools/currency_converter" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="globalrate currency converter exchange forex" data-cat="career">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-600 flex items-center justify-center text-xl mb-3 shadow-md shadow-yellow-500/25">
+                        <i class="fas fa-coins text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>GlobalRate</span>
+                        <span class="text-xs">💱</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Real-time currency exchange rates and instant cross-currency calculators.
+                    </p>
+                </a>
 
-            <a href="/tools/password_generator" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-slate-600 to-slate-900 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-slate-500/30">
-                    <i class="fas fa-key text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">🔐VaultKey</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Stay secure online! 🛡️🔑
-Generate ultra-strong passwords to protect your accounts.</p>
-            </a>
+                <!-- 11. VaultKey Password Generator -->
+                <a href="/tools/password_generator" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="vaultkey password generator security" data-cat="dev">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-slate-600 to-slate-900 flex items-center justify-center text-xl mb-3 shadow-md shadow-slate-500/25">
+                        <i class="fas fa-key text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>VaultKey</span>
+                        <span class="text-xs">🔐</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Generate ultra-secure, cryptographically strong passwords on the client side.
+                    </p>
+                </a>
 
-            <a href="/tools/grammar_fixer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-pink-500/30">
-                    <i class="fas fa-spell-check text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">✨Grammar Fixer</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Write with confidence! 📝✨
-Make your English professional and error-free.</p>
-            </a>
+                <!-- 12. Grammar Fixer -->
+                <a href="/tools/grammar_fixer" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="grammar fixer english proofread text" data-cat="career">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-xl mb-3 shadow-md shadow-pink-500/25">
+                        <i class="fas fa-spell-check text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>Grammar Fixer</span>
+                        <span class="text-xs">✨</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Refine text into professional, polished English with natural tone corrections.
+                    </p>
+                </a>
 
-            <a href="/tools/interview_questions" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-orange-500/30">
-                    <i class="fas fa-user-tie text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">💼🌐ElitePreparation</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Crack top company interviews! 🚀💼
-Prepare for the toughest questions with smart guidance.</p>
-            </a>
+                <!-- 13. CodeRefine (Code Debugger) -->
+                <a href="/tools/code_debugger" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="coderefine code debugger python js bugs" data-cat="dev">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-gray-600 to-green-600 flex items-center justify-center text-xl mb-3 shadow-md shadow-green-500/25">
+                        <i class="fas fa-bug text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>CodeRefine</span>
+                        <span class="text-xs">💻</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Debug runtime stack traces, fix edge-case bugs, and optimize execution speed.
+                    </p>
+                </a>
 
-            <a href="/tools/mock_interviewer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-cyan-500/30">
-                    <i class="fas fa-microphone text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">🎤MockMaster</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Practice. Improve. Succeed. 🎯🎤
-Do live mock interviews and boost your confidence.</p>
-            </a>
+                <!-- 14. ConceptEase (Feynman Explainer) -->
+                <a href="/tools/feynman_explainer" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 group" data-name="conceptease feynman explainer study learn" data-cat="learning">
+                    <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-xl mb-3 shadow-md shadow-blue-500/25">
+                        <i class="fas fa-brain text-white"></i>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold mb-1 text-gray-100 flex items-center gap-1.5">
+                        <span>ConceptEase</span>
+                        <span class="text-xs">📚</span>
+                    </h3>
+                    <p class="text-gray-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        Master tough computer science & academic topics broken down like you're 5.
+                    </p>
+                </a>
 
-            <a href="/tools/math_solver" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-rose-400 to-red-700 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-red-500/30">
-                    <i class="fas fa-calculator text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">➗MathFlow</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Solve smarter, step by step! 🧠✨
-Break down complex problems with AI guidance.</p>
-            </a>
+            </div>
 
-            <a href="/tools/sing_with_me" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-700 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-fuchsia-500/30">
-                    <i class="fas fa-music text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">🎵VibeRoom</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Study break? Let's vibe! 🎶😄
-Sing along and refresh your mind together.</p>
-            </a>
-
-            <a href="/tools/cold_email" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-cyan-500/30">
-                    <i class="fas fa-envelope-open-text text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">📧MailMagnet</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Open doors to global opportunities! 🌎📩
-Craft high-converting emails for high-paying jobs.</p>
-            </a>
-
-            <a href="/tools/fitness_coach" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-orange-500/30">
-                    <i class="fas fa-dumbbell text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">🥊FitForge AI</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Train smarter at home! 💪🔥
-Get personalized workouts, boxing plans, and diet guidance.</p>
-            </a>
-
-            <a href="/tools/feynman_explainer" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-blue-500/30">
-                    <i class="fas fa-brain text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">📚ConceptEase</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Master complex concepts easily! 🤖📘
-Understand AIML and college topics in simple language.</p>
-            </a>
-
-            <a href="/tools/code_debugger" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-gray-600 to-green-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-green-500/30">
-                    <i class="fas fa-bug text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">💻CodeRefine</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Build better, faster code! ⚡💻
-Fix errors and optimize advanced projects effortlessly.</p>
-            </a>
-
-            <a href="/tools/movie_talker" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-purple-500/30">
-                    <i class="fas fa-film text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">🎬CineVerse</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Experience stories differently! 🍿✨
-Hear movie storytelling or dive into fun discussions.</p>
-            </a>
-
-            <a href="/tools/anime_talker" class="tool-card bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 group">
-                <div class="tool-icon-wrapper w-14 h-14 rounded-xl bg-gradient-to-br from-rose-500 to-red-700 flex items-center justify-center text-2xl mb-4 shadow-lg shadow-rose-500/30">
-                    <i class="fas fa-fire-flame-curved text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-100">🐉🎐Akiro Anime Hub </h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Let's talk fandom! 🎎🔥
-Enjoy fun conversations about your favorite anime and characters.</p>
-            </a>
+            <!-- Empty Search State -->
+            <div id="noToolsFound" class="hidden text-center py-12">
+                <i class="fas fa-search text-3xl text-gray-600 mb-2"></i>
+                <p class="text-gray-400 text-sm">No tools matching your query.</p>
+                <button type="button" onclick="clearToolSearch()" class="mt-2 text-xs text-cyan-400 underline font-semibold">View all tools</button>
+            </div>
         </div>
 
         <!-- Arcade Zone Section -->
-        <div class="mt-8 mb-8 max-w-7xl mx-auto">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
-                    <i class="fas fa-gamepad text-xl"></i>
+        <div id="arcadeZoneSection" class="mt-4 mb-10 max-w-7xl mx-auto">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/25">
+                    <i class="fas fa-gamepad text-base sm:text-lg"></i>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-bold text-white">Arcade Zone</h2>
-                    <p class="text-gray-400 text-sm">Take a break with zero API cost client-side games!</p>
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-white">Arcade Zone</h2>
+                    <p class="text-gray-400 text-xs sm:text-sm">Client-side interactive AI games with zero latency.</p>
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 md:gap-5">
                 
-                <a href="/arcade/tic-tac-toe" class="arcade-card group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-pink-500/40 transition duration-300">
-                    <div class="flex items-center gap-4 mb-3">
-                        <div class="w-12 h-12 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-2xl group-hover:scale-110 transition"><i class="fas fa-times"></i></div>
-                        <h3 class="text-lg font-bold text-gray-200 group-hover:text-pink-400 transition">Tic-Tac-Toe</h3>
+                <a href="/arcade/tic-tac-toe" class="arcade-card group bg-gray-900/60 border border-gray-800 rounded-2xl p-4 hover:border-pink-500/40 transition">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-xl group-hover:scale-105 transition"><i class="fas fa-times"></i></div>
+                        <h3 class="text-base font-bold text-gray-200 group-hover:text-pink-400 transition">Tic-Tac-Toe</h3>
                     </div>
-                    <p class="text-sm text-gray-400">Can you beat the Unbeatable AI in Hard mode?</p>
+                    <p class="text-xs text-gray-400">Can you beat the unbeatable minimax AI engine?</p>
                 </a>
                 
-                <a href="/arcade/code-le" class="arcade-card group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-green-500/40 transition duration-300">
-                    <div class="flex items-center gap-4 mb-3">
-                        <div class="w-12 h-12 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center text-2xl group-hover:scale-110 transition"><i class="fas fa-terminal"></i></div>
-                        <h3 class="text-lg font-bold text-gray-200 group-hover:text-green-400 transition">Code-le</h3>
+                <a href="/arcade/code-le" class="arcade-card group bg-gray-900/60 border border-gray-800 rounded-2xl p-4 hover:border-green-500/40 transition">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center text-xl group-hover:scale-105 transition"><i class="fas fa-terminal"></i></div>
+                        <h3 class="text-base font-bold text-gray-200 group-hover:text-green-400 transition">Code-le</h3>
                     </div>
-                    <p class="text-sm text-gray-400">Guess the 5-letter Tech Word. You have 6 attempts!</p>
+                    <p class="text-xs text-gray-400">Guess the secret 5-letter Tech Word in 6 attempts.</p>
                 </a>
 
-                <a href="/arcade/anime-match" class="arcade-card group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-purple-500/40 transition duration-300">
-                    <div class="flex items-center gap-4 mb-3">
-                        <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-2xl group-hover:scale-110 transition"><i class="fas fa-magic"></i></div>
-                        <h3 class="text-lg font-bold text-gray-200 group-hover:text-purple-400 transition">Anime Match</h3>
+                <a href="/arcade/anime-match" class="arcade-card group bg-gray-900/60 border border-gray-800 rounded-2xl p-4 hover:border-purple-500/40 transition">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl group-hover:scale-105 transition"><i class="fas fa-magic"></i></div>
+                        <h3 class="text-base font-bold text-gray-200 group-hover:text-purple-400 transition">Anime Match</h3>
                     </div>
-                    <p class="text-sm text-gray-400">Memory card game with Ayanokōji, Lucifer & more.</p>
+                    <p class="text-xs text-gray-400">Memory flip card game with Ayanokōji & Lucifer.</p>
                 </a>
 
-                <a href="/arcade/flappy-bug" class="arcade-card group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-cyan-500/40 transition duration-300">
-                    <div class="flex items-center gap-4 mb-3">
-                        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-2xl group-hover:scale-110 transition"><i class="fas fa-bug"></i></div>
-                        <h3 class="text-lg font-bold text-gray-200 group-hover:text-cyan-400 transition">Flappy Bug</h3>
+                <a href="/arcade/flappy-bug" class="arcade-card group bg-gray-900/60 border border-gray-800 rounded-2xl p-4 hover:border-cyan-500/40 transition">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl group-hover:scale-105 transition"><i class="fas fa-bug"></i></div>
+                        <h3 class="text-base font-bold text-gray-200 group-hover:text-cyan-400 transition">Flappy Bug</h3>
                     </div>
-                    <p class="text-sm text-gray-400">Dodge the 404 Errors and save the Developer Bug!</p>
+                    <p class="text-xs text-gray-400">Dodge 404 error obstacles and save the Developer Bug.</p>
                 </a>
 
-                <a href="/arcade/ludo" class="arcade-card group bg-gray-900/40 border border-white/5 rounded-2xl p-4 hover:bg-gray-800/80 hover:border-yellow-500/40 transition duration-300">
-                    <div class="flex items-center gap-4 mb-3">
-                        <div class="w-12 h-12 rounded-xl bg-yellow-500/10 text-yellow-400 flex items-center justify-center text-2xl group-hover:scale-110 transition"><i class="fas fa-dice"></i></div>
-                        <h3 class="text-lg font-bold text-gray-200 group-hover:text-yellow-400 transition">Ludo Lite</h3>
+                <a href="/arcade/ludo" class="arcade-card group bg-gray-900/60 border border-gray-800 rounded-2xl p-4 hover:border-yellow-500/40 transition">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-xl bg-yellow-500/10 text-yellow-400 flex items-center justify-center text-xl group-hover:scale-105 transition"><i class="fas fa-dice"></i></div>
+                        <h3 class="text-base font-bold text-gray-200 group-hover:text-yellow-400 transition">Ludo Lite</h3>
                     </div>
-                    <p class="text-sm text-gray-400">Roll the interactive 3D dice in this classic arena.</p>
+                    <p class="text-xs text-gray-400">Roll interactive 3D dice in this classic fast-paced arena.</p>
                 </a>
             </div>
         </div>
+
+        <!-- Bottom Padding for safe mobile scrolling -->
+        <div class="h-10"></div>
     </main>
 
-    <!-- Custom Tool Modal -->
-    <div id="customToolModal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-white"><i class="fas fa-magic text-cyan-500"></i> Create AI Tool</h3>
-                <button onclick="document.getElementById('customToolModal').classList.add('hidden')" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+    <!-- Custom Tool Modal (Fully Mobile Scrollable) -->
+    <div id="customToolModal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-3.5 sm:p-4 backdrop-blur-sm">
+        <div class="bg-gray-900 border border-gray-700 rounded-2xl p-5 sm:p-6 w-full max-w-md shadow-2xl max-h-[90dvh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-800">
+                <h3 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-magic text-cyan-400"></i>
+                    <span>Create AI Tool</span>
+                </h3>
+                <button onclick="document.getElementById('customToolModal').classList.add('hidden')" class="text-gray-400 hover:text-white p-1 text-lg" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="space-y-4">
+            <div class="space-y-3.5">
                 <div>
-                    <label class="text-sm text-gray-400 mb-1 block">Tool Name</label>
-                    <input type="text" id="ct-name" placeholder="e.g. Legal Advisor" class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 outline-none border border-gray-700 focus:border-cyan-500">
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block">Tool Name</label>
+                    <input type="text" id="ct-name" placeholder="e.g. Legal Advisor" class="w-full bg-gray-800 text-white rounded-xl px-3.5 py-2.5 text-sm outline-none border border-gray-700 focus:border-cyan-500">
                 </div>
                 <div>
-                    <label class="text-sm text-gray-400 mb-1 block">Short Description</label>
-                    <input type="text" id="ct-desc" placeholder="e.g. Helps with law questions" class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 outline-none border border-gray-700 focus:border-cyan-500">
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block">Short Description</label>
+                    <input type="text" id="ct-desc" placeholder="e.g. Gives quick legal insights" class="w-full bg-gray-800 text-white rounded-xl px-3.5 py-2.5 text-sm outline-none border border-gray-700 focus:border-cyan-500">
                 </div>
                 <div>
-                    <label class="text-sm text-gray-400 mb-1 block">AI Instructions (Prompt)</label>
-                    <textarea id="ct-inst" rows="4" placeholder="Act as an expert lawyer. Give legal advice strictly based on Indian Law..." class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 outline-none border border-gray-700 focus:border-cyan-500"></textarea>
+                    <label class="text-xs font-semibold text-gray-300 mb-1 block">AI Instructions (System Prompt)</label>
+                    <textarea id="ct-inst" rows="4" placeholder="Act as a specialized legal advisor. Clarify queries accurately..." class="w-full bg-gray-800 text-white rounded-xl p-3 text-sm outline-none border border-gray-700 focus:border-cyan-500"></textarea>
                 </div>
-                <button onclick="saveCustomTool()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 rounded-lg transition shadow-lg mt-2">
-                    Create My Tool
+                <button onclick="saveCustomTool()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg mt-2 text-sm flex items-center justify-center gap-2 active:scale-95">
+                    <span>Create & Launch Tool</span>
+                    <i class="fas fa-rocket text-xs"></i>
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script>
-        document.addEventListener('DOMContentLoaded', loadCustomTools);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCustomTools();
+        });
 
+        // Search & Category Filter Logic
+        let currentCategory = 'all';
+
+        function filterTools() {
+            const query = (document.getElementById('toolSearchInput').value || '').toLowerCase().trim();
+            const clearBtn = document.getElementById('clearSearchBtn');
+            clearBtn.classList.toggle('hidden', query.length === 0);
+
+            const cards = document.querySelectorAll('#toolsGridContainer .tool-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name') || '';
+                const cat = card.getAttribute('data-cat') || '';
+                const text = card.textContent.toLowerCase();
+
+                const matchesQuery = query === '' || name.includes(query) || text.includes(query);
+                const matchesCategory = currentCategory === 'all' || cat === currentCategory;
+
+                if (matchesQuery && matchesCategory) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            const noFound = document.getElementById('noToolsFound');
+            if (noFound) {
+                noFound.classList.toggle('hidden', visibleCount > 0);
+            }
+
+            const badge = document.getElementById('toolCountBadge');
+            if (badge) {
+                badge.textContent = `${visibleCount} tools`;
+            }
+
+            // Also hide arcade section if filtering a non-arcade category
+            const arcadeSec = document.getElementById('arcadeZoneSection');
+            if (arcadeSec) {
+                if (currentCategory === 'all' || currentCategory === 'arcade') {
+                    arcadeSec.classList.remove('hidden');
+                } else {
+                    arcadeSec.classList.add('hidden');
+                }
+            }
+        }
+
+        function filterCategory(category, button) {
+            currentCategory = category;
+            document.querySelectorAll('.category-pill').forEach(btn => {
+                btn.className = 'category-pill px-3 py-1.5 rounded-full font-semibold transition shrink-0 bg-gray-900 text-gray-300 hover:text-white border border-gray-800';
+            });
+            button.className = 'category-pill active px-3.5 py-1.5 rounded-full font-bold transition shrink-0 bg-cyan-500 text-black shadow-sm';
+            filterTools();
+        }
+
+        function clearToolSearch() {
+            const input = document.getElementById('toolSearchInput');
+            if (input) input.value = '';
+            filterCategory('all', document.querySelector('.category-pill'));
+            filterTools();
+        }
+
+        // Custom Tools Async Loader
         async function loadCustomTools() {
             try {
                 const res = await fetch('/api/get_custom_tools');
@@ -428,18 +617,18 @@ Enjoy fun conversations about your favorite anime and characters.</p>
                 grid.innerHTML = '';
                 
                 if (!data.tools || data.tools.length === 0) {
-                    grid.innerHTML = '<p class="text-gray-500 text-sm col-span-full">You haven\'t created any custom tools yet. Click "Create Tool" to build one!</p>';
+                    grid.innerHTML = '<p class="text-gray-500 text-xs sm:text-sm col-span-full">You haven\'t created any custom tools yet. Click "Create Custom Tool" above to build your first one!</p>';
                     return;
                 }
 
                 data.tools.forEach(tool => {
                     grid.innerHTML += `
-                        <div onclick="openCustomToolChat('${tool.id}', '${tool.name}')" class="bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 hover:border-cyan-500 hover:-translate-y-1 transition tool-card shadow-lg group">
-                            <div class="w-14 h-14 rounded-xl bg-gray-900 flex items-center justify-center mb-4 group-hover:scale-110 transition shadow-inner">
-                                <i class="${tool.icon || 'fas fa-wrench'} text-2xl text-cyan-400"></i>
+                        <div onclick="openCustomToolChat('${tool.id}', '${tool.name}')" class="tool-card bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-4 sm:p-5 hover:border-cyan-500 transition shadow-lg group cursor-pointer">
+                            <div class="tool-icon-wrapper w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gray-800 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
+                                <i class="${tool.icon || 'fas fa-wrench'} text-lg sm:text-xl text-cyan-400"></i>
                             </div>
-                            <h3 class="text-xl font-bold text-white mb-2">${tool.name}</h3>
-                            <p class="text-sm text-gray-400 line-clamp-2 leading-relaxed">${tool.description}</p>
+                            <h3 class="text-base sm:text-lg font-bold text-white mb-1 truncate">${tool.name}</h3>
+                            <p class="text-xs sm:text-sm text-gray-400 line-clamp-2 leading-relaxed">${tool.description || 'Custom Ethrix AI Agent'}</p>
                         </div>
                     `;
                 });
@@ -453,47 +642,49 @@ Enjoy fun conversations about your favorite anime and characters.</p>
             const desc = document.getElementById('ct-desc').value.trim();
             const inst = document.getElementById('ct-inst').value.trim();
             
-            if (!name || !inst) return alert("Please provide both a Name and AI Instructions for your tool!");
+            if (!name || !inst) return alert("Please provide both a Name and Instructions for your tool!");
 
             const btn = document.querySelector('#customToolModal button.bg-gradient-to-r');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Creating...';
 
-            await fetch('/api/create_custom_tool', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    name: name, 
-                    description: desc, 
-                    instruction: inst,
-                    icon: "fas fa-bolt"
-                })
-            });
+            try {
+                await fetch('/api/create_custom_tool', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        name: name, 
+                        description: desc, 
+                        instruction: inst,
+                        icon: "fas fa-bolt"
+                    })
+                });
 
-            document.getElementById('ct-name').value = '';
-            document.getElementById('ct-desc').value = '';
-            document.getElementById('ct-inst').value = '';
-            btn.innerHTML = 'Create My Tool';
-            document.getElementById('customToolModal').classList.add('hidden');
-            
-            loadCustomTools();
+                document.getElementById('ct-name').value = '';
+                document.getElementById('ct-desc').value = '';
+                document.getElementById('ct-inst').value = '';
+                document.getElementById('customToolModal').classList.add('hidden');
+                loadCustomTools();
+            } catch (e) {
+                alert("Failed to create tool.");
+            }
+            btn.innerHTML = '<span>Create & Launch Tool</span><i class="fas fa-rocket text-xs ml-1.5"></i>';
         }
 
         function openCustomToolChat(toolId, toolName) {
-            // Setting the tool in local storage so the main chat knows which mode to open
             localStorage.setItem("current_tool_mode", toolId);
             localStorage.setItem("current_tool_name", toolName);
             window.location.href = "/"; 
         }
+
+        // Mobile Sidebar Controls
+        function openMobileSidebar() {
+            document.getElementById('tools-sidebar').classList.add('mobile-open');
+            document.getElementById('sidebar-overlay').classList.add('active');
+        }
+        function closeMobileSidebar() {
+            document.getElementById('tools-sidebar').classList.remove('mobile-open');
+            document.getElementById('sidebar-overlay').classList.remove('active');
+        }
     </script>
-<script>
-function openMobileSidebar() {
-    document.getElementById('tools-sidebar').classList.add('mobile-open');
-    document.getElementById('sidebar-overlay').classList.add('active');
-}
-function closeMobileSidebar() {
-    document.getElementById('tools-sidebar').classList.remove('mobile-open');
-    document.getElementById('sidebar-overlay').classList.remove('active');
-}
-</script>
 </body>
 </html>
