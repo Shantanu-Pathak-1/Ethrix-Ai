@@ -109,9 +109,9 @@ def get_mongo_client():
             MONGO_URL,
             tlsCAFile=certifi.where(),
             connect=False,
-            serverSelectionTimeoutMS=5000,
-            connectTimeoutMS=5000,
-            socketTimeoutMS=5000
+            serverSelectionTimeoutMS=10000,
+            connectTimeoutMS=10000,
+            socketTimeoutMS=10000
         )
         if loop and not loop.is_closed():
             _client_instances[loop] = client
