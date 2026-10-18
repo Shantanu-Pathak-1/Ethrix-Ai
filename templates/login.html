@@ -11,7 +11,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -25,104 +25,167 @@
 
         body {
             margin: 0;
-            padding: 20px 16px;
+            padding: 24px 16px;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            /* Elegant warm aesthetic gradient matching Screenshot 2 */
-            background: radial-gradient(circle at 45% 35%, #B47F75 0%, #9B675D 50%, #764740 100%);
+            /* Harmonized futuristic dark cyan theme matching the rest of Ethrix AI */
+            background-color: #0B0F19;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(0, 229, 255, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(236, 72, 153, 0.07) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(30, 144, 255, 0.05) 0%, transparent 60%);
             background-attachment: fixed;
-            color: #1E2024;
+            color: #E2E8F0;
             overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Top Navigation Header / Back Button Container */
+        .auth-topbar {
+            width: 100%;
+            max-width: 1060px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            z-index: 10;
+        }
+
+        .back-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 18px;
+            border-radius: 9999px;
+            background: rgba(18, 24, 38, 0.75);
+            border: 1px solid rgba(0, 229, 255, 0.22);
+            color: #94A3B8;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none;
+            backdrop-filter: blur(16px);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+        }
+        .back-nav-btn:hover {
+            color: #00E5FF;
+            border-color: #00E5FF;
+            background: rgba(0, 229, 255, 0.1);
+            transform: translateX(-3px);
+            box-shadow: 0 6px 20px rgba(0, 229, 255, 0.25);
         }
 
         /* Master Card */
         .auth-card {
             width: 100%;
             max-width: 1060px;
-            background: #FFFFFF;
-            border-radius: 38px;
-            box-shadow: 0 35px 80px -15px rgba(50, 18, 15, 0.45), 0 10px 30px rgba(0, 0, 0, 0.15);
+            background: rgba(18, 24, 38, 0.92);
+            border: 1px solid rgba(0, 229, 255, 0.18);
+            border-radius: 32px;
+            backdrop-filter: blur(24px);
+            box-shadow: 
+                0 30px 80px -15px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(0, 229, 255, 0.08);
             overflow: hidden;
             display: grid;
             grid-template-columns: 1.05fr 1.12fr;
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 10;
         }
 
         @media (max-width: 920px) {
+            body {
+                padding: 16px 12px;
+            }
             .auth-card {
                 grid-template-columns: 1fr;
                 max-width: 480px;
-                border-radius: 30px;
+                border-radius: 24px;
             }
             .showcase-column {
                 display: none !important;
             }
             .form-column {
-                padding: 36px 26px !important;
+                padding: 32px 22px !important;
+            }
+            .auth-topbar {
+                max-width: 480px;
+                margin-bottom: 14px;
             }
         }
 
         .form-column {
-            padding: 48px 46px;
+            padding: 44px 42px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+        }
+
+        /* Heading typography */
+        .auth-heading {
+            font-family: 'Outfit', sans-serif;
+            color: #FFFFFF;
+            letter-spacing: -0.02em;
         }
 
         /* Inputs */
         .custom-input {
             width: 100%;
             height: 52px;
-            background: #F5F6F8;
-            border: 1.5px solid #EAEDF1;
+            background: rgba(11, 15, 25, 0.7);
+            border: 1.5px solid rgba(0, 229, 255, 0.16);
             border-radius: 14px;
             padding: 0 18px;
             font-size: 0.95rem;
-            color: #1E2024;
+            color: #FFFFFF;
             outline: none;
             transition: all 0.25s ease;
             font-weight: 500;
         }
         .custom-input::placeholder {
-            color: #9EA3AB;
+            color: #64748B;
             font-weight: 400;
         }
         .custom-input:focus {
-            background: #FFFFFF;
-            border-color: #8E5E69;
-            box-shadow: 0 0 0 4px rgba(142, 94, 105, 0.12);
+            background: rgba(11, 15, 25, 0.95);
+            border-color: #00E5FF;
+            box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.18);
         }
 
-        /* Primary Action Button (Dusty Rose Palette) */
+        /* Primary Action Button (Futuristic Cyan/Blue Gradient) */
         .btn-submit {
             width: 100%;
             height: 52px;
-            background: #8E5E69;
-            color: #FFFFFF;
+            background: linear-gradient(135deg, #1E90FF 0%, #00E5FF 100%);
+            color: #050810;
             border: none;
             border-radius: 14px;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 0.01em;
             cursor: pointer;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            box-shadow: 0 10px 25px -4px rgba(142, 94, 105, 0.45);
+            box-shadow: 0 10px 25px -4px rgba(0, 229, 255, 0.45);
         }
         .btn-submit:hover:not(:disabled) {
-            background: #7B4F59;
             transform: translateY(-2px);
-            box-shadow: 0 14px 28px -4px rgba(142, 94, 105, 0.55);
+            box-shadow: 0 14px 30px -4px rgba(0, 229, 255, 0.65);
+            filter: brightness(1.08);
         }
         .btn-submit:active:not(:disabled) {
             transform: translateY(0);
         }
         .btn-submit:disabled {
-            background: #BFA5AC;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.4);
             cursor: not-allowed;
             box-shadow: none;
         }
@@ -131,21 +194,22 @@
         .social-btn {
             width: 60px;
             height: 50px;
-            background: #FFFFFF;
-            border: 1.5px solid #ECEFF3;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1.5px solid rgba(255, 255, 255, 0.09);
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            color: #FFFFFF;
         }
         .social-btn:hover {
-            border-color: #D1D5DB;
-            background: #F9FAFB;
+            border-color: rgba(0, 229, 255, 0.4);
+            background: rgba(0, 229, 255, 0.1);
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 6px 18px rgba(0, 229, 255, 0.2);
         }
 
         /* Switch Mode Pills */
@@ -156,12 +220,15 @@
             font-size: 0.82rem;
             font-weight: 600;
             transition: all 0.2s;
-            color: #71767B;
+            color: #94A3B8;
+            background: transparent;
+            border: none;
         }
         .tab-pill.active {
-            background: #8E5E69;
-            color: #FFFFFF;
-            box-shadow: 0 4px 12px rgba(142, 94, 105, 0.3);
+            background: linear-gradient(135deg, #1E90FF, #00E5FF);
+            color: #050810;
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(0, 229, 255, 0.35);
         }
 
         /* Showcase Column */
@@ -173,7 +240,7 @@
             width: 100%;
             height: 100%;
             min-height: 560px;
-            border-radius: 28px;
+            border-radius: 24px;
             background: url('/static/images/login-showcase.jpg') center / cover no-repeat;
             position: relative;
             overflow: hidden;
@@ -181,14 +248,25 @@
             flex-direction: column;
             justify-content: flex-end;
             padding: 34px;
-            box-shadow: inset 0 -80px 100px -20px rgba(15, 10, 20, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 -120px 140px -20px rgba(5, 8, 16, 0.95);
+        }
+
+        /* Frosted Glass Overlay Badge on Showcase */
+        .showcase-badge {
+            background: rgba(11, 15, 25, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 229, 255, 0.25);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         /* Spinner */
         .spinner {
-            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border: 2.5px solid rgba(5, 8, 16, 0.3);
             border-radius: 50%;
-            border-top: 2.5px solid #ffffff;
+            border-top: 2.5px solid #050810;
             width: 18px;
             height: 18px;
             animation: spin 0.8s linear infinite;
@@ -197,192 +275,237 @@
 
         .fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Custom SweetAlert Dark Theme overrides */
+        .swal2-popup {
+            background: #121826 !important;
+            border: 1px solid rgba(0, 229, 255, 0.25) !important;
+            color: #FFFFFF !important;
+            border-radius: 20px !important;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 25px rgba(0,229,255,0.15) !important;
+        }
+        .swal2-title { color: #FFFFFF !important; }
+        .swal2-html-container { color: #94A3B8 !important; }
+        .swal2-input {
+            background: rgba(11, 15, 25, 0.8) !important;
+            border: 1.5px solid rgba(0, 229, 255, 0.25) !important;
+            color: #FFFFFF !important;
+            border-radius: 12px !important;
+        }
+        .swal2-input:focus {
+            border-color: #00E5FF !important;
+            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.2) !important;
+        }
     </style>
 </head>
 <body>
 
-<div class="auth-card">
-    
-    <!-- LEFT: FORM COLUMN -->
-    <div class="form-column">
+    <!-- TOPBAR WITH BACK BUTTON -->
+    <div class="auth-topbar">
+        <a href="/" class="back-nav-btn" title="Return to Ethrix Chat">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Ethrix</span>
+        </a>
+
+        <div class="flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse"></span>
+            <span class="text-xs font-semibold text-gray-400">Ethrix AI v2.5</span>
+        </div>
+    </div>
+
+    <!-- MASTER CARD -->
+    <div class="auth-card">
         
-        <!-- Header Branding & Tab Switcher -->
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-2.5">
-                <img src="/static/images/logo.png" class="w-8 h-8 rounded-full border border-gray-200 shadow-sm object-cover">
-                <span class="font-bold text-base text-[#1E2024] tracking-wide">Ethrix AI</span>
-            </div>
+        <!-- LEFT: FORM COLUMN -->
+        <div class="form-column">
             
-            <!-- Quick Tab Toggle -->
-            <div class="flex bg-[#F5F6F8] p-1 rounded-xl border border-[#EAEDF1]">
-                <button type="button" id="tab-login-btn" onclick="switchAuthTab('login')" class="tab-pill active">Sign In</button>
-                <button type="button" id="tab-signup-btn" onclick="switchAuthTab('signup')" class="tab-pill">Sign Up</button>
-            </div>
-        </div>
-
-        <!-- Title Section -->
-        <div class="mb-6">
-            <h1 id="auth-heading" class="text-3xl sm:text-4xl font-bold text-[#1E2024] tracking-tight mb-2">Hello Again!</h1>
-            <p id="auth-subheading" class="text-xs sm:text-sm text-[#7D828A] font-medium">Let's get started with your account</p>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- LOGIN FORM                                 -->
-        <!-- ========================================== -->
-        <div id="login-form" class="space-y-4 fade-in">
-            <div>
-                <input type="text" id="login-id" class="custom-input" placeholder="Email or Username" autocomplete="username">
-            </div>
-            
-            <div class="relative">
-                <input type="password" id="login-pass" class="custom-input pr-12" placeholder="Password" autocomplete="current-password">
-                <button type="button" onclick="togglePasswordVisibility('login-pass', 'pass-eye-icon')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none">
-                    <i id="pass-eye-icon" class="fas fa-eye-slash text-sm"></i>
-                </button>
-            </div>
-
-            <div class="flex justify-end">
-                <a href="javascript:void(0)" onclick="forgotPasswordNotice()" class="text-xs font-semibold text-[#7D828A] hover:text-[#8E5E69] transition">Recovery Password</a>
-            </div>
-
-            <button type="button" class="btn-submit mt-2" onclick="handleLogin(this)">
-                <span>Sign In</span>
-            </button>
-
-            <!-- Divider -->
-            <div class="relative flex items-center justify-center my-6">
-                <div class="border-t border-[#EAEDF1] w-full"></div>
-                <span class="bg-white px-3 text-xs font-medium text-[#9EA3AB] whitespace-nowrap">Or continue with</span>
-                <div class="border-t border-[#EAEDF1] w-full"></div>
-            </div>
-
-            <!-- Social OAuth Buttons -->
-            <div class="flex items-center justify-center gap-4">
-                <!-- Google Button -->
-                <button type="button" onclick="handleGoogleLogin()" class="social-btn" title="Sign in with Google">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                </button>
-
-                <!-- Apple Button -->
-                <button type="button" onclick="socialNotice('Apple ID')" class="social-btn" title="Sign in with Apple">
-                    <i class="fab fa-apple text-xl text-[#1E2024]"></i>
-                </button>
-
-                <!-- Facebook Button -->
-                <button type="button" onclick="socialNotice('Facebook')" class="social-btn" title="Sign in with Facebook">
-                    <i class="fab fa-facebook-f text-lg text-[#1877F2]"></i>
-                </button>
-            </div>
-
-            <!-- Bypass / Guest Access Option -->
-            <div class="mt-4">
-                <a href="/guest_login" class="w-full py-2.5 px-4 rounded-xl border border-dashed border-[#8E5E69]/40 hover:border-[#8E5E69] text-[#8E5E69] hover:bg-[#8E5E69]/10 text-xs font-bold transition flex items-center justify-center gap-2" style="text-decoration:none;">
-                    <i class="fas fa-bolt text-amber-500"></i>
-                    <span>⚡ Skip & Explore as Guest (Bypass Login)</span>
+            <!-- Header Branding & Tab Switcher -->
+            <div class="flex items-center justify-between mb-6">
+                <a href="/" class="flex items-center gap-2.5 text-decoration-none group">
+                    <img src="/static/images/logo.png" class="w-8 h-8 rounded-full border border-[rgba(0,229,255,0.4)] shadow-sm object-cover group-hover:scale-105 transition">
+                    <span class="font-bold text-base text-white tracking-wide group-hover:text-[#00E5FF] transition">Ethrix AI</span>
                 </a>
-            </div>
-
-            <!-- Consent Checkbox -->
-            <div class="flex items-start gap-2.5 mt-5 pt-2 border-t border-[#F2F4F7]">
-                <input type="checkbox" id="google-consent" class="mt-1 w-4 h-4 rounded text-[#8E5E69] focus:ring-[#8E5E69] cursor-pointer" checked>
-                <label for="google-consent" class="text-[11px] text-[#7D828A] leading-relaxed cursor-pointer select-none">
-                    I agree to the <a href="/legal" target="_blank" class="text-[#8E5E69] underline hover:text-[#1E2024]">Terms of Service</a> & <a href="/legal" target="_blank" class="text-[#8E5E69] underline hover:text-[#1E2024]">Privacy Policy</a>, and authorize Ethrix AI services.
-                </label>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- SIGNUP FORM                                -->
-        <!-- ========================================== -->
-        <div id="signup-form" class="hidden space-y-4 fade-in">
-            <!-- Step 1: Email -->
-            <div id="step-1" class="space-y-3">
-                <input type="email" id="reg-email" class="custom-input" placeholder="Enter your email address">
-                <button type="button" class="btn-submit" onclick="sendOTP(this)">
-                    <span>Send Verification Code</span>
-                </button>
-            </div>
-
-            <!-- Step 2: OTP Verification -->
-            <div id="step-2" class="hidden space-y-3 fade-in">
-                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800">
-                    <i class="fas fa-check-circle mr-1 text-emerald-600"></i> Verification code sent! Check your inbox or spam.
-                </div>
-                <input type="text" id="reg-otp" class="custom-input text-center text-lg tracking-widest font-bold" placeholder="• • • • • •" maxlength="6">
-                <button type="button" class="btn-submit" onclick="verifyOTP(this)">
-                    <span>Verify & Continue</span>
-                </button>
-            </div>
-
-            <!-- Step 3: Complete Details -->
-            <div id="step-3" class="hidden space-y-3 fade-in">
-                <input type="text" id="reg-name" class="custom-input" placeholder="Full Name">
-                <input type="text" id="reg-user" class="custom-input" placeholder="Choose a unique username">
                 
-                <div class="text-left">
-                    <label class="text-[11px] font-semibold text-gray-500 ml-1">Date of Birth</label>
-                    <input type="date" id="reg-dob" class="custom-input mt-1">
+                <!-- Quick Tab Toggle -->
+                <div class="flex bg-[rgba(11,15,25,0.7)] p-1 rounded-xl border border-[rgba(255,255,255,0.08)]">
+                    <button type="button" id="tab-login-btn" onclick="switchAuthTab('login')" class="tab-pill active">Sign In</button>
+                    <button type="button" id="tab-signup-btn" onclick="switchAuthTab('signup')" class="tab-pill">Sign Up</button>
                 </div>
+            </div>
 
+            <!-- Title Section -->
+            <div class="mb-6">
+                <h1 id="auth-heading" class="auth-heading text-3xl sm:text-4xl font-bold tracking-tight mb-2">Hello Again!</h1>
+                <p id="auth-subheading" class="text-xs sm:text-sm text-gray-400 font-medium">Let's get started with your account</p>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- LOGIN FORM                                 -->
+            <!-- ========================================== -->
+            <div id="login-form" class="space-y-4 fade-in">
+                <div>
+                    <input type="text" id="login-id" class="custom-input" placeholder="Email or Username" autocomplete="username">
+                </div>
+                
                 <div class="relative">
-                    <input type="password" id="reg-pass" class="custom-input pr-12" placeholder="Create Password">
-                    <button type="button" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-base hover:scale-110 transition" onclick="generateMagicPass()" title="Auto-generate secure magic password">
-                        ✨
+                    <input type="password" id="login-pass" class="custom-input pr-12" placeholder="Password" autocomplete="current-password">
+                    <button type="button" onclick="togglePasswordVisibility('login-pass', 'pass-eye-icon')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#00E5FF] focus:outline-none transition">
+                        <i id="pass-eye-icon" class="fas fa-eye-slash text-sm"></i>
                     </button>
                 </div>
 
-                <div class="flex items-start gap-2.5 pt-1">
-                    <input type="checkbox" id="terms-agree" class="mt-1 w-4 h-4 rounded text-[#8E5E69] focus:ring-[#8E5E69] cursor-pointer">
-                    <label for="terms-agree" class="text-[11px] text-[#7D828A] leading-relaxed cursor-pointer select-none">
-                        I am at least 13 years old and accept the <a href="/legal" target="_blank" class="text-[#8E5E69] underline">Terms of Service</a> & <a href="/legal" target="_blank" class="text-[#8E5E69] underline">Privacy Policy</a>.
+                <div class="flex justify-end">
+                    <a href="javascript:void(0)" onclick="forgotPasswordNotice()" class="text-xs font-semibold text-gray-400 hover:text-[#00E5FF] transition">Recovery Password</a>
+                </div>
+
+                <button type="button" class="btn-submit mt-2" onclick="handleLogin(this)">
+                    <span>Sign In</span>
+                </button>
+
+                <!-- Divider -->
+                <div class="relative flex items-center justify-center my-6">
+                    <div class="border-t border-[rgba(255,255,255,0.08)] w-full"></div>
+                    <span class="bg-[rgba(18,24,38,0.92)] px-3 text-xs font-medium text-gray-400 whitespace-nowrap">Or continue with</span>
+                    <div class="border-t border-[rgba(255,255,255,0.08)] w-full"></div>
+                </div>
+
+                <!-- Social OAuth Buttons -->
+                <div class="flex items-center justify-center gap-4">
+                    <!-- Google Button -->
+                    <button type="button" onclick="handleGoogleLogin()" class="social-btn" title="Sign in with Google">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                    </button>
+
+                    <!-- Apple Button -->
+                    <button type="button" onclick="socialNotice('Apple ID')" class="social-btn" title="Sign in with Apple">
+                        <i class="fab fa-apple text-xl text-white"></i>
+                    </button>
+
+                    <!-- Facebook Button -->
+                    <button type="button" onclick="socialNotice('Facebook')" class="social-btn" title="Sign in with Facebook">
+                        <i class="fab fa-facebook-f text-lg text-[#1877F2]"></i>
+                    </button>
+                </div>
+
+                <!-- Bypass / Guest Access Option -->
+                <div class="mt-4">
+                    <a href="/guest_login" class="w-full py-2.5 px-4 rounded-xl border border-dashed border-[rgba(0,229,255,0.4)] hover:border-[#00E5FF] text-[#00E5FF] hover:bg-[rgba(0,229,255,0.08)] text-xs font-bold transition flex items-center justify-center gap-2" style="text-decoration:none;">
+                        <i class="fas fa-bolt text-amber-400"></i>
+                        <span>⚡ Skip & Explore as Guest (Bypass Login)</span>
+                    </a>
+                </div>
+
+                <!-- Consent Checkbox -->
+                <div class="flex items-start gap-2.5 mt-5 pt-3 border-t border-[rgba(255,255,255,0.06)]">
+                    <input type="checkbox" id="google-consent" class="mt-1 w-4 h-4 rounded text-[#00E5FF] focus:ring-[#00E5FF] bg-[rgba(11,15,25,0.8)] border-[rgba(0,229,255,0.3)] cursor-pointer" checked>
+                    <label for="google-consent" class="text-[11px] text-gray-400 leading-relaxed cursor-pointer select-none">
+                        I agree to the <a href="/legal" target="_blank" class="text-[#00E5FF] underline hover:text-white">Terms of Service</a> & <a href="/legal" target="_blank" class="text-[#00E5FF] underline hover:text-white">Privacy Policy</a>, and authorize Ethrix AI services.
                     </label>
                 </div>
-
-                <button type="button" class="btn-submit mt-1" onclick="completeSignup(this)">
-                    <span>Create Account 🚀</span>
-                </button>
             </div>
 
-            <div class="text-center pt-2">
-                <p class="text-xs text-gray-500">
-                    Already have an account? 
-                    <a href="javascript:void(0)" onclick="switchAuthTab('login')" class="text-[#8E5E69] font-bold underline hover:text-[#1E2024]">Sign In</a>
-                </p>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- RIGHT: SHOWCASE COLUMN (Matching Screenshot 2) -->
-    <div class="showcase-column">
-        <div class="showcase-inner">
-            
-            <!-- Bottom Content -->
-            <div class="relative z-10">
-                <p class="text-white text-base sm:text-lg font-medium drop-shadow-md mb-4 tracking-tight">
-                    Finally, all your AI work in one place.
-                </p>
-
-                <!-- Slider Arrows -->
-                <div class="flex items-center gap-2">
-                    <button type="button" class="w-8 h-8 rounded-full border border-white/40 bg-black/20 backdrop-blur-md flex items-center justify-center text-white/90 hover:bg-white/30 transition text-xs shadow-sm">
-                        <i class="fas fa-arrow-left"></i>
+            <!-- ========================================== -->
+            <!-- SIGNUP FORM                                -->
+            <!-- ========================================== -->
+            <div id="signup-form" class="hidden space-y-4 fade-in">
+                <!-- Step 1: Email -->
+                <div id="step-1" class="space-y-3">
+                    <input type="email" id="reg-email" class="custom-input" placeholder="Enter your email address">
+                    <button type="button" class="btn-submit" onclick="sendOTP(this)">
+                        <span>Send Verification Code</span>
                     </button>
-                    <button type="button" class="w-8 h-8 rounded-full border border-white/40 bg-black/20 backdrop-blur-md flex items-center justify-center text-white/90 hover:bg-white/30 transition text-xs shadow-sm">
-                        <i class="fas fa-arrow-right"></i>
+                </div>
+
+                <!-- Step 2: OTP Verification -->
+                <div id="step-2" class="hidden space-y-3 fade-in">
+                    <div class="bg-[rgba(16,185,129,0.12)] border border-emerald-500/40 rounded-xl p-3 text-xs text-emerald-300">
+                        <i class="fas fa-check-circle mr-1 text-emerald-400"></i> Verification code sent! Check your inbox or spam.
+                    </div>
+                    <input type="text" id="reg-otp" class="custom-input text-center text-lg tracking-widest font-bold text-[#00E5FF]" placeholder="• • • • • •" maxlength="6">
+                    <button type="button" class="btn-submit" onclick="verifyOTP(this)">
+                        <span>Verify & Continue</span>
                     </button>
+                </div>
+
+                <!-- Step 3: Complete Details -->
+                <div id="step-3" class="hidden space-y-3 fade-in">
+                    <input type="text" id="reg-name" class="custom-input" placeholder="Full Name">
+                    <input type="text" id="reg-user" class="custom-input" placeholder="Choose a unique username">
+                    
+                    <div class="text-left">
+                        <label class="text-[11px] font-semibold text-gray-400 ml-1">Date of Birth</label>
+                        <input type="date" id="reg-dob" class="custom-input mt-1">
+                    </div>
+
+                    <div class="relative">
+                        <input type="password" id="reg-pass" class="custom-input pr-12" placeholder="Create Password">
+                        <button type="button" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-base hover:scale-110 transition" onclick="generateMagicPass()" title="Auto-generate secure magic password">
+                            ✨
+                        </button>
+                    </div>
+
+                    <div class="flex items-start gap-2.5 pt-1">
+                        <input type="checkbox" id="terms-agree" class="mt-1 w-4 h-4 rounded text-[#00E5FF] focus:ring-[#00E5FF] bg-[rgba(11,15,25,0.8)] border-[rgba(0,229,255,0.3)] cursor-pointer">
+                        <label for="terms-agree" class="text-[11px] text-gray-400 leading-relaxed cursor-pointer select-none">
+                            I am at least 13 years old and accept the <a href="/legal" target="_blank" class="text-[#00E5FF] underline">Terms of Service</a> & <a href="/legal" target="_blank" class="text-[#00E5FF] underline">Privacy Policy</a>.
+                        </label>
+                    </div>
+
+                    <button type="button" class="btn-submit mt-1" onclick="completeSignup(this)">
+                        <span>Create Account 🚀</span>
+                    </button>
+                </div>
+
+                <div class="text-center pt-2">
+                    <p class="text-xs text-gray-400">
+                        Already have an account? 
+                        <a href="javascript:void(0)" onclick="switchAuthTab('login')" class="text-[#00E5FF] font-bold underline hover:text-white">Sign In</a>
+                    </p>
                 </div>
             </div>
 
         </div>
-    </div>
 
-</div>
+        <!-- RIGHT: SHOWCASE COLUMN -->
+        <div class="showcase-column">
+            <div class="showcase-inner">
+                
+                <!-- Bottom Glassmorphic Content Card -->
+                <div class="showcase-badge relative z-10">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[rgba(0,229,255,0.12)] border border-[rgba(0,229,255,0.3)] text-[#00E5FF] text-xs font-bold mb-3">
+                        <i class="fas fa-sparkles"></i>
+                        <span>Next-Gen Intelligence</span>
+                    </div>
+                    <h3 class="text-white text-lg sm:text-xl font-bold tracking-tight mb-2">
+                        Finally, all your AI work in one place.
+                    </h3>
+                    <p class="text-gray-300 text-xs sm:text-sm leading-relaxed mb-4">
+                        Ethrix AI unites conversational intelligence, studio image generation, web research, and personal memory into one seamless experience.
+                    </p>
+
+                    <!-- Indicators -->
+                    <div class="flex items-center justify-between pt-2 border-t border-[rgba(255,255,255,0.1)]">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-6 h-1.5 rounded-full bg-[#00E5FF]"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-white/30"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-white/30"></span>
+                        </div>
+                        <a href="/" class="text-xs font-semibold text-gray-400 hover:text-[#00E5FF] transition flex items-center gap-1">
+                            <span>Explore app</span>
+                            <i class="fas fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
 
 <script>
     // --- Switch between Login and Signup ---
@@ -420,10 +543,10 @@
         const icon = document.getElementById(iconId);
         if (input.type === 'password') {
             input.type = 'text';
-            icon.className = 'fas fa-eye text-sm text-[#8E5E69]';
+            icon.className = 'fas fa-eye text-sm text-[#00E5FF]';
         } else {
             input.type = 'password';
-            icon.className = 'fas fa-eye-slash text-sm text-gray-400';
+            icon.className = 'fas fa-eye-slash text-sm text-gray-500';
         }
     }
 
@@ -447,7 +570,7 @@
                 icon: 'warning',
                 title: 'Missing Details',
                 text: 'Please enter your username/email and password.',
-                confirmButtonColor: '#8E5E69'
+                confirmButtonColor: '#00E5FF'
             });
         }
         setLoading(btn, true);
@@ -465,7 +588,7 @@
                     icon: 'error',
                     title: 'Login Failed',
                     text: data.message || 'Incorrect credentials',
-                    confirmButtonColor: '#8E5E69'
+                    confirmButtonColor: '#00E5FF'
                 });
             }
         } catch (e) {
@@ -473,7 +596,7 @@
                 icon: 'error',
                 title: 'Error',
                 text: 'Could not connect to the server.',
-                confirmButtonColor: '#8E5E69'
+                confirmButtonColor: '#00E5FF'
             });
         }
         setLoading(btn, false, "Sign In");
@@ -487,7 +610,7 @@
                 icon: 'info',
                 title: 'Terms Agreement',
                 text: 'Please agree to the Terms & Privacy Policy to continue with Google.',
-                confirmButtonColor: '#8E5E69'
+                confirmButtonColor: '#00E5FF'
             });
         }
         window.location.href = '/auth/login';
@@ -499,7 +622,7 @@
             icon: 'info',
             title: provider,
             text: `${provider} login is coming soon. Please use Google or your registered email/password!`,
-            confirmButtonColor: '#8E5E69'
+            confirmButtonColor: '#00E5FF'
         });
     }
 
@@ -511,14 +634,15 @@
             inputPlaceholder: 'Enter your registered email',
             showCancelButton: true,
             confirmButtonText: 'Send Reset Link',
-            confirmButtonColor: '#8E5E69'
+            confirmButtonColor: '#00E5FF',
+            cancelButtonColor: '#334155'
         }).then((result) => {
             if (result.isConfirmed && result.value) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Reset Link Sent',
                     text: 'If an account exists with this email, instructions have been sent.',
-                    confirmButtonColor: '#8E5E69'
+                    confirmButtonColor: '#00E5FF'
                 });
             }
         });
@@ -532,7 +656,7 @@
                 icon: 'warning',
                 title: 'Valid Email Needed',
                 text: 'Please enter a valid email address.',
-                confirmButtonColor: '#8E5E69'
+                confirmButtonColor: '#00E5FF'
             });
         }
         setLoading(btn, true);
@@ -551,7 +675,7 @@
                     icon: 'error',
                     title: 'Error',
                     text: data.message || 'Failed to send OTP.',
-                    confirmButtonColor: '#8E5E69'
+                    confirmButtonColor: '#00E5FF'
                 });
             }
         } catch (e) {
@@ -559,7 +683,7 @@
                 icon: 'error',
                 title: 'Server Error',
                 text: 'Could not send verification code.',
-                confirmButtonColor: '#8E5E69'
+                confirmButtonColor: '#00E5FF'
             });
         }
         setLoading(btn, false, 'Send Verification Code');
@@ -574,7 +698,7 @@
                 icon: 'warning',
                 title: 'Enter Code',
                 text: 'Please enter the 6-digit code sent to your email.',
-                confirmButtonColor: '#8E5E69'
+                confirmButtonColor: '#00E5FF'
             });
         }
         setLoading(btn, true);
@@ -592,8 +716,8 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Invalid Code',
-                    text: 'The verification code entered is incorrect or expired.',
-                    confirmButtonColor: '#8E5E69'
+                    text: data.message || 'The verification code entered is incorrect or expired.',
+                    confirmButtonColor: '#00E5FF'
                 });
             }
         } catch (e) {
@@ -601,7 +725,7 @@
                 icon: 'error',
                 title: 'Error',
                 text: 'Verification failed. Try again.',
-                confirmButtonColor: '#8E5E69'
+                confirmButtonColor: '#00E5FF'
             });
         }
         setLoading(btn, false, 'Verify & Continue');
@@ -635,7 +759,7 @@
                 icon: 'warning',
                 title: 'Agreement Required',
                 text: 'Please accept the Terms of Service & Privacy Policy to continue.',
-                confirmButtonColor: '#8E5E69'
+                confirmButtonColor: '#00E5FF'
             });
         }
         const payload = {
@@ -650,7 +774,7 @@
                 icon: 'warning',
                 title: 'Missing Fields',
                 text: 'Please fill in all registration fields.',
-                confirmButtonColor: '#8E5E69'
+                confirmButtonColor: '#00E5FF'
             });
         }
         setLoading(btn, true);
@@ -666,7 +790,7 @@
                     icon: 'success',
                     title: 'Welcome to Ethrix! 🚀',
                     text: 'Your account has been created successfully.',
-                    confirmButtonColor: '#8E5E69'
+                    confirmButtonColor: '#00E5FF'
                 }).then(() => {
                     window.location.href = '/';
                 });
@@ -675,7 +799,7 @@
                     icon: 'error',
                     title: 'Registration Error',
                     text: data.message || 'Failed to complete signup.',
-                    confirmButtonColor: '#8E5E69'
+                    confirmButtonColor: '#00E5FF'
                 });
             }
         } catch (e) {
@@ -683,7 +807,7 @@
                 icon: 'error',
                 title: 'Error',
                 text: 'Server connection failed.',
-                confirmButtonColor: '#8E5E69'
+                confirmButtonColor: '#00E5FF'
             });
         }
         setLoading(btn, false, 'Create Account 🚀');
