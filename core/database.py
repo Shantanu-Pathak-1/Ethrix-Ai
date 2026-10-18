@@ -41,6 +41,10 @@ MONGO_URL           = os.getenv("MONGO_URL") or os.getenv("MONGODB_URI") or "mon
 PINECONE_API_KEY    = os.getenv("PINECONE_API_KEY")
 MAIL_USERNAME       = os.getenv("MAIL_USERNAME")
 BREVO_API_KEY       = os.getenv("BREVO_API_KEY")
+SMTP_HOST           = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT           = int(os.getenv("SMTP_PORT", 587))
+SMTP_USER           = os.getenv("SMTP_USER") or os.getenv("MAIL_USERNAME")
+SMTP_PASSWORD       = os.getenv("SMTP_PASSWORD") or os.getenv("GMAIL_APP_PASSWORD")
 
 # ==========================================
 # 2. OAUTH SETUP (GOOGLE LOGIN)
@@ -69,24 +73,69 @@ def get_password_hash(password):
 async def get_current_user(request: Request):
     return request.session.get('user')
 
+def _send_smtp_sync(to: str, subject: str, body: str):
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"Ethrix AI <{SMTP_USER}>"
+    msg["To"] = to
+    msg.attach(MIMEText(body, "html"))
+
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=12) as server:
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.send_message(msg)
+
 async def send_email(to, subject, body):
     """
-    Async email sender — server block nahi karega.
-    Brevo (Sendinblue) SMTP API use karta hai.
+    Multi-provider Email Sender:
+    1. Brevo HTTP API (if BREVO_API_KEY is configured)
+    2. Standard Gmail SMTP (if SMTP_USER and SMTP_PASSWORD/App Password configured)
+    3. Terminal Logger fallback (so dev signup never blocks!)
     """
-    api = BREVO_API_KEY
-    if not api: return False
-    try:
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            await client.post(
-                "https://api.brevo.com/v3/smtp/email",
-                headers={"api-key": api, "content-type": "application/json"},
-                json={"sender": {"email": MAIL_USERNAME, "name": "Ethrix"}, "to": [{"email": to}], "subject": subject, "htmlContent": body}
-            )
-        return True
-    except Exception as e:
-        print(f"[Email Error]: {e}")
-        return False
+    # 1. Try Brevo API
+    if BREVO_API_KEY and MAIL_USERNAME:
+        try:
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                res = await client.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    headers={"api-key": BREVO_API_KEY, "content-type": "application/json"},
+                    json={
+                        "sender": {"email": MAIL_USERNAME, "name": "Ethrix AI"},
+                        "to": [{"email": to}],
+                        "subject": subject,
+                        "htmlContent": body
+                    }
+                )
+                if res.status_code in (200, 201, 202):
+                    return True
+                print(f"[Brevo API Status {res.status_code}]: {res.text}")
+        except Exception as e:
+            print(f"[Brevo Email Error]: {e}")
+
+    # 2. Try Standard Gmail / SMTP
+    if SMTP_USER and SMTP_PASSWORD:
+        try:
+            import asyncio
+            await asyncio.to_thread(_send_smtp_sync, to, subject, body)
+            return True
+        except Exception as e:
+            print(f"[SMTP Email Error]: {e}")
+
+    # 3. Development / Fallback Logger
+    import re
+    otp_match = re.search(r'>(\d{6})<', body) or re.search(r'\b(\d{6})\b', body)
+    otp_code = otp_match.group(1) if otp_match else "N/A"
+    print("\n" + "=" * 52)
+    print("[ETHRIX AUTH] Email Verification Code:")
+    print(f"   Recipient: {to}")
+    print(f"   Subject:   {subject}")
+    print(f"   OTP CODE:  {otp_code}")
+    print("=" * 52 + "\n")
+    return False
 
 # ==========================================
 # 4. RAW DATABASE CONNECTIONS (LOOP-AWARE)

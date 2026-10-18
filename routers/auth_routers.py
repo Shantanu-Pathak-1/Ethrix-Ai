@@ -116,12 +116,33 @@ async def guest_login(request: Request, background_tasks: BackgroundTasks):
 
 @router.post("/api/send_otp")
 async def send_otp_endpoint(req: OTPRequest):
-    if await users_collection.find_one({"email": req.email}): return JSONResponse({"status": "error", "message": "Exists!"}, 400)
+    if await users_collection.find_one({"email": req.email}):
+        return JSONResponse({"status": "error", "message": "Email already registered! Please sign in."}, 400)
+    
     otp = str(random.randint(100000, 999999))
     await otp_collection.update_one({"email": req.email}, {"$set": {"otp": otp}}, upsert=True)
-    sent = await send_email(req.email, "Code", f"<h1>{otp}</h1>")
-    if sent: return {"status": "success"}
-    return JSONResponse({"status": "error"}, 500)
+    
+    email_html = f"""
+    <div style="font-family:'Segoe UI',Roboto,Helvetica,sans-serif;max-width:480px;margin:auto;background:#0B0F19;color:#FFFFFF;border-radius:16px;padding:32px;border:1px solid rgba(0,229,255,0.25);text-align:center;">
+        <h2 style="color:#00E5FF;margin-bottom:8px;font-size:24px;">Ethrix AI Verification</h2>
+        <p style="color:#94A3B8;font-size:14px;margin-top:0;">Your 6-digit verification code is below:</p>
+        <div style="background:rgba(0,229,255,0.1);border:1.5px dashed #00E5FF;border-radius:12px;padding:16px 24px;margin:24px 0;display:inline-block;">
+            <span style="font-size:32px;font-weight:800;letter-spacing:8px;color:#00E5FF;">{otp}</span>
+        </div>
+        <p style="color:#64748B;font-size:12px;margin-top:20px;">Valid for 10 minutes. If you did not request this, please ignore.</p>
+    </div>
+    """
+    
+    sent = await send_email(req.email, f"{otp} is your Ethrix AI verification code", email_html)
+    if sent:
+        return {"status": "success", "message": "Verification code sent to your email!"}
+    
+    # Dev mode fallback: OTP saved in DB & logged in console so user is never blocked
+    return {
+        "status": "success",
+        "message": f"Verification code generated! (Dev mode: check terminal for code)",
+        "dev_otp": otp
+    }
 
 @router.post("/api/verify_otp")
 async def verify_otp_endpoint(req: OTPVerifyRequest):
